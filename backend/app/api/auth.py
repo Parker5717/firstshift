@@ -10,9 +10,9 @@ JWT payload: { sub: user_id, role: "employee", exp: ... }
 import logging
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, status
 from jose import jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.api.schemas import LoginIn, LoginOut, RegisterIn, UserProfileOut
@@ -25,20 +25,17 @@ log = logging.getLogger("firstshift.auth")
 settings = get_settings()
 router = APIRouter()
 
-# bcrypt контекст — один на весь модуль
-_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 # ---------------------------------------------------------------------------
 # Утилиты
 # ---------------------------------------------------------------------------
 
 def hash_password(password: str) -> str:
-    return _pwd.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 def create_access_token(user_id: int, role: str) -> str:
@@ -48,7 +45,6 @@ def create_access_token(user_id: int, role: str) -> str:
 
 
 def _initialize_quest_progress(db: Session, user: User) -> None:
-    """Создать записи прогресса для всех квестов при первом входе."""
     all_quests = db.query(Quest).all()
     existing_slugs = {
         p.quest.slug for p in db.query(UserQuestProgress)
@@ -91,18 +87,10 @@ def _build_profile(user: User) -> UserProfileOut:
 # Эндпоинты
 # ---------------------------------------------------------------------------
 
-@router.post(
-    "/register",
-    response_model=LoginOut,
-    status_code=status.HTTP_201_CREATED,
-    summary="Регистрация нового сотрудника",
-)
+@router.post("/register", response_model=LoginOut, status_code=201, summary="Регистрация")
 def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
     if db.query(User).filter(User.username == payload.username).first():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Пользователь с таким именем уже существует",
-        )
+        raise HTTPException(status_code=409, detail="Пользователь с таким именем уже существует")
 
     user = User(
         username=payload.username,
@@ -118,45 +106,32 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
     db.commit()
     db.refresh(user)
 
-    log.info("Новый пользователь: %s (id=%d, role=%s)", user.username, user.id, user.role)
-    token = create_access_token(user.id, user.role)
-    return LoginOut(access_token=token, token_type="bearer", user=_build_profile(user))
+    log.info("Новый пользователь: %s (id=%d)", user.username, user.id)
+    return LoginOut(
+        access_token=create_access_token(user.id, user.role),
+        token_type="bearer",
+        user=_build_profile(user),
+    )
 
 
-@router.post(
-    "/login",
-    response_model=LoginOut,
-    summary="Вход по паролю",
-)
+@router.post("/login", response_model=LoginOut, summary="Вход по паролю")
 def login(payload: LoginIn, db: Session = Depends(get_db)) -> LoginOut:
     user = db.query(User).filter(User.username == payload.username).first()
 
-    # Пользователь не найден — намеренно не говорим что именно не так
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Неверный логин или пароль",
-        )
-
-    # Аккаунт без пароля (старый хакатонный аккаунт)
-    if user.password_hash is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Этот аккаунт создан без пароля. Зарегистрируйся заново через /register.",
-        )
+    if user is None or user.password_hash is None:
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
     if not verify_password(payload.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Неверный логин или пароль",
-        )
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
-    # Инициализируем прогресс для новых квестов (если YAML обновился)
     _initialize_quest_progress(db, user)
     user.last_active_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(user)
 
     log.info("Вход: %s (id=%d, role=%s)", user.username, user.id, user.role)
-    token = create_access_token(user.id, user.role)
-    return LoginOut(access_token=token, token_type="bearer", user=_build_profile(user))
+    return LoginOut(
+        access_token=create_access_token(user.id, user.role),
+        token_type="bearer",
+        user=_build_profile(user),
+    )

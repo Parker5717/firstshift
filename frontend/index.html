@@ -29,7 +29,6 @@
         radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,200,100,0.06), transparent);
       pointer-events: none;
     }
-
     .particle {
       position: fixed; width: 2px; height: 2px;
       background: var(--accent); border-radius: 50%;
@@ -37,8 +36,7 @@
     }
     @keyframes float {
       0%   { transform: translateY(100vh) scale(0); opacity: 0; }
-      10%  { opacity: 0.6; }
-      90%  { opacity: 0.3; }
+      10%  { opacity: 0.6; } 90% { opacity: 0.3; }
       100% { transform: translateY(-20px) scale(1); opacity: 0; }
     }
 
@@ -83,20 +81,16 @@
     @keyframes fadeIn { to { opacity: 1; } }
     .feature {
       flex: 1; padding: 8px 6px; border-radius: 10px;
-      border: 1px solid rgba(0,170,255,0.2);
-      background: rgba(0,170,255,0.04);
-      text-align: center; font-size: 10px;
-      color: var(--text-secondary); line-height: 1.4;
+      border: 1px solid rgba(0,170,255,0.2); background: rgba(0,170,255,0.04);
+      text-align: center; font-size: 10px; color: var(--text-secondary); line-height: 1.4;
     }
     .feature .icon { font-size: 18px; display: block; margin-bottom: 3px; }
 
-    /* Таб-переключатель Вход / Регистрация */
+    /* Таб-переключатель */
     .tab-switch {
       display: flex; width: 100%;
-      background: rgba(0,170,255,0.06);
-      border: 1px solid rgba(0,170,255,0.2);
-      border-radius: 10px; padding: 3px;
-      margin-bottom: 16px;
+      background: rgba(0,170,255,0.06); border: 1px solid rgba(0,170,255,0.2);
+      border-radius: 10px; padding: 3px; margin-bottom: 16px;
     }
     .tab-btn {
       flex: 1; padding: 9px; border: none; border-radius: 8px;
@@ -112,28 +106,41 @@
     /* Карточка формы */
     .login-box {
       width: 100%; padding: 24px 22px; border-radius: 20px;
-      border: 1px solid rgba(0,170,255,0.3);
-      background: rgba(7,11,20,0.9);
+      border: 1px solid rgba(0,170,255,0.3); background: rgba(7,11,20,0.9);
       backdrop-filter: blur(20px);
-      box-shadow:
-        0 0 0 1px rgba(0,170,255,0.1),
-        0 24px 48px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+      box-shadow: 0 0 0 1px rgba(0,170,255,0.1), 0 24px 48px rgba(0,0,0,0.4),
+                  inset 0 1px 0 rgba(255,255,255,0.05);
       animation: boxIn 0.8s 0.2s cubic-bezier(0.4,0,0.2,1) both;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     @keyframes boxIn {
       from { opacity: 0; transform: translateY(24px) scale(0.97); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    /* Shake — запускается через JS */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15%       { transform: translateX(-7px); }
+      30%       { transform: translateX(7px); }
+      45%       { transform: translateX(-5px); }
+      60%       { transform: translateX(5px); }
+      75%       { transform: translateX(-3px); }
+      90%       { transform: translateX(2px); }
+    }
+    .login-box.shake {
+      animation: shake 0.45s ease;
+      border-color: rgba(255,51,85,0.6);
+      box-shadow: 0 0 0 3px rgba(255,51,85,0.2), 0 24px 48px rgba(0,0,0,0.4);
+    }
+
     .input-group { margin-bottom: 12px; }
     .input-group input {
       width: 100%; padding: 13px 16px; box-sizing: border-box;
-      background: rgba(0,170,255,0.05);
-      border: 1px solid rgba(0,170,255,0.2);
+      background: rgba(0,170,255,0.05); border: 1px solid rgba(0,170,255,0.2);
       border-radius: 12px; color: var(--text-primary);
       font-size: 16px; font-family: 'Inter', sans-serif;
-      outline: none; transition: all 0.2s ease;
+      outline: none; transition: all 0.25s ease;
     }
     .input-group input:focus {
       border-color: var(--accent); background: rgba(0,170,255,0.08);
@@ -141,13 +148,19 @@
     }
     .input-group input::placeholder { color: var(--text-dim); }
 
+    /* Красная подсветка полей при ошибке */
+    .input-group.input-error input {
+      border-color: #ff3355 !important;
+      background: rgba(255,51,85,0.07) !important;
+      box-shadow: 0 0 0 3px rgba(255,51,85,0.18) !important;
+    }
+
     .btn-login {
       width: 100%; padding: 14px; border-radius: 12px; border: none;
       background: linear-gradient(135deg, #0077ee, #00aaff);
       color: #fff; font-size: 15px; font-weight: 700;
       font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
-      cursor: pointer; transition: all 0.2s ease;
-      position: relative; overflow: hidden;
+      cursor: pointer; transition: all 0.2s ease; overflow: hidden; position: relative;
     }
     .btn-login::after {
       content: ''; position: absolute; inset: 0;
@@ -159,19 +172,24 @@
     .btn-login:active { transform: translateY(0); }
     .btn-login:disabled { opacity: 0.5; cursor: default; transform: none; }
 
+    /* Блок ошибки */
     .error-msg {
-      font-size: 12px; color: var(--danger);
-      text-align: center; min-height: 16px;
-      margin-top: 10px; font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: 20px; margin-top: 10px;
+      font-size: 13px; font-weight: 600; color: #ff3355;
+      font-family: 'Inter', sans-serif;
+      opacity: 0; transform: translateY(-4px);
+      transition: opacity 0.2s, transform 0.2s;
     }
+    .error-msg.visible { opacity: 1; transform: translateY(0); }
 
     .bottom-links {
       display: flex; gap: 16px; margin-top: 20px;
       animation: fadeIn 0.8s 0.5s ease both;
     }
     .bottom-links a {
-      font-size: 12px; color: var(--text-dim);
-      text-decoration: none; font-family: 'Inter', sans-serif; transition: color 0.2s;
+      font-size: 12px; color: var(--text-dim); text-decoration: none;
+      font-family: 'Inter', sans-serif; transition: color 0.2s;
     }
     .bottom-links a:hover { color: var(--accent); }
 
@@ -201,53 +219,40 @@
     <div class="feature"><span class="icon">🛡️</span>Безопасность</div>
   </div>
 
-  <!-- Таб-переключатель -->
   <div class="tab-switch">
     <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Войти</button>
     <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Регистрация</button>
   </div>
 
-  <div class="login-box">
-
-    <!-- Поле логина (всегда видно) -->
-    <div class="input-group">
-      <input
-        type="text" id="username-input"
+  <div class="login-box" id="login-box">
+    <div class="input-group" id="group-username">
+      <input type="text" id="username-input"
         placeholder="Логин (a-z, 0-9, _, -)"
         maxlength="32" autocomplete="username"
-        autocorrect="off" autocapitalize="off" spellcheck="false"
-      >
+        autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
 
-    <!-- Пароль (всегда видно) -->
-    <div class="input-group">
-      <input
-        type="password" id="password-input"
+    <div class="input-group" id="group-password">
+      <input type="password" id="password-input"
         placeholder="Пароль (минимум 6 символов)"
-        maxlength="128" autocomplete="current-password"
-      >
+        maxlength="128" autocomplete="current-password">
     </div>
 
-    <!-- Имя для отображения — только при регистрации -->
-    <div class="input-group" id="displayname-group" style="display:none">
-      <input
-        type="text" id="displayname-input"
+    <div class="input-group" id="group-displayname" style="display:none">
+      <input type="text" id="displayname-input"
         placeholder="Имя для отображения (необязательно)"
-        maxlength="64" autocomplete="name"
-      >
+        maxlength="64" autocomplete="name">
     </div>
 
-    <button class="btn-login" id="btn-submit">Начать миссию →</button>
+    <button class="btn-login" id="btn-submit">Войти →</button>
 
-    <div class="error-msg" id="error-msg"></div>
-
+    <div class="error-msg" id="error-msg">⚠️ <span id="error-text"></span></div>
   </div>
 
   <div class="bottom-links">
     <a href="/markers">🖨️ Маркеры для печати</a>
     <a href="/docs" target="_blank">📖 API Docs</a>
   </div>
-
 </div>
 
 <div class="version">FirstShift v0.2.0</div>
@@ -266,18 +271,53 @@
     document.body.appendChild(p);
   }
 
-  // ---------- Таб-переключатель ----------
-  let _mode = 'login';  // 'login' | 'register'
+  let _mode = 'login';
 
   function switchTab(mode) {
     _mode = mode;
     document.getElementById('tab-login').classList.toggle('active',    mode === 'login');
     document.getElementById('tab-register').classList.toggle('active', mode === 'register');
-    document.getElementById('displayname-group').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('group-displayname').style.display = mode === 'register' ? 'block' : 'none';
     document.getElementById('btn-submit').textContent = mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
     document.getElementById('password-input').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
-    document.getElementById('error-msg').textContent = '';
+    hideError();
     document.getElementById('username-input').focus();
+  }
+
+  // ---------- Визуальная ошибка ----------
+  function showError(message, fields = ['username', 'password']) {
+    // Текст
+    document.getElementById('error-text').textContent = message;
+    const errorEl = document.getElementById('error-msg');
+    errorEl.classList.add('visible');
+
+    // Красная подсветка полей
+    fields.forEach(f => {
+      const g = document.getElementById('group-' + f);
+      if (g) g.classList.add('input-error');
+    });
+
+    // Shake на карточке
+    const box = document.getElementById('login-box');
+    box.classList.remove('shake');
+    void box.offsetWidth;  // reflow чтобы анимация перезапустилась
+    box.classList.add('shake');
+    box.addEventListener('animationend', () => box.classList.remove('shake'), { once: true });
+
+    // Убираем красные рамки через 2.5 сек
+    setTimeout(() => {
+      fields.forEach(f => {
+        const g = document.getElementById('group-' + f);
+        if (g) g.classList.remove('input-error');
+      });
+    }, 2500);
+  }
+
+  function hideError() {
+    document.getElementById('error-msg').classList.remove('visible');
+    ['username', 'password', 'displayname'].forEach(f => {
+      document.getElementById('group-' + f)?.classList.remove('input-error');
+    });
   }
 
   // ---------- Валидация ----------
@@ -285,21 +325,24 @@
     const username = document.getElementById('username-input').value.trim();
     const password = document.getElementById('password-input').value;
 
-    if (!username) return 'Введи логин';
-    if (!/^[a-zA-Z0-9_\-]+$/.test(username)) return 'Логин: только a-z, 0-9, _ и -';
-    if (username.length < 2) return 'Логин минимум 2 символа';
-    if (!password) return 'Введи пароль';
-    if (password.length < 6) return 'Пароль минимум 6 символов';
+    if (!username) return { msg: 'Введи логин', fields: ['username'] };
+    if (!/^[a-zA-Z0-9_\-]+$/.test(username))
+      return { msg: 'Логин: только a-z, 0-9, _ и -', fields: ['username'] };
+    if (username.length < 2)
+      return { msg: 'Логин минимум 2 символа', fields: ['username'] };
+    if (!password) return { msg: 'Введи пароль', fields: ['password'] };
+    if (password.length < 6)
+      return { msg: 'Пароль минимум 6 символов', fields: ['password'] };
     return null;
   }
 
-  // ---------- Отправка формы ----------
+  // ---------- Отправка ----------
   async function doSubmit() {
-    const errorEl = document.getElementById('error-msg');
-    const btn     = document.getElementById('btn-submit');
+    const btn = document.getElementById('btn-submit');
+    hideError();
 
     const err = validate();
-    if (err) { errorEl.textContent = err; return; }
+    if (err) { showError(err.msg, err.fields); return; }
 
     const username    = document.getElementById('username-input').value.trim();
     const password    = document.getElementById('password-input').value;
@@ -307,7 +350,6 @@
 
     btn.disabled = true;
     btn.textContent = '⏳ Подключение...';
-    errorEl.textContent = '';
 
     try {
       if (_mode === 'login') {
@@ -317,20 +359,22 @@
       }
       btn.textContent = '✅ Входим...';
       setTimeout(() => window.location.href = '/safety', 400);
-    } catch (err) {
-      errorEl.textContent = err.message || 'Ошибка подключения';
+    } catch (apiErr) {
+      const msg = apiErr.message || 'Ошибка подключения';
+      showError(msg, ['username', 'password']);
       btn.disabled = false;
       btn.textContent = _mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
     }
   }
 
-  // ---------- События ----------
   document.getElementById('btn-submit').addEventListener('click', doSubmit);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doSubmit();
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') doSubmit(); });
+
+  // Сбрасываем ошибку при вводе
+  ['username-input', 'password-input', 'displayname-input'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', hideError);
   });
 
-  // Инициализация
   switchTab('login');
   document.getElementById('username-input').focus();
 </script>
