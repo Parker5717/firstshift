@@ -118,18 +118,8 @@
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* Shake — запускается через JS */
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      15%       { transform: translateX(-7px); }
-      30%       { transform: translateX(7px); }
-      45%       { transform: translateX(-5px); }
-      60%       { transform: translateX(5px); }
-      75%       { transform: translateX(-3px); }
-      90%       { transform: translateX(2px); }
-    }
-    .login-box.shake {
-      animation: shake 0.45s ease;
+    /* Красная рамка карточки при ошибке — без animation, только border */
+    .login-box.error-state {
       border-color: rgba(255,51,85,0.6);
       box-shadow: 0 0 0 3px rgba(255,51,85,0.2), 0 24px 48px rgba(0,0,0,0.4);
     }
@@ -297,12 +287,20 @@
       if (g) g.classList.add('input-error');
     });
 
-    // Shake на карточке
+    // Shake через Web Animations API — не конфликтует с CSS анимациями
     const box = document.getElementById('login-box');
-    box.classList.remove('shake');
-    void box.offsetWidth;  // reflow чтобы анимация перезапустилась
-    box.classList.add('shake');
-    box.addEventListener('animationend', () => box.classList.remove('shake'), { once: true });
+    box.classList.add('error-state');
+    box.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-8px)' },
+      { transform: 'translateX(8px)' },
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(-3px)' },
+      { transform: 'translateX(2px)' },
+      { transform: 'translateX(0)' },
+    ], { duration: 420, easing: 'ease' });
+    setTimeout(() => box.classList.remove('error-state'), 2500);
 
     // Убираем красные рамки через 2.5 сек
     setTimeout(() => {

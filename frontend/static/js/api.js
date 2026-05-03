@@ -32,9 +32,15 @@ const API = (() => {
     const resp = await fetch(BASE + path, { ...options, headers });
 
     if (resp.status === 401) {
-      clearToken();
-      window.location.href = '/';
-      throw new Error('Сессия истекла, войди заново');
+      // На auth-эндпоинтах (логин/регистрация) — просто бросаем ошибку,
+      // НЕ редиректим, чтобы форма могла показать сообщение пользователю.
+      if (!path.startsWith('/api/auth/')) {
+        clearToken();
+        window.location.href = '/';
+      }
+      let detail = 'Ошибка авторизации';
+      try { detail = (await resp.json()).detail || detail; } catch (_) {}
+      throw new Error(detail);
     }
 
     if (!resp.ok) {
