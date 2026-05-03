@@ -1,161 +1,123 @@
-# 🤖 CASPER AR Assistant
+# FirstShift — AR-платформа адаптации сотрудников
 
-> **Команда:** «Команда которая объективно лучше всех, но судьи этого не замечают» 🎯
->
-> Хакатон **«Цифровой Вызов»** от Casper AI, Нижний Новгород 2026
+**FirstShift** превращает онбординг на производстве в AR-квест прямо в браузере смартфона. Новый сотрудник сканирует оборудование камерой — система распознаёт объекты через YOLOv8 и ArUco, засчитывает квесты, начисляет XP и формирует цифровой журнал инструктажей для HR.
 
-**Молодой сотрудник → камера смартфона → AR-подсказки и квесты → уверенная работа в цеху**
+> Пилот: предприятие, Сахалин, август 2026.
 
 ---
 
-## Что это
+## Возможности
 
-AR-помощник для адаптации новичков на производстве. Открывается в браузере смартфона, не требует установки. Камера распознаёт ArUco-маркеры на оборудовании и выдаёт контекстные подсказки через геймифицированную систему квестов.
-
-### Ключевые фичи
-
-| Функция | Описание |
-|---------|----------|
-| 🎯 **AR-квесты** | 7 квестов по нарастающей сложности, цепочка разблокировок |
-| 📷 **ArUco детекция** | Мгновенное распознавание маркеров через OpenCV |
-| 🦺 **Safety Check** | Проверка СИЗ через фронтальную камеру |
-| 🏆 **XP и ачивки** | Уровни от «Стажёр» до «Мастер цеха», 5 достижений |
-| 🤖 **Маскот КАСПЕР** | Антистресс-фразы, реакции на события |
-| 👤 **Лидерборд** | Топ-10 среди новичков (не с ветеранами) |
-| 🖨️ **Печатные маркеры** | Готовые к печати ArUco PNG через `/markers` |
+- **AR-квесты** — сотрудник наводит камеру на оборудование, YOLOv8 и ArUco-маркеры автоматически засчитывают выполнение
+- **Safety Check** — ежедневная проверка СИЗ через фронтальную камеру с фиксацией в цифровом журнале
+- **Геймификация** — XP, уровни, ачивки, лидерборд; маскот Алекс с голосовыми подсказками
+- **HR-панель** — прогресс каждого сотрудника, статус Safety Check, PDF-отчёт одной кнопкой
+- **Офлайн-режим** — Service Worker + IndexedDB, синхронизация при появлении сети
+- **Без установки** — PWA, открывается в браузере смартфона по ссылке
 
 ---
-
-## Быстрый старт
-
-### Windows — двойной клик
-
-| Файл | Описание |
-|------|----------|
-| `start.bat` | Обычный запуск — ArUco маркеры, быстро, стабильно |
-| `start_yolo.bat` | YOLOv8 + ArUco — нейросетевая детекция объектов |
-| `ngrok.bat` | Туннель для доступа с телефонов (запускай отдельно) |
-
-### Ручной запуск
-
-```bash
-cd backend
-python -m venv .venv
-
-# Linux/macOS
-source .venv/bin/activate
-
-# Windows
-.venv\Scripts\activate.bat
-
-pip install -r requirements.txt
-pip install numpy==2.2.0  # Windows + Python 3.13
-
-uvicorn app.main:app --reload
-```
-
-Открой **http://localhost:8000** — страница логина.
-
-### Маркеры для демо
-
-Открой **http://localhost:8000/markers** → распечатай → прикрепи к объектам.
-
-| Маркер | Квест |
-|--------|-------|
-| ID 0 — Входная зона | Первый шаг |
-| ID 1 — Аварийный стоп | Аварийная остановка |
-| ID 2 — Рабочий станок | Знакомство со станком |
-| ID 3 — Зона инструмента | Финальный осмотр |
-| ID 4 — Огнетушитель | Где огнетушитель? |
-| ID 10 — Каска (СИЗ) | Safety Check |
-| ID 11 — Жилет (СИЗ) | Safety Check |
-
-
-
-Запусти `start.bat` или `start_yolo.bat`, потом в отдельном окне — `ngrok.bat`.
-
-ngrok выдаст URL вида `https://abc123.ngrok-free.app` — открывай на любом телефоне.
-
-### Очистка БД
-
-```bash
-cd backend
-python reset_db.py          # полный сброс
-python reset_db.py --users  # только пользователи
-```
-
----
-
-## YOLOv8 режим
-
-По умолчанию детекция работает через **ArUco маркеры** — стабильно, быстро, без GPU.
-
-Для нейросетевой детекции запусти **`start_yolo.bat`** — он сам установит зависимости и запустит сервер с YOLOv8.
-
-Или вручную:
-
-```bash
-# 1. Установи зависимости (~2GB, только один раз)
-pip install -r requirements-yolo.txt
-
-# 2. Запусти (Windows)
-set CASPER_YOLO=1
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-В браузере появится зелёный бейдж **«🤖 YOLOv8 ACTIVE»**.
-
-### Что детектирует YOLOv8 в демо-режиме
-
-| COCO объект | → | Производственный объект |
-|-------------|---|------------------------|
-| bottle | → | Огнетушитель 🧯 |
-| chair | → | Рабочее место ⚙️ |
-| laptop / keyboard | → | Панель управления 🖥️ |
-| scissors | → | Режущий инструмент ✂️ |
-| person | → | Человек 👤 |
-
-> В реальном внедрении YOLOv8 дообучается на фото конкретного оборудования предприятия. ArUco маркеры остаются как надёжный fallback.
-
-
-
-## Архитектура
-
-```
-casper-ar-assistant/
-├── backend/
-│   ├── app/
-│   │   ├── api/        # REST + WebSocket эндпоинты
-│   │   ├── core/       # конфиг, WS менеджер
-│   │   ├── cv/         # ArUco + YOLOv8 + PPE детекторы
-│   │   ├── db/         # SQLAlchemy модели, seed
-│   │   ├── game/       # XP engine, ачивки, контент YAML
-│   │   └── main.py     # FastAPI entry point
-│   ├── models/         # YOLO веса (.pt)
-│   ├── reset_db.py     # утилита очистки БД
-│   └── requirements.txt
-├── frontend/
-│   ├── index.html      # логин
-│   ├── app.html        # AR-камера + HUD
-│   ├── safety.html     # Safety Check
-│   ├── profile.html    # профиль + лидерборд
-│   └── markers.html    # маркеры для печати
-└── docs/
-    └── demo-script.md  # сценарий для жюри
-```
 
 ## Стек
 
-| Слой | Технология |
+| Слой | Технологии |
 |------|-----------|
-| Backend | FastAPI 0.115, SQLAlchemy 2.0, SQLite |
-| Computer Vision | OpenCV 4.10 (ArUco), YOLOv8n (ultralytics) |
-| Transport | REST API + WebSocket (real-time) |
-| Frontend | Vanilla JS, Canvas 2D AR overlay |
-| Auth | JWT (python-jose) |
+| Backend | Python 3.11 · FastAPI 0.115 · SQLAlchemy 2.0 |
+| CV | YOLOv8n (ultralytics) · OpenCV ArUco |
+| База данных | SQLite (dev) → PostgreSQL (prod) |
+| Frontend | Vanilla JS · Tailwind CDN · Canvas API |
+| Transport | REST API + WebSocket |
+| Auth | JWT (python-jose) · bcrypt |
 
 ---
 
-## Демо-сценарий
+## Быстрый старт (Windows)
 
-Подробный сценарий для презентации жюри: [`docs/demo-script.md`](docs/demo-script.md)
+### 1. Клонировать и создать окружение
+
+```cmd
+git clone https://github.com/Parker5717/firstshift.git
+cd firstshift\backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Настроить переменные окружения
+
+```cmd
+copy .env.example .env
+```
+
+Открой `.env` и задай `SECRET_KEY` — любая случайная строка.
+
+### 3. Запустить сервер
+
+```cmd
+cd ..
+start_yolo.bat
+```
+
+Сервер запустится на `http://localhost:8000`.  
+Для доступа с телефона используй ngrok (см. `ngrok.bat`).
+
+---
+
+## Структура проекта
+
+```
+firstshift/
+├── backend/
+│   ├── app/
+│   │   ├── main.py              # FastAPI entry point
+│   │   ├── core/                # config, ws_manager, auth
+│   │   ├── api/                 # роутеры (auth, quests, vision, hr…)
+│   │   ├── cv/                  # CV pipeline: ArUco + YOLOv8 + PPE
+│   │   ├── game/                # XP engine, quest trigger, achievements
+│   │   └── db/                  # ORM models, database, seeder
+│   └── requirements.txt
+├── frontend/
+│   ├── app.html                 # Главная SPA (камера + AR + HUD)
+│   ├── safety.html              # Safety Check
+│   ├── admin.html               # HR-панель
+│   └── static/js/               # camera, vision-client, quest-engine…
+├── docs/
+│   └── architecture.md          # Полная архитектура продукта
+├── start_yolo.bat
+└── README.md
+```
+
+Подробная архитектура: [`docs/architecture.md`](docs/architecture.md)
+
+---
+
+## Роли пользователей
+
+| Роль | Доступ |
+|------|--------|
+| `employee` | Камера, квесты, Safety Check, профиль |
+| `mentor` | + прогресс своих подопечных |
+| `hr` | + все сотрудники, Safety Check журнал, PDF-отчёты |
+| `admin` | Системное управление |
+
+---
+
+## Roadmap
+
+- [x] ArUco маркеры + YOLOv8 детекция
+- [x] Геймификация (XP, уровни, ачивки)
+- [x] Safety Check через фронтальную камеру
+- [x] WebSocket стрим кадров
+- [x] Автозасчитывание квестов через CV
+- [ ] JWT auth с ролями (в разработке)
+- [ ] HR Admin-панель
+- [ ] Офлайн Safety Check (Service Worker)
+- [ ] PDF-отчёты
+- [ ] PostgreSQL + мультитенантность
+- [ ] Fine-tune YOLOv8 под оборудование клиента
+
+---
+
+## Автор
+
+Parker — основатель FirstShift, Южно-Сахалинск  
+Проект участвует в программе [ITMO Stars](https://stars.itmo.ru/) (дедлайн: 18 июля 2026)

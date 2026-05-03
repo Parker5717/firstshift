@@ -1,34 +1,60 @@
-# Python
+# ── Python ────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
+*.pyo
+*.pyd
 .Python
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# Virtualenv
-venv/
+# ── Virtual environments ───────────────────────────────────────
 .venv/
+venv/
 env/
+ENV/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-.DS_Store
+# ── Environment & secrets ──────────────────────────────────────
+.env
+.env.local
+.env.production
+!.env.example
 
-# Project-specific
-backend/casper.db
-backend/casper.db-journal
-backend/.env
+# ── Database ───────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── ML models (большие бинарники — не в git) ──────────────────
 backend/models/*.pt
+backend/models/*.onnx
+backend/models/*.engine
 !backend/models/.gitkeep
 
-# Логи
+# ── Logs ──────────────────────────────────────────────────────
 *.log
+logs/
 
-# Сборки фронта (на будущее)
-frontend/dist/
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── pytest / coverage ─────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── ngrok ─────────────────────────────────────────────────────
+ngrok.exe
+*.ngrok-free.app
+
+# ── Node (если появится) ──────────────────────────────────────
 node_modules/
