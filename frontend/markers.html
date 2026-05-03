@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CASPER — Маркеры для печати</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body {
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 24px 16px 48px;
+      display: block;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .page-header h1 {
+      font-size: 24px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .markers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto 32px;
+    }
+
+    .marker-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      background: var(--bg-panel);
+      backdrop-filter: blur(8px);
+    }
+
+    .marker-icon { font-size: 28px; margin-bottom: 8px; }
+
+    .marker-card img {
+      width: 200px;
+      height: 200px;
+      image-rendering: pixelated;
+      border: 3px solid white;
+      border-radius: 4px;
+      margin: 12px auto;
+      display: block;
+      background: white;
+    }
+
+    .marker-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .marker-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .marker-quest {
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .hint-box {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-glass);
+    }
+    .hint-box h3 {
+      color: var(--accent);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .hint-box ol {
+      padding-left: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 2;
+    }
+    .hint-box li span { color: var(--text-primary); font-weight: 600; }
+
+    @media print {
+      body { background: white; color: black; padding: 0; }
+      .page-header p, .btn-row, .hint-box, .marker-quest, .no-print { display: none; }
+      .markers-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .marker-card { border: 1px solid #ccc; background: white; padding: 10px; }
+      .marker-label { color: black; }
+      .marker-id { color: #666; }
+      .page-header h1 { color: black; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div style="font-size:40px;margin-bottom:8px">🖨️</div>
+  <h1>ArUco маркеры для цеха</h1>
+  <p>
+    Распечатай и прикрепи к объектам в цеху.<br>
+    Рекомендуемый размер: 10×10 см или больше.<br>
+    Камера распознаёт маркер с расстояния до 1–2 метров.
+  </p>
+</div>
+
+<div class="btn-row no-print">
+  <button class="btn btn-primary" onclick="window.print()">🖨️ Распечатать все маркеры</button>
+  <a href="/" class="btn">← На главную</a>
+</div>
+
+<div class="markers-grid" id="markers-grid">
+  <!-- Заполняется JS -->
+</div>
+
+<div class="hint-box no-print">
+  <h3>📋 Как использовать маркеры</h3>
+  <ol>
+    <li>Распечатай маркеры и прикрепи к объектам</li>
+    <li>Маркер <span>ID 0</span> → входная зона / дверь</li>
+    <li>Маркер <span>ID 1</span> → кнопка аварийного стопа</li>
+    <li>Маркер <span>ID 2</span> → рабочий станок</li>
+    <li>Маркер <span>ID 3</span> → зона хранения инструмента</li>
+    <li>Войди в приложение → начни квест → наведи камеру на маркер</li>
+    <li>Появится кнопка «✅ Засчитать» — нажми!</li>
+  </ol>
+</div>
+
+<script>
+  const MARKERS = [
+    { id: 0,  icon: '🚪', label: 'Входная зона',             quest: 'Квест: Первый шаг' },
+    { id: 1,  icon: '🛑', label: 'Аварийный стоп',            quest: 'Квест: Аварийная остановка' },
+    { id: 2,  icon: '⚙️', label: 'Рабочий станок',            quest: 'Квест: Знакомство со станком' },
+    { id: 3,  icon: '🔧', label: 'Зона хранения инструмента', quest: 'Квест: Финальный осмотр' },
+    { id: 4,  icon: '🧯', label: 'Огнетушитель',              quest: 'Квест: Где огнетушитель?' },
+  ];
+
+  const PPE_MARKERS = [
+    { id: 10, icon: '⛑', label: 'КАСКА (СИЗ)',  quest: 'Safety Check — приложи к голове/лбу' },
+    { id: 11, icon: '🦺', label: 'ЖИЛЕТ (СИЗ)', quest: 'Safety Check — приложи к груди' },
+  ];
+
+  const grid = document.getElementById('markers-grid');
+
+  // Цеховые маркеры
+  MARKERS.forEach(({ id, icon, label, quest }) => {
+    grid.appendChild(_makeCard(id, icon, label, quest));
+  });
+
+  // Разделитель
+  const sep = document.createElement('div');
+  sep.style.cssText = 'grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;text-align:center;color:var(--accent);font-size:13px;font-family:var(--font-mono);letter-spacing:1px';
+  sep.textContent = '⛑ МАРКЕРЫ СИЗ — для Safety Check';
+  grid.appendChild(sep);
+
+  // PPE маркеры
+  PPE_MARKERS.forEach(({ id, icon, label, quest }) => {
+    grid.appendChild(_makeCard(id, icon, label, quest));
+  });
+
+  function _makeCard(id, icon, label, quest) {
+    const card = document.createElement('div');
+    card.className = 'marker-card';
+    card.innerHTML = `
+      <div class="marker-icon">${icon}</div>
+      <div class="marker-id">ArUco ID: ${id} · DICT_4X4_50</div>
+      <img src="/api/markers/${id}/image" alt="ArUco маркер ${id}" loading="lazy">
+      <div class="marker-label">${label}</div>
+      <div class="marker-quest">${quest}</div>
+    `;
+    return card;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CASPER — Проверка СИЗ</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    #camera-wrap {
+      position: relative;
+      flex: 1;
+      background: #000;
+      overflow: hidden;
+    }
+    #video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scaleX(-1); /* зеркало для фронтальной камеры */
+    }
+
+    /* Силуэт человека поверх камеры */
+    #silhouette {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #silhouette svg {
+      height: 75%;
+      opacity: 0.25;
+      filter: drop-shadow(0 0 12px rgba(0,170,255,0.5));
+    }
+
+    /* Зоны подсветки СИЗ */
+    .ppe-zone {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: all 0.4s ease;
+      pointer-events: none;
+    }
+    #zone-helmet {
+      top: 8%; left: 50%;
+      transform: translateX(-50%);
+      width: 22%; padding-top: 22%;
+    }
+    #zone-vest {
+      top: 35%; left: 50%;
+      transform: translateX(-50%);
+      width: 44%; padding-top: 32%;
+    }
+    .ppe-zone.ok      { border-color: #00ff88; background: rgba(0,255,136,0.08); }
+    .ppe-zone.missing { border-color: #ff3355; background: rgba(255,51,85,0.08); }
+
+    /* Нижняя панель статуса */
+    #status-panel {
+      background: var(--bg-dark);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #status-title {
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    #ppe-checks {
+      display: flex;
+      gap: 12px;
+    }
+
+    .ppe-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-glass);
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .ppe-item.ok      { border-color: #00ff88; color: #00ff88; background: rgba(0,255,136,0.08); }
+    .ppe-item.missing { border-color: #ff3355; color: #ff3355; background: rgba(255,51,85,0.08); }
+    .ppe-item .icon   { font-size: 20px; }
+
+    #status-message {
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text-secondary);
+      min-height: 22px;
+      transition: color 0.3s;
+    }
+    #status-message.ok      { color: #00ff88; }
+    #status-message.missing { color: #ff3355; }
+
+    #btn-confirm {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--locked);
+      color: var(--text-dim);
+    }
+    #btn-confirm.ready {
+      background: #00ff88;
+      color: #070b14;
+      box-shadow: 0 0 24px rgba(0,255,136,0.4);
+    }
+    #btn-confirm.ready:hover { background: #22ffaa; }
+
+    /* Верхняя панель */
+    #top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+    }
+    #top-bar h1 { font-size: 16px; font-weight: 700; flex: 1; }
+    .btn-back {
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Сканирующая линия */
+    @keyframes scan {
+      0%   { top: 10%; }
+      100% { top: 90%; }
+    }
+    #scan-line {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 8px var(--accent-glow);
+      animation: scan 2.5s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Верхняя панель -->
+<div id="top-bar">
+  <button class="btn btn-back" id="btn-back">← Выйти</button>
+  <h1>🦺 Проверка снаряжения</h1>
+</div>
+
+<!-- Камера -->
+<div id="camera-wrap">
+  <video id="video" autoplay playsinline muted></video>
+
+  <!-- Сканирующая линия -->
+  <div id="scan-line"></div>
+
+  <!-- Силуэт -->
+  <div id="silhouette">
+    <svg viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Голова (зона каски) -->
+      <circle cx="50" cy="22" r="16" stroke="#00aaff" stroke-width="1.5"/>
+      <!-- Каска -->
+      <path d="M30 22 Q30 6 50 6 Q70 6 70 22" stroke="#00aaff" stroke-width="2" fill="rgba(0,170,255,0.1)"/>
+      <!-- Тело (зона жилета) -->
+      <rect x="28" y="42" width="44" height="55" rx="6" stroke="#00aaff" stroke-width="1.5" fill="rgba(0,170,255,0.06)"/>
+      <!-- Воротник -->
+      <path d="M42 38 L50 48 L58 38" stroke="#00aaff" stroke-width="1.5"/>
+      <!-- Руки -->
+      <rect x="8"  y="42" width="18" height="45" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
+      <rect x="74" y="42" width="18" height="45" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
+      <!-- Ноги -->
+      <rect x="28" y="100" width="18" height="55" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
+      <rect x="54" y="100" width="18" height="55" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
+    </svg>
+
+    <!-- Зоны подсветки -->
+    <div id="zone-helmet" class="ppe-zone"></div>
+    <div id="zone-vest"   class="ppe-zone"></div>
+  </div>
+</div>
+
+<!-- Нижняя панель -->
+<div id="status-panel">
+  <div id="status-title">📡 Сканирование снаряжения...</div>
+
+  <div style="font-size:12px;color:var(--text-dim);text-align:center;margin-bottom:4px">
+    Используй маркеры: ⛑ ID 10 = каска · 🦺 ID 11 = жилет
+    <a href="/markers" style="color:var(--accent);margin-left:6px" target="_blank">Распечатать →</a>
+  </div>
+
+  <div id="ppe-checks">
+    <div class="ppe-item" id="item-helmet">
+      <span class="icon">⛑</span>
+      <span id="ppe-helmet">Каска</span>
+    </div>
+    <div class="ppe-item" id="item-vest">
+      <span class="icon">🦺</span>
+      <span id="ppe-vest">Жилет</span>
+    </div>
+  </div>
+
+  <div id="status-message">Встань перед камерой в полный рост</div>
+
+  <button id="btn-confirm" disabled>
+    Начать смену →
+  </button>
+
+  <button onclick="window.location.href='/app'"
+    style="width:100%;padding:10px;background:transparent;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;margin-top:4px">
+    Пропустить проверку →
+  </button>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script src="/static/js/camera.js"></script>
+<script>
+  if (!API.hasToken()) window.location.href = '/';
+
+  document.getElementById('btn-back').addEventListener('click', () => {
+    Camera.stop();
+    API.clearToken();
+    window.location.href = '/';
+  });
+
+  const videoEl    = document.getElementById('video');
+  const btnConfirm = document.getElementById('btn-confirm');
+  const msgEl      = document.getElementById('status-message');
+
+  let _allOk     = false;
+  let _okStreak  = 0;
+  let _lastFrame = null;
+  const CONFIRM_STREAK = 3;
+
+  // Запускаем фронтальную камеру
+  Camera.start(videoEl, 'user');
+
+  // PPE polling каждые 1.2 сек
+  setInterval(checkPPE, 1200);
+
+  async function checkPPE() {
+    const canvas = document.createElement('canvas');
+    canvas.width  = videoEl.videoWidth  || 320;
+    canvas.height = videoEl.videoHeight || 240;
+    if (videoEl.readyState < 2) return;
+
+    canvas.getContext('2d').drawImage(videoEl, 0, 0);
+    const b64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+    if (!b64) return;
+    _lastFrame = b64;
+
+    try {
+      const token = sessionStorage.getItem('casper_token');
+      const resp  = await fetch('/api/vision/detect', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ image: b64, run_ppe: true, run_objects: false }),
+      });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data.ppe) updateUI(data.ppe);
+    } catch (e) {
+      console.debug('[Safety] Ошибка запроса:', e.message);
+    }
+  }
+
+  function updateUI(ppe) {
+    const helmetItem = document.getElementById('item-helmet');
+    const vestItem   = document.getElementById('item-vest');
+    const helmetText = document.getElementById('ppe-helmet');
+    const vestText   = document.getElementById('ppe-vest');
+    const zoneHelmet = document.getElementById('zone-helmet');
+    const zoneVest   = document.getElementById('zone-vest');
+
+    // Обновляем элементы
+    helmetItem.className = `ppe-item ${ppe.helmet ? 'ok' : 'missing'}`;
+    vestItem.className   = `ppe-item ${ppe.vest   ? 'ok' : 'missing'}`;
+    helmetText.textContent = ppe.helmet ? '✅ Каска' : '❌ Каска';
+    vestText.textContent   = ppe.vest   ? '✅ Жилет' : '❌ Жилет';
+    zoneHelmet.className = `ppe-zone ${ppe.helmet ? 'ok' : 'missing'}`;
+    zoneVest.className   = `ppe-zone ${ppe.vest   ? 'ok' : 'missing'}`;
+
+    if (ppe.all_ok) {
+      _okStreak++;
+      msgEl.textContent = _okStreak >= CONFIRM_STREAK
+        ? '✅ Снаряжение в порядке! Можно начинать.'
+        : `Держи позицию... ${_okStreak}/${CONFIRM_STREAK}`;
+      msgEl.className = 'ok';
+    } else {
+      _okStreak = 0;
+      const missing = ppe.missing.map(m => m === 'helmet' ? 'каску' : 'жилет').join(' и ');
+      msgEl.textContent = `Надень ${missing}`;
+      msgEl.className = 'missing';
+    }
+
+    _allOk = _okStreak >= CONFIRM_STREAK;
+    btnConfirm.disabled = !_allOk;
+    btnConfirm.className = _allOk ? 'ready' : '';
+
+    // Обновляем заголовок
+    document.getElementById('status-title').textContent =
+      _allOk ? '🟢 ПРОВЕРКА ПРОЙДЕНА' : '📡 Сканирование снаряжения...';
+  }
+
+  // Завершить safety check и перейти в приложение
+  btnConfirm.addEventListener('click', async () => {
+    if (!_allOk) return;
+    btnConfirm.textContent = 'Засчитываем...';
+    btnConfirm.disabled = true;
+
+    try {
+      const token = sessionStorage.getItem('casper_token');
+      // Записываем safety_check как ScanEvent для ачивки
+      await fetch('/api/vision/detect', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image: _lastFrame || '',
+          run_ppe: false,
+          run_objects: false,
+        }),
+      }).catch(() => {});
+
+      // Отдельный эндпоинт для записи safety check
+      await fetch('/api/progress/safety_check', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      }).catch(() => {});
+
+    } catch (e) {
+      console.error('[Safety] Ошибка:', e);
+    }
+
+    Camera.stop();
+    window.location.href = '/app';
+  });
+</script>
+</body>
+</html>

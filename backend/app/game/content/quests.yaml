@@ -1,0 +1,95 @@
+quests:
+
+  - slug: first_steps
+    title: "Первый шаг"
+    description: >
+      Твоя первая миссия — найти и отсканировать табличку входной зоны цеха.
+      Маркер висит у входа. Просто наведи камеру и держи пару секунд.
+    type: discovery
+    target_class: null
+    target_marker_id: 0
+    xp_reward: 50
+    prerequisite_slug: null
+    story_chapter: 1
+    difficulty: 1
+    params_json: "{}"
+
+  - slug: find_extinguisher
+    title: "Где огнетушитель?"
+    description: >
+      Каждый сотрудник должен знать, где висит огнетушитель в его зоне.
+      Найди его и отсканируй маркер рядом с ним.
+    type: discovery
+    target_class: null
+    target_marker_id: 4
+    xp_reward: 75
+    prerequisite_slug: first_steps
+    story_chapter: 1
+    difficulty: 2
+    params_json: "{}"
+
+  - slug: emergency_stop
+    title: "Аварийная остановка"
+    description: >
+      Красная кнопка аварийного стопа — самый важный элемент в цеху.
+      Найди её на своей рабочей позиции и запомни где она. Отсканируй маркер рядом с ней.
+    type: discovery
+    target_class: null
+    target_marker_id: 1
+    xp_reward: 100
+    prerequisite_slug: first_steps
+    story_chapter: 2
+    difficulty: 2
+    params_json: "{}"
+
+  - slug: machine_intro
+    title: "Знакомство со станком"
+    description: >
+      Наведи камеру на свой рабочий станок. Система покажет его название,
+      основные органы управления и ключевые правила безопасности.
+      После изучения ответь на один короткий вопрос.
+    type: knowledge
+    target_class: null
+    target_marker_id: 2
+    xp_reward: 150
+    prerequisite_slug: emergency_stop
+    story_chapter: 2
+    difficulty: 3
+    params_json: >
+      {"quiz": {"question": "Что нужно сделать перед включением станка?",
+      "options": ["Проверить наличие СИЗ и убедиться что зона свободна",
+      "Сразу нажать кнопку пуска", "Спросить коллегу"],
+      "correct_index": 0}}
+
+  - slug: speed_explorer
+    title: "Быстрый осмотр"
+    description: >
+      Покажи, что ты уже освоился! За 3 минуты найди и отсканируй 4 объекта:
+      входную зону, огнетушитель, аварийный стоп и рабочий станок.
+      Таймер пошёл как только ты принял квест.
+    type: speed_run
+    target_class: null
+    target_marker_id: null
+    xp_reward: 200
+    prerequisite_slug: machine_intro
+    story_chapter: 3
+    difficulty: 4
+    params_json: '{"required_markers": [0, 4, 1, 2], "time_sec": 180}'
+
+  - slug: boss_inspection
+    title: "Финальный осмотр"
+    description: >
+      Последнее испытание стажёра. Отсканируй маркер зоны хранения инструмента
+      и ответь на финальный вопрос. Удачи, оперативник!
+    type: knowledge
+    target_class: null
+    target_marker_id: 3
+    xp_reward: 300
+    prerequisite_slug: speed_explorer
+    story_chapter: 3
+    difficulty: 5
+    params_json: >
+      {"quiz": {"question": "Что делать если заметил неисправность оборудования?",
+      "options": ["Немедленно сообщить наставнику и не использовать оборудование",
+      "Попробовать починить самому", "Продолжать работать"],
+      "correct_index": 0}}

@@ -1,0 +1,36 @@
+achievements:
+
+  - slug: first_scan
+    title: "Первый контакт"
+    description: "Сделал первое сканирование объекта. Система тебя видит!"
+    icon: eye
+    xp_bonus: 25
+    condition_json: '{"type": "scan_count", "min": 1}'
+
+  - slug: safety_master
+    title: "Гуру безопасности"
+    description: "Прошёл проверку СИЗ 3 раза. Безопасность — твой приоритет!"
+    icon: shield
+    xp_bonus: 75
+    condition_json: '{"type": "scan_count_class", "detected_class": "safety_check", "min": 3}'
+
+  - slug: speed_demon
+    title: "Молния"
+    description: "Завершил квест «Быстрый осмотр». Скорость — твоё второе имя."
+    icon: zap
+    xp_bonus: 100
+    condition_json: '{"type": "quest_completed", "quest_slug": "speed_explorer"}'
+
+  - slug: explorer_10
+    title: "Исследователь"
+    description: "Отсканировал 10 разных объектов. Цех больше не чужой."
+    icon: map
+    xp_bonus: 50
+    condition_json: '{"type": "unique_scan_count", "min": 10}'
+
+  - slug: level_5
+    title: "Опытный новичок"
+    description: "Достиг 5-го уровня. Ты больше не стажёр — ты молодой специалист."
+    icon: star
+    xp_bonus: 150
+    condition_json: '{"type": "level_reached", "min": 5}'
