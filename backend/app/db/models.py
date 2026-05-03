@@ -1,16 +1,9 @@
 """
-ORM-модели CASPER AR Assistant.
+ORM-модели FirstShift.
 
-Архитектурные решения:
-- Quest и Achievement — статика, грузится из YAML при старте (см. game/content/).
-  В БД они нужны только для FK с UserQuestProgress / UserAchievement и для
-  истории скан-событий. При изменении YAML — пересеять БД.
-- Прогресс пользователя хранится отдельно от квестов (классический many-to-many
-  через ассоциативную таблицу с дополнительными полями).
-- ScanEvent — лог всех успешных детекций. Нужен для:
-    1) анти-чита (нельзя получить XP за один и тот же объект 100 раз подряд),
-    2) аналитики ("какие квесты проходят чаще всего"),
-    3) ачивок типа "отсканируй 10 разных объектов".
+Изменения v2 (шаг 1):
+- User.password_hash  — bcrypt-хэш пароля (nullable для совместимости)
+- User.role           — роль: employee / mentor / hr / admin
 """
 
 from datetime import datetime, timezone
@@ -31,7 +24,6 @@ from app.db.database import Base
 
 
 def _utcnow() -> datetime:
-    """UTC-время с timezone-aware datetime. SQLite его игнорит, но для PG важно."""
     return datetime.now(timezone.utc)
 
 
@@ -39,19 +31,26 @@ def _utcnow() -> datetime:
 # Enums
 # ---------------------------------------------------------------------------
 
+class UserRole(StrEnum):
+    EMPLOYEE = "employee"
+    MENTOR   = "mentor"
+    HR       = "hr"
+    ADMIN    = "admin"
+
+
 class QuestType(StrEnum):
-    DISCOVERY = "discovery"      # "найди и отсканируй объект X"
-    SAFETY = "safety"            # "пройди проверку СИЗ"
-    KNOWLEDGE = "knowledge"      # "ответь на квиз после сканирования"
-    SPEED_RUN = "speed_run"      # "найди N объектов за T минут"
+    DISCOVERY = "discovery"
+    SAFETY    = "safety"
+    KNOWLEDGE = "knowledge"
+    SPEED_RUN = "speed_run"
 
 
 class QuestStatus(StrEnum):
-    LOCKED = "locked"            # ещё не открыт (есть невыполненный prerequisite)
-    AVAILABLE = "available"      # можно начинать
-    ACTIVE = "active"            # пользователь начал, но не завершил
-    COMPLETED = "completed"      # успешно завершён
-    FAILED = "failed"            # speed_run провален (не уложился по времени)
+    LOCKED    = "locked"
+    AVAILABLE = "available"
+    ACTIVE    = "active"
+    COMPLETED = "completed"
+    FAILED    = "failed"
 
 
 # ---------------------------------------------------------------------------
@@ -65,10 +64,14 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     display_name: Mapped[str] = mapped_column(String(128), default="")
 
+    # Auth
+    password_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    role: Mapped[str] = mapped_column(String(16), default=UserRole.EMPLOYEE.value)
+
     # Прогресс
     level: Mapped[int] = mapped_column(Integer, default=1)
     total_xp: Mapped[int] = mapped_column(Integer, default=0)
-    current_streak: Mapped[int] = mapped_column(Integer, default=0)  # дней подряд
+    current_streak: Mapped[int] = mapped_column(Integer, default=0)
 
     # Тайминг
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
@@ -86,11 +89,11 @@ class User(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<User {self.username} lvl={self.level} xp={self.total_xp}>"
+        return f"<User {self.username} role={self.role} lvl={self.level}>"
 
 
 # ---------------------------------------------------------------------------
-# Quests (контент)
+# Quests
 # ---------------------------------------------------------------------------
 
 class Quest(Base):
@@ -100,27 +103,15 @@ class Quest(Base):
     slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     title: Mapped[str] = mapped_column(String(128))
     description: Mapped[str] = mapped_column(Text)
-
-    # Тип квеста определяет, как его валидировать (см. quest_manager.py)
-    type: Mapped[str] = mapped_column(String(32))  # значения из QuestType
-
-    # Что именно искать. Один из двух способов идентификации:
-    #   target_class    — имя класса для нейросети (например "fire_extinguisher")
-    #   target_marker_id — ID ArUco-маркера (например 7)
-    # Если оба None — квест валидируется кастомной логикой (например speed_run).
+    type: Mapped[str] = mapped_column(String(32))
     target_class: Mapped[str | None] = mapped_column(String(64), nullable=True)
     target_marker_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-
-    # Награда и порядок прохождения
     xp_reward: Mapped[int] = mapped_column(Integer, default=50)
     prerequisite_slug: Mapped[str | None] = mapped_column(String(64), nullable=True)
     story_chapter: Mapped[int] = mapped_column(Integer, default=1)
-    difficulty: Mapped[int] = mapped_column(Integer, default=1)  # 1-5
-
-    # Доп. параметры в JSON-подобной строке (для speed_run: {"count": 5, "time_sec": 180})
+    difficulty: Mapped[int] = mapped_column(Integer, default=1)
     params_json: Mapped[str] = mapped_column(Text, default="{}")
 
-    # Связи
     progress_records: Mapped[list["UserQuestProgress"]] = relationship(
         back_populates="quest", cascade="all, delete-orphan"
     )
@@ -142,20 +133,17 @@ class UserQuestProgress(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     quest_id: Mapped[int] = mapped_column(ForeignKey("quests.id", ondelete="CASCADE"), index=True)
-
     status: Mapped[str] = mapped_column(String(16), default=QuestStatus.LOCKED.value)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
-
     started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    # Связи
     user: Mapped["User"] = relationship(back_populates="quest_progress")
     quest: Mapped["Quest"] = relationship(back_populates="progress_records")
 
 
 # ---------------------------------------------------------------------------
-# Achievements (контент)
+# Achievements
 # ---------------------------------------------------------------------------
 
 class Achievement(Base):
@@ -165,16 +153,9 @@ class Achievement(Base):
     slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     title: Mapped[str] = mapped_column(String(128))
     description: Mapped[str] = mapped_column(Text)
-    icon: Mapped[str] = mapped_column(String(64), default="trophy")  # имя иконки во фронте
-
-    # JSON-условие срабатывания, проверяется в game/achievements.py
-    # Примеры:
-    #   {"type": "scan_count", "min": 10}
-    #   {"type": "level_reached", "min": 5}
-    #   {"type": "quest_completed", "slug": "boss_inspection"}
+    icon: Mapped[str] = mapped_column(String(64), default="trophy")
     condition_json: Mapped[str] = mapped_column(Text)
-
-    xp_bonus: Mapped[int] = mapped_column(Integer, default=0)  # доп. XP при разблокировке
+    xp_bonus: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class UserAchievement(Base):
@@ -199,21 +180,14 @@ class UserAchievement(Base):
 # ---------------------------------------------------------------------------
 
 class ScanEvent(Base):
-    """
-    Каждое успешное распознавание объекта или маркера — одна запись.
-    Используется для анти-чита, аналитики и условий ачивок.
-    """
     __tablename__ = "scan_events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
     detected_class: Mapped[str | None] = mapped_column(String(64), nullable=True)
     marker_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
-
-    # Если скан был засчитан в рамках квеста — фиксируем какого
     quest_id: Mapped[int | None] = mapped_column(
         ForeignKey("quests.id", ondelete="SET NULL"), nullable=True
     )

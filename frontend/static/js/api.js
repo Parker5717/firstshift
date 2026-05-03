@@ -1,11 +1,10 @@
 /**
- * CASPER API Client
+ * FirstShift API Client
  * Обёртка над fetch с JWT-авторизацией.
- * Все методы возвращают промис с данными или бросают Error.
  */
 
 const API = (() => {
-  const BASE = '';  // same-origin, сервер FastAPI отдаёт и фронт и API
+  const BASE      = '';
   const TOKEN_KEY = 'casper_token';
 
   let _token = sessionStorage.getItem(TOKEN_KEY);
@@ -22,9 +21,7 @@ const API = (() => {
     sessionStorage.removeItem(TOKEN_KEY);
   }
 
-  function hasToken() {
-    return !!_token;
-  }
+  function hasToken() { return !!_token; }
 
   // ---------- Базовый fetch ----------
 
@@ -57,44 +54,38 @@ const API = (() => {
     return _fetch(path, { method: 'GET' });
   }
 
+  // ---------- Auth ----------
+
+  async function login(username, password) {
+    const data = await post('/api/auth/login', { username, password });
+    setToken(data.access_token);
+    return data;
+  }
+
+  async function register(username, password, displayName) {
+    const data = await post('/api/auth/register', {
+      username,
+      password,
+      display_name: displayName || null,
+    });
+    setToken(data.access_token);
+    return data;
+  }
+
   // ---------- Методы ----------
 
-  async function login(username) {
-    const data = await post('/api/auth/login', { username });
-    setToken(data.access_token);
-    return data;  // { access_token, user }
-  }
-
-  async function getProfile() {
-    return get('/api/users/me');
-  }
-
-  async function getQuests() {
-    return get('/api/quests');
-  }
-
-  async function startQuest(slug) {
-    return post(`/api/quests/${slug}/start`, {});
-  }
-
-  async function completeQuest(slug) {
-    return post(`/api/quests/${slug}/complete`, {});
-  }
-
-  async function getLeaderboard() {
-    return get('/api/users/leaderboard');
-  }
+  async function getProfile()         { return get('/api/users/me'); }
+  async function getQuests()          { return get('/api/quests'); }
+  async function startQuest(slug)     { return post(`/api/quests/${slug}/start`, {}); }
+  async function completeQuest(slug)  { return post(`/api/quests/${slug}/complete`, {}); }
+  async function getLeaderboard()     { return get('/api/users/leaderboard'); }
 
   return {
-    hasToken,
-    clearToken,
-    login,
-    get,
-    post,
-    getProfile,
-    getQuests,
-    startQuest,
-    completeQuest,
+    hasToken, clearToken,
+    login, register,
+    get, post,
+    getProfile, getQuests,
+    startQuest, completeQuest,
     getLeaderboard,
   };
 })();

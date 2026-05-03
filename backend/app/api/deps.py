@@ -1,8 +1,8 @@
 """
-Зависимости FastAPI, используемые в нескольких роутерах.
+FastAPI dependencies.
 
-Основная — get_current_user: читает JWT из заголовка Authorization,
-валидирует, возвращает объект User из БД. Если токен невалидный — 401.
+get_current_user  — декодирует JWT, возвращает User из БД
+require_role      — фабрика dependency для проверки роли
 """
 
 import logging
@@ -16,7 +16,7 @@ from app.core.config import get_settings
 from app.db.database import get_db
 from app.db.models import User
 
-log = logging.getLogger("casper.deps")
+log = logging.getLogger("firstshift.deps")
 settings = get_settings()
 
 _bearer = HTTPBearer(auto_error=True)
@@ -26,13 +26,7 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
-    """
-    FastAPI dependency. Использование в эндпоинте:
-
-        @router.get("/me")
-        def me(user: User = Depends(get_current_user)):
-            ...
-    """
+    """Валидировать JWT и вернуть текущего пользователя."""
     token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
@@ -54,3 +48,22 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def require_role(*roles: str):
+    """
+    Фабрика dependency для защиты эндпоинтов по роли.
+
+    Использование:
+        @router.get("/admin/users")
+        def list_users(user=Depends(require_role("hr", "admin"))):
+            ...
+    """
+    def _check(user: User = Depends(get_current_user)) -> User:
+        if user.role not in roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Доступ запрещён. Требуется роль: {', '.join(roles)}",
+            )
+        return user
+    return _check

@@ -3,24 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>CASPER AR — Первый день на заводе</title>
+  <title>FirstShift — Первый день на заводе</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600&display=swap');
 
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-      background: #070b14;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; overflow: hidden; background: #070b14;
     }
 
-    /* Анимированный фон */
     .bg-grid {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background-image:
         linear-gradient(rgba(0,170,255,0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,170,255,0.04) 1px, transparent 1px);
@@ -28,25 +22,18 @@
       mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
       pointer-events: none;
     }
-
     .bg-glow {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background:
         radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,100,255,0.12), transparent),
         radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,200,100,0.06), transparent);
       pointer-events: none;
     }
 
-    /* Плавающие частицы */
     .particle {
-      position: fixed;
-      width: 2px; height: 2px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: float linear infinite;
-      opacity: 0;
-      pointer-events: none;
+      position: fixed; width: 2px; height: 2px;
+      background: var(--accent); border-radius: 50%;
+      animation: float linear infinite; opacity: 0; pointer-events: none;
     }
     @keyframes float {
       0%   { transform: translateY(100vh) scale(0); opacity: 0; }
@@ -55,33 +42,22 @@
       100% { transform: translateY(-20px) scale(1); opacity: 0; }
     }
 
-    /* Основной контент */
     .login-wrap {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 400px;
-      padding: 0 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      position: relative; z-index: 1;
+      width: 100%; max-width: 400px; padding: 0 24px;
+      display: flex; flex-direction: column; align-items: center;
     }
 
-    /* Логотип */
     .logo-area {
-      text-align: center;
-      margin-bottom: 36px;
+      text-align: center; margin-bottom: 24px;
       animation: logoIn 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
     }
     @keyframes logoIn {
       from { opacity: 0; transform: translateY(-24px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
     .logo-robot {
-      font-size: 72px;
-      display: block;
-      margin-bottom: 12px;
+      font-size: 64px; display: block; margin-bottom: 10px;
       filter: drop-shadow(0 0 24px rgba(0,170,255,0.6));
       animation: robotPulse 3s ease-in-out infinite;
     }
@@ -89,60 +65,56 @@
       0%, 100% { filter: drop-shadow(0 0 24px rgba(0,170,255,0.6)); transform: scale(1); }
       50%       { filter: drop-shadow(0 0 40px rgba(0,170,255,0.9)); transform: scale(1.05); }
     }
-
     .logo-name {
-      font-family: 'Orbitron', monospace;
-      font-size: 36px;
-      font-weight: 900;
-      letter-spacing: 8px;
-      color: #fff;
-      text-shadow:
-        0 0 20px rgba(0,170,255,0.8),
-        0 0 60px rgba(0,170,255,0.3);
+      font-family: 'Orbitron', monospace; font-size: 30px; font-weight: 900;
+      letter-spacing: 6px; color: #fff;
+      text-shadow: 0 0 20px rgba(0,170,255,0.8), 0 0 60px rgba(0,170,255,0.3);
     }
-
     .logo-tagline {
-      font-size: 13px;
-      color: var(--text-secondary);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 8px;
+      font-size: 12px; color: var(--text-secondary);
+      letter-spacing: 2px; text-transform: uppercase; margin-top: 6px;
       font-family: 'Inter', sans-serif;
     }
 
-    /* Фичи */
     .features {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 28px;
-      animation: fadeIn 0.8s 0.3s ease forwards;
-      opacity: 0;
+      display: flex; gap: 10px; margin-bottom: 20px;
+      animation: fadeIn 0.8s 0.3s ease forwards; opacity: 0;
     }
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
+    @keyframes fadeIn { to { opacity: 1; } }
     .feature {
-      flex: 1;
-      padding: 10px 8px;
-      border-radius: 10px;
+      flex: 1; padding: 8px 6px; border-radius: 10px;
       border: 1px solid rgba(0,170,255,0.2);
       background: rgba(0,170,255,0.04);
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-secondary);
-      line-height: 1.4;
+      text-align: center; font-size: 10px;
+      color: var(--text-secondary); line-height: 1.4;
     }
-    .feature .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .feature .icon { font-size: 18px; display: block; margin-bottom: 3px; }
 
-    /* Форма логина */
+    /* Таб-переключатель Вход / Регистрация */
+    .tab-switch {
+      display: flex; width: 100%;
+      background: rgba(0,170,255,0.06);
+      border: 1px solid rgba(0,170,255,0.2);
+      border-radius: 10px; padding: 3px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1; padding: 9px; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: all 0.2s;
+      background: transparent; color: var(--text-secondary);
+    }
+    .tab-btn.active {
+      background: var(--accent); color: #fff;
+      box-shadow: 0 2px 12px rgba(0,170,255,0.4);
+    }
+
+    /* Карточка формы */
     .login-box {
-      width: 100%;
-      padding: 28px 24px;
-      border-radius: 20px;
+      width: 100%; padding: 24px 22px; border-radius: 20px;
       border: 1px solid rgba(0,170,255,0.3);
       background: rgba(7,11,20,0.9);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       box-shadow:
         0 0 0 1px rgba(0,170,255,0.1),
         0 24px 48px rgba(0,0,0,0.4),
@@ -154,59 +126,33 @@
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .login-box h2 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-      text-align: center;
-      margin-bottom: 20px;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .input-group { position: relative; margin-bottom: 14px; }
-
+    .input-group { margin-bottom: 12px; }
     .input-group input {
-      width: 100%;
-      padding: 14px 16px;
+      width: 100%; padding: 13px 16px; box-sizing: border-box;
       background: rgba(0,170,255,0.05);
       border: 1px solid rgba(0,170,255,0.2);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-      transition: all 0.2s ease;
+      border-radius: 12px; color: var(--text-primary);
+      font-size: 16px; font-family: 'Inter', sans-serif;
+      outline: none; transition: all 0.2s ease;
     }
     .input-group input:focus {
-      border-color: var(--accent);
-      background: rgba(0,170,255,0.08);
+      border-color: var(--accent); background: rgba(0,170,255,0.08);
       box-shadow: 0 0 0 3px rgba(0,170,255,0.15);
     }
     .input-group input::placeholder { color: var(--text-dim); }
 
     .btn-login {
-      width: 100%;
-      padding: 15px;
-      border-radius: 12px;
-      border: none;
+      width: 100%; padding: 14px; border-radius: 12px; border: none;
       background: linear-gradient(135deg, #0077ee, #00aaff);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: 'Inter', sans-serif;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
+      color: #fff; font-size: 15px; font-weight: 700;
+      font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
+      cursor: pointer; transition: all 0.2s ease;
+      position: relative; overflow: hidden;
     }
     .btn-login::after {
-      content: '';
-      position: absolute;
-      inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-      opacity: 0;
-      transition: opacity 0.2s;
+      opacity: 0; transition: opacity 0.2s;
     }
     .btn-login:hover::after { opacity: 1; }
     .btn-login:hover { box-shadow: 0 8px 24px rgba(0,170,255,0.4); transform: translateY(-1px); }
@@ -214,48 +160,24 @@
     .btn-login:disabled { opacity: 0.5; cursor: default; transform: none; }
 
     .error-msg {
-      font-size: 12px;
-      color: var(--danger);
-      text-align: center;
-      min-height: 16px;
-      margin-top: 8px;
-      font-family: 'Inter', sans-serif;
+      font-size: 12px; color: var(--danger);
+      text-align: center; min-height: 16px;
+      margin-top: 10px; font-family: 'Inter', sans-serif;
     }
 
-    .login-hint {
-      font-size: 12px;
-      color: var(--text-dim);
-      text-align: center;
-      margin-top: 14px;
-      line-height: 1.5;
-      font-family: 'Inter', sans-serif;
-    }
-
-    /* Ссылки внизу */
     .bottom-links {
-      display: flex;
-      gap: 16px;
-      margin-top: 20px;
+      display: flex; gap: 16px; margin-top: 20px;
       animation: fadeIn 0.8s 0.5s ease both;
     }
     .bottom-links a {
-      font-size: 12px;
-      color: var(--text-dim);
-      text-decoration: none;
-      font-family: 'Inter', sans-serif;
-      transition: color 0.2s;
+      font-size: 12px; color: var(--text-dim);
+      text-decoration: none; font-family: 'Inter', sans-serif; transition: color 0.2s;
     }
     .bottom-links a:hover { color: var(--accent); }
 
-    /* Версия */
     .version {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      font-size: 10px;
-      color: var(--text-dim);
-      font-family: monospace;
-      opacity: 0.5;
+      position: fixed; bottom: 16px; right: 16px;
+      font-size: 10px; color: var(--text-dim); font-family: monospace; opacity: 0.5;
     }
   </style>
 </head>
@@ -268,55 +190,57 @@
 
   <div class="logo-area">
     <span class="logo-robot">🤖</span>
-    <div class="logo-name">CASPER</div>
+    <div class="logo-name">FIRSTSHIFT</div>
     <div class="logo-tagline">AR-помощник на производстве</div>
   </div>
 
   <div class="features">
-    <div class="feature">
-      <span class="icon">📷</span>
-      AR-камера
-    </div>
-    <div class="feature">
-      <span class="icon">🎯</span>
-      Квесты
-    </div>
-    <div class="feature">
-      <span class="icon">🏆</span>
-      Ачивки
-    </div>
-    <div class="feature">
-      <span class="icon">🤖</span>
-      ИИ-наставник
-    </div>
+    <div class="feature"><span class="icon">📷</span>AR-камера</div>
+    <div class="feature"><span class="icon">🎯</span>Квесты</div>
+    <div class="feature"><span class="icon">🏆</span>Ачивки</div>
+    <div class="feature"><span class="icon">🛡️</span>Безопасность</div>
+  </div>
+
+  <!-- Таб-переключатель -->
+  <div class="tab-switch">
+    <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Войти</button>
+    <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Регистрация</button>
   </div>
 
   <div class="login-box">
-    <h2>Введи свой никнейм для входа</h2>
 
+    <!-- Поле логина (всегда видно) -->
     <div class="input-group">
       <input
-        type="text"
-        id="username-input"
-        placeholder="Например: Parker"
-        maxlength="32"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
+        type="text" id="username-input"
+        placeholder="Логин (a-z, 0-9, _, -)"
+        maxlength="32" autocomplete="username"
+        autocorrect="off" autocapitalize="off" spellcheck="false"
       >
     </div>
 
-    <button class="btn-login" id="btn-login">
-      Начать миссию →
-    </button>
+    <!-- Пароль (всегда видно) -->
+    <div class="input-group">
+      <input
+        type="password" id="password-input"
+        placeholder="Пароль (минимум 6 символов)"
+        maxlength="128" autocomplete="current-password"
+      >
+    </div>
+
+    <!-- Имя для отображения — только при регистрации -->
+    <div class="input-group" id="displayname-group" style="display:none">
+      <input
+        type="text" id="displayname-input"
+        placeholder="Имя для отображения (необязательно)"
+        maxlength="64" autocomplete="name"
+      >
+    </div>
+
+    <button class="btn-login" id="btn-submit">Начать миссию →</button>
 
     <div class="error-msg" id="error-msg"></div>
 
-    <div class="login-hint">
-      Нет аккаунта? Он создастся автоматически.<br>
-      Пароль не нужен.
-    </div>
   </div>
 
   <div class="bottom-links">
@@ -326,50 +250,89 @@
 
 </div>
 
-<div class="version">CASPER v0.1.0 · Цифровой Вызов 2026</div>
+<div class="version">FirstShift v0.2.0</div>
 
 <script src="/static/js/api.js"></script>
 <script>
   if (API.hasToken()) window.location.href = '/safety';
 
-  // Частицы
+  // Частицы фона
   for (let i = 0; i < 20; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
     p.style.left = Math.random() * 100 + 'vw';
     p.style.animationDuration = (8 + Math.random() * 12) + 's';
-    p.style.animationDelay = (Math.random() * 10) + 's';
+    p.style.animationDelay   = (Math.random() * 10) + 's';
     document.body.appendChild(p);
   }
 
-  const input   = document.getElementById('username-input');
-  const btn     = document.getElementById('btn-login');
-  const errorEl = document.getElementById('error-msg');
+  // ---------- Таб-переключатель ----------
+  let _mode = 'login';  // 'login' | 'register'
 
-  async function doLogin() {
-    const username = input.value.trim();
-    if (!username) { errorEl.textContent = 'Введи никнейм'; input.focus(); return; }
-    if (!/^[a-zA-Z0-9_\-]+$/.test(username)) {
-      errorEl.textContent = 'Только латиница, цифры, _ и -';
-      return;
-    }
+  function switchTab(mode) {
+    _mode = mode;
+    document.getElementById('tab-login').classList.toggle('active',    mode === 'login');
+    document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+    document.getElementById('displayname-group').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('btn-submit').textContent = mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
+    document.getElementById('password-input').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    document.getElementById('error-msg').textContent = '';
+    document.getElementById('username-input').focus();
+  }
+
+  // ---------- Валидация ----------
+  function validate() {
+    const username = document.getElementById('username-input').value.trim();
+    const password = document.getElementById('password-input').value;
+
+    if (!username) return 'Введи логин';
+    if (!/^[a-zA-Z0-9_\-]+$/.test(username)) return 'Логин: только a-z, 0-9, _ и -';
+    if (username.length < 2) return 'Логин минимум 2 символа';
+    if (!password) return 'Введи пароль';
+    if (password.length < 6) return 'Пароль минимум 6 символов';
+    return null;
+  }
+
+  // ---------- Отправка формы ----------
+  async function doSubmit() {
+    const errorEl = document.getElementById('error-msg');
+    const btn     = document.getElementById('btn-submit');
+
+    const err = validate();
+    if (err) { errorEl.textContent = err; return; }
+
+    const username    = document.getElementById('username-input').value.trim();
+    const password    = document.getElementById('password-input').value;
+    const displayName = document.getElementById('displayname-input').value.trim();
+
     btn.disabled = true;
     btn.textContent = '⏳ Подключение...';
     errorEl.textContent = '';
+
     try {
-      await API.login(username);
+      if (_mode === 'login') {
+        await API.login(username, password);
+      } else {
+        await API.register(username, password, displayName || null);
+      }
       btn.textContent = '✅ Входим...';
       setTimeout(() => window.location.href = '/safety', 400);
     } catch (err) {
       errorEl.textContent = err.message || 'Ошибка подключения';
       btn.disabled = false;
-      btn.textContent = 'Начать миссию →';
+      btn.textContent = _mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
     }
   }
 
-  btn.addEventListener('click', doLogin);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  input.focus();
+  // ---------- События ----------
+  document.getElementById('btn-submit').addEventListener('click', doSubmit);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSubmit();
+  });
+
+  // Инициализация
+  switchTab('login');
+  document.getElementById('username-input').focus();
 </script>
 </body>
 </html>

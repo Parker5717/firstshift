@@ -1,8 +1,10 @@
 """
 Pydantic v2 схемы — контракт API между backend и frontend.
 
-Все Response-схемы заканчиваются на ...Out (то что отдаём клиенту).
-Request-схемы заканчиваются на ...In (то что принимаем от клиента).
+Изменения v2 (шаг 1):
+- LoginIn     — добавлено поле password
+- RegisterIn  — новая схема для регистрации
+- UserProfileOut — добавлено поле role
 """
 
 from pydantic import BaseModel, Field
@@ -12,18 +14,24 @@ from pydantic import BaseModel, Field
 # Auth
 # ---------------------------------------------------------------------------
 
+class RegisterIn(BaseModel):
+    username: str = Field(
+        min_length=2,
+        max_length=32,
+        pattern=r"^[a-zA-Z0-9_\-]+$",
+        examples=["parker"],
+    )
+    password: str = Field(min_length=6, max_length=128)
+    display_name: str | None = Field(default=None, max_length=64)
+
+
 class LoginIn(BaseModel):
     username: str = Field(
         min_length=2,
         max_length=32,
         pattern=r"^[a-zA-Z0-9_\-]+$",
-        examples=["Parker"],
     )
-    display_name: str | None = Field(
-        default=None,
-        max_length=64,
-        description="Имя для отображения. Если не задано, используется username.",
-    )
+    password: str = Field(min_length=1, max_length=128)
 
 
 class TokenOut(BaseModel):
@@ -39,6 +47,7 @@ class UserProfileOut(BaseModel):
     id: int
     username: str
     display_name: str
+    role: str
     level: int
     level_title: str
     total_xp: int
@@ -50,7 +59,6 @@ class UserProfileOut(BaseModel):
 
 
 class LoginOut(BaseModel):
-    """Ответ на успешный логин: токен + профиль сразу."""
     access_token: str
     token_type: str = "bearer"
     user: UserProfileOut
@@ -70,8 +78,8 @@ class QuestOut(BaseModel):
     story_chapter: int
     status: str
     params_json: str
-    target_marker_id: int | None = None   # нужен фронту для CV-матчинга
-    target_class: str | None = None        # нужен фронту для CV-матчинга
+    target_marker_id: int | None = None
+    target_class: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -99,7 +107,7 @@ class QuestCompleteOut(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Scan (будет расширяться на шаге 5)
+# Scan
 # ---------------------------------------------------------------------------
 
 class ScanEventIn(BaseModel):
