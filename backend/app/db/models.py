@@ -1,22 +1,14 @@
 """
 ORM-модели FirstShift.
 
-Изменения v2 (шаг 1):
-- User.password_hash  — bcrypt-хэш пароля (nullable для совместимости)
-- User.role           — роль: employee / mentor / hr / admin
+v3 (шаги 3-4): password_hash, role, mentor_id
 """
 
 from datetime import datetime, timezone
 from enum import StrEnum
 
 from sqlalchemy import (
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    UniqueConstraint,
+    DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,10 +18,6 @@ from app.db.database import Base
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
-
-# ---------------------------------------------------------------------------
-# Enums
-# ---------------------------------------------------------------------------
 
 class UserRole(StrEnum):
     EMPLOYEE = "employee"
@@ -53,31 +41,23 @@ class QuestStatus(StrEnum):
     FAILED    = "failed"
 
 
-# ---------------------------------------------------------------------------
-# Users
-# ---------------------------------------------------------------------------
-
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     display_name: Mapped[str] = mapped_column(String(128), default="")
-
-    # Auth
     password_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
     role: Mapped[str] = mapped_column(String(16), default=UserRole.EMPLOYEE.value)
-
-    # Прогресс
+    mentor_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     level: Mapped[int] = mapped_column(Integer, default=1)
     total_xp: Mapped[int] = mapped_column(Integer, default=0)
     current_streak: Mapped[int] = mapped_column(Integer, default=0)
-
-    # Тайминг
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     last_active_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
-    # Связи
     quest_progress: Mapped[list["UserQuestProgress"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
@@ -87,14 +67,16 @@ class User(Base):
     scan_events: Mapped[list["ScanEvent"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    mentees: Mapped[list["User"]] = relationship(
+        "User", foreign_keys="User.mentor_id", back_populates="mentor"
+    )
+    mentor: Mapped["User | None"] = relationship(
+        "User", foreign_keys=[mentor_id], back_populates="mentees", remote_side="User.id"
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.username} role={self.role} lvl={self.level}>"
 
-
-# ---------------------------------------------------------------------------
-# Quests
-# ---------------------------------------------------------------------------
 
 class Quest(Base):
     __tablename__ = "quests"
@@ -120,15 +102,9 @@ class Quest(Base):
         return f"<Quest {self.slug} ({self.type}, +{self.xp_reward} XP)>"
 
 
-# ---------------------------------------------------------------------------
-# Прогресс пользователя по квестам
-# ---------------------------------------------------------------------------
-
 class UserQuestProgress(Base):
     __tablename__ = "user_quest_progress"
-    __table_args__ = (
-        UniqueConstraint("user_id", "quest_id", name="uq_user_quest"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "quest_id", name="uq_user_quest"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -141,10 +117,6 @@ class UserQuestProgress(Base):
     user: Mapped["User"] = relationship(back_populates="quest_progress")
     quest: Mapped["Quest"] = relationship(back_populates="progress_records")
 
-
-# ---------------------------------------------------------------------------
-# Achievements
-# ---------------------------------------------------------------------------
 
 class Achievement(Base):
     __tablename__ = "achievements"
@@ -160,9 +132,7 @@ class Achievement(Base):
 
 class UserAchievement(Base):
     __tablename__ = "user_achievements"
-    __table_args__ = (
-        UniqueConstraint("user_id", "achievement_id", name="uq_user_achievement"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "achievement_id", name="uq_user_achievement"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -174,10 +144,6 @@ class UserAchievement(Base):
     user: Mapped["User"] = relationship(back_populates="achievements")
     achievement: Mapped["Achievement"] = relationship()
 
-
-# ---------------------------------------------------------------------------
-# Лог сканирований
-# ---------------------------------------------------------------------------
 
 class ScanEvent(Base):
     __tablename__ = "scan_events"
