@@ -6,7 +6,7 @@
  * 2. Офлайн-очередь Safety Check через IndexedDB + Background Sync
  */
 
-const CACHE_NAME   = 'firstshift-v1';
+const CACHE_NAME   = 'firstshift-v2';
 const SYNC_TAG     = 'safety-check-sync';
 const IDB_NAME     = 'firstshift-offline';
 const IDB_STORE    = 'safety_queue';
