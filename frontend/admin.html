@@ -95,7 +95,7 @@
     }
 
     /* Safety */
-    .safety-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .safety-grid { display:flex; flex-direction:column; gap:8px; }
     .safety-col-title { font-size:12px; font-family:monospace; font-weight:700; margin-bottom:10px; }
     .safety-item {
       display:flex; align-items:center; gap:10px;
@@ -183,7 +183,7 @@
   <div class="stats-row">
     <div class="stat-card"><div class="val" id="stat-total">—</div><div class="lbl">СОТРУДНИКОВ</div></div>
     <div class="stat-card"><div class="val" id="stat-active">—</div><div class="lbl">АКТИВНЫ СЕГОДНЯ</div></div>
-    <div class="stat-card"><div class="val" id="stat-safety">—</div><div class="lbl">SAFETY CHECK ✅</div></div>
+    <div class="stat-card"><div class="val" id="stat-safety">—</div><div class="lbl">SAFETY CHECK СЕГОДНЯ</div></div>
     <div class="stat-card"><div class="val" id="stat-avg">—</div><div class="lbl">СРЕДНЕЕ ВЫПОЛНЕНИЕ</div></div>
   </div>
 
@@ -219,14 +219,7 @@
     </div>
     <div id="safety-loading" class="loading">Загрузка...</div>
     <div class="safety-grid" id="safety-grid" style="display:none">
-      <div>
-        <div class="safety-col-title">✅ Прошли</div>
-        <div id="safety-passed"></div>
-      </div>
-      <div>
-        <div class="safety-col-title">❌ Не прошли</div>
-        <div id="safety-failed"></div>
-      </div>
+      <div id="safety-list"></div>
     </div>
   </div>
 
@@ -481,30 +474,24 @@
     try {
       const data = await apiFetch('/api/admin/safety/today');
       const passed = data.filter(u => u.passed_today);
-      const failed = data.filter(u => !u.passed_today);
-      document.getElementById('stat-safety').textContent = passed.length;
+      document.getElementById('stat-safety').textContent = `${passed.length}/${data.length}`;
 
-      document.getElementById('safety-passed').innerHTML = passed.length
-        ? passed.map(u => `
-            <div class="safety-item passed">
-              <span style="font-size:18px">✅</span>
-              <div>
+      // Сортируем: сначала прошедшие (по времени), потом не заходившие
+      const sorted = [
+        ...data.filter(u => u.passed_today).sort((a,b) => new Date(b.last_check_at) - new Date(a.last_check_at)),
+        ...data.filter(u => !u.passed_today),
+      ];
+
+      document.getElementById('safety-list').innerHTML = sorted.length
+        ? sorted.map(u => `
+            <div class="safety-item ${u.passed_today ? 'passed' : 'failed'}">
+              <span style="font-size:18px">${u.passed_today ? '✅' : '🕐'}</span>
+              <div style="flex:1">
                 <div class="safety-name">${u.display_name}</div>
-                <div class="safety-time">${fmtTime(u.last_check_at)}</div>
+                <div class="safety-time">${u.passed_today ? 'Прошёл сегодня в ' + fmtTime(u.last_check_at) : 'Ещё не заходил сегодня'}</div>
               </div>
             </div>`).join('')
-        : '<div class="empty">Никто не прошёл</div>';
-
-      document.getElementById('safety-failed').innerHTML = failed.length
-        ? failed.map(u => `
-            <div class="safety-item failed">
-              <span style="font-size:18px">❌</span>
-              <div>
-                <div class="safety-name">${u.display_name}</div>
-                <div class="safety-time">не проходил сегодня</div>
-              </div>
-            </div>`).join('')
-        : '<div class="empty">Все прошли! 🎉</div>';
+        : '<div class="empty">Нет сотрудников</div>';
 
       document.getElementById('safety-loading').style.display = 'none';
       document.getElementById('safety-grid').style.display    = 'grid';
