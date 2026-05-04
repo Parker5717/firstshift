@@ -1,7 +1,7 @@
 """
 Users роутер.
 
-GET /api/users/me        — профиль текущего пользователя
+GET /api/users/me          — профиль текущего пользователя
 GET /api/users/leaderboard — топ-10 по XP
 """
 
@@ -22,7 +22,7 @@ def _build_profile(user: User) -> UserProfileOut:
         id=user.id,
         username=user.username,
         display_name=user.display_name or user.username,
-        role=user.role,                          # ← было пропущено
+        role=user.role,
         level=user.level,
         level_title=level_title(user.level),
         total_xp=user.total_xp,
