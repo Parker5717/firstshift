@@ -272,16 +272,19 @@
 
   function fmtDate(iso) {
     if (!iso) return '—';
-    const diff = Math.floor((Date.now() - new Date(iso)) / 60000);
+    // Добавляем Z чтобы JS парсил как UTC (SQLite хранит без timezone)
+    const dt = iso.endsWith('Z') ? iso : iso + 'Z';
+    const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
     if (diff < 1)    return 'только что';
     if (diff < 60)   return `${diff} мин. назад`;
     if (diff < 1440) return `${Math.floor(diff/60)} ч. назад`;
-    return new Date(iso).toLocaleDateString('ru-RU');
+    return new Date(dt).toLocaleDateString('ru-RU');
   }
 
   function fmtTime(iso) {
     if (!iso) return '';
-    return new Date(iso).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+    const dt = iso.endsWith('Z') ? iso : iso + 'Z';
+    return new Date(dt).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
   }
 
   // ── Загрузка ──────────────────────────────────────────────
