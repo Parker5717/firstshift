@@ -1,8 +1,8 @@
 """
 Users роутер.
 
-GET /api/users/me  — профиль текущего пользователя.
-GET /api/users/leaderboard — топ-10 (заготовка, будет расширена на шаге 9).
+GET /api/users/me        — профиль текущего пользователя
+GET /api/users/leaderboard — топ-10 по XP
 """
 
 from fastapi import APIRouter, Depends
@@ -22,6 +22,7 @@ def _build_profile(user: User) -> UserProfileOut:
         id=user.id,
         username=user.username,
         display_name=user.display_name or user.username,
+        role=user.role,                          # ← было пропущено
         level=user.level,
         level_title=level_title(user.level),
         total_xp=user.total_xp,
@@ -31,27 +32,15 @@ def _build_profile(user: User) -> UserProfileOut:
     )
 
 
-@router.get(
-    "/me",
-    response_model=UserProfileOut,
-    summary="Мой профиль",
-)
-def get_my_profile(
-    current_user: User = Depends(get_current_user),
-) -> UserProfileOut:
-    """Возвращает профиль текущего авторизованного пользователя."""
+@router.get("/me", response_model=UserProfileOut, summary="Мой профиль")
+def get_my_profile(current_user: User = Depends(get_current_user)) -> UserProfileOut:
     return _build_profile(current_user)
 
 
-@router.get(
-    "/leaderboard",
-    response_model=list[UserProfileOut],
-    summary="Топ-10 пользователей (заготовка)",
-)
+@router.get("/leaderboard", response_model=list[UserProfileOut], summary="Топ-10 по XP")
 def leaderboard(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),  # только для авторизованных
+    _: User = Depends(get_current_user),
 ) -> list[UserProfileOut]:
-    """Топ-10 по XP. Будет доработан на шаге 9 (фильтрация по когорте)."""
     top = db.query(User).order_by(User.total_xp.desc()).limit(10).all()
     return [_build_profile(u) for u in top]
