@@ -227,25 +227,25 @@ def safety_today(
     db: Session = Depends(get_db),
     _: User = Depends(require_role("hr", "admin")),
 ) -> list[SafetyStatusOut]:
+    from app.db.models import SafetyCheck
     today_start = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=timezone.utc)
     users = db.query(User).filter(User.role == "employee").all()
     result = []
     for user in users:
         last_check = (
-            db.query(ScanEvent)
+            db.query(SafetyCheck)
             .filter(
-                ScanEvent.user_id == user.id,
-                ScanEvent.detected_class == "safety_check",
-                ScanEvent.timestamp >= today_start,
+                SafetyCheck.user_id == user.id,
+                SafetyCheck.timestamp >= today_start,
             )
-            .order_by(ScanEvent.timestamp.desc())
+            .order_by(SafetyCheck.timestamp.desc())
             .first()
         )
         result.append(SafetyStatusOut(
             user_id=user.id,
             username=user.username,
             display_name=user.display_name or user.username,
-            passed_today=last_check is not None,
+            passed_today=last_check is not None and last_check.passed,
             last_check_at=last_check.timestamp if last_check else None,
         ))
     return result

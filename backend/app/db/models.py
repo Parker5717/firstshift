@@ -159,3 +159,40 @@ class ScanEvent(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="scan_events")
+
+
+# ── SafetyCheck ───────────────────────────────────────────────────────────────
+
+class SafetyCheck(Base):
+    """
+    Результат ежедневной проверки СИЗ.
+    Заменяет костыль с ScanEvent(detected_class='safety_check').
+
+    client_id — UUID генерируется на фронте, используется для
+    дедупликации офлайн-записей (шаг 8).
+    """
+    __tablename__ = "safety_checks"
+    __table_args__ = (
+        UniqueConstraint("user_id", "client_id", name="uq_safety_client"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+    passed: Mapped[bool] = mapped_column(default=False)
+
+    # Детали по каждому элементу СИЗ
+    helmet: Mapped[bool] = mapped_column(default=False)
+    vest: Mapped[bool] = mapped_column(default=False)
+    goggles: Mapped[bool] = mapped_column(default=False)
+    missing_items: Mapped[str] = mapped_column(String(256), default="")  # JSON-список
+
+    # UUID для дедупликации офлайн-записей (шаг 8)
+    client_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+
+    user: Mapped["User"] = relationship()
+
+    def __repr__(self) -> str:
+        return f"<SafetyCheck user={self.user_id} passed={self.passed} {self.timestamp}>"
