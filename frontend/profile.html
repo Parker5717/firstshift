@@ -101,7 +101,7 @@
 <div id="top-bar">
   <button class="btn" onclick="window.location.href='/app'" style="padding:8px 14px;font-size:13px">← Назад</button>
   <h1>👤 Мой профиль</h1>
-  <button class="btn" id="btn-logout-top" style="padding:8px 14px;font-size:13px;color:var(--danger);border-color:rgba(255,51,85,0.4)">Выйти</button>
+  <button class="btn" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'" style="padding:8px 14px;font-size:13px;color:var(--danger);border-color:rgba(255,51,85,0.4)">Выйти</button>
 </div>
 
 <!-- Hero -->
@@ -150,7 +150,7 @@
 
 <!-- Выход из аккаунта -->
 <div class="section" style="margin-top:32px;padding-bottom:32px">
-  <button id="btn-logout-bottom">
+  <button onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
       <polyline points="16 17 21 12 16 7"/>
@@ -227,14 +227,6 @@
       lbList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;font-size:14px">Пока никого нет. Будь первым! 🚀</div>';
     }
   }
-
-  function doLogout() {
-    API.clearToken();
-    window.location.href = '/';
-  }
-
-  document.getElementById('btn-logout-top').addEventListener('click', doLogout);
-  document.getElementById('btn-logout-bottom').addEventListener('click', doLogout);
 
   load().catch(console.error);
 </script>
