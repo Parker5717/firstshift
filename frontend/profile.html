@@ -97,6 +97,12 @@
 <div id="top-bar">
   <button class="btn" onclick="window.location.href='/app'" style="padding:8px 14px;font-size:13px">← Назад</button>
   <h1>👤 Мой профиль</h1>
+  <button id="btn-admin" onclick="window.location.href='/admin'" style="
+    display:none; padding:8px 14px; font-size:13px; font-weight:600;
+    color:#ffaa00; border:1px solid rgba(255,170,0,0.4);
+    background:rgba(255,170,0,0.08); border-radius:8px;
+    cursor:pointer; font-family:inherit; transition:all 0.2s;
+  ">⚙️ Admin</button>
   <button class="btn-logout" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">Выйти</button>
 </div>
 
@@ -159,6 +165,11 @@
   async function load() {
     const profile = await API.getProfile();
     _myUsername = profile.username;
+    // Показываем кнопку Admin для hr и admin
+    if (['hr', 'admin'].includes(profile.role)) {
+      const adminBtn = document.getElementById('btn-admin');
+      if (adminBtn) adminBtn.style.display = 'inline-block';
+    }
     document.getElementById('hero-avatar').textContent  = (profile.display_name || profile.username).charAt(0).toUpperCase();
     document.getElementById('hero-name').textContent    = profile.display_name || profile.username;
     document.getElementById('hero-level').textContent   = `LVL ${profile.level} · ${profile.level_title}`;

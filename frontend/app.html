@@ -87,6 +87,16 @@
     <span class="tab-label">Профиль</span>
   </button>
 
+  <!-- Admin — показывается только для hr/admin -->
+  <button class="tab-item" id="tab-admin" onclick="Tab.admin()" style="display:none;color:#ffaa00">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+    </svg>
+    <span class="tab-label">Admin</span>
+  </button>
+
 </nav>
 
 <!-- ── МОДАЛКА — ЗАДАНИЯ (квесты + ачивки) ───────────────── -->
@@ -152,6 +162,7 @@
     quests()      { QuestEngine.openModal('quests'); },
     encyclopedia(){ window.location.href = '/encyclopedia'; },
     profile()     { window.location.href = '/profile'; },
+    admin()       { window.location.href = '/admin'; },
   };
 </script>
 
