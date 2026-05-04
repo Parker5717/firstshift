@@ -229,10 +229,8 @@
   }
 
   function doLogout() {
-    if (confirm('Выйти из аккаунта?')) {
-      API.clearToken();
-      window.location.href = '/';
-    }
+    API.clearToken();
+    window.location.href = '/';
   }
 
   document.getElementById('btn-logout-top').addEventListener('click', doLogout);
