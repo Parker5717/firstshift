@@ -3,132 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CASPER AR</title>
+  <title>FirstShift AR</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <link rel="stylesheet" href="/static/css/hud.css">
 </head>
 <body>
 
-<!-- ============================================================
-     КАМЕРА + AR ОВЕРЛЕЙ
-     ============================================================ -->
+<!-- ── КАМЕРА + AR ─────────────────────────────────────────── -->
 <div id="camera-container">
   <video id="video" autoplay playsinline muted></video>
   <canvas id="ar-canvas"></canvas>
-
-  <!-- Ошибка камеры -->
   <div id="camera-error" class="hidden">
     <div class="icon">📷</div>
     <h3>Нет доступа к камере</h3>
-    <p>Разреши доступ к камере в настройках браузера и попробуй снова.</p>
-    <button class="btn btn-primary" id="btn-retry-camera" style="margin-top:16px">
-      Попробовать снова
-    </button>
+    <p>Разреши доступ к камере в настройках браузера.</p>
+    <button class="btn btn-primary" id="btn-retry-camera" style="margin-top:16px">Попробовать снова</button>
   </div>
 </div>
 
-<!-- ============================================================
-     HUD — ВЕРХНЯЯ ПАНЕЛЬ (профиль + XP)
-     ============================================================ -->
+<!-- ── HUD TOP — тонкая полоска XP ───────────────────────── -->
 <div id="hud-top">
   <div id="hud-avatar">?</div>
   <div id="hud-profile">
-    <div id="hud-level-label">LVL 1 · Стажёр</div>
-    <div id="hud-username">Загрузка...</div>
+    <div id="hud-header-row">
+      <span id="hud-username">Загрузка...</span>
+      <span id="hud-level-label">LVL 1</span>
+    </div>
     <div id="hud-xp-bar" class="xp-bar-wrap">
       <div id="hud-xp-fill" class="xp-bar-fill" style="width:0%"></div>
     </div>
-    <div id="hud-xp-text">0 XP</div>
   </div>
 </div>
 
-<!-- ============================================================
-     HUD — КНОПКИ СПРАВА
-     ============================================================ -->
-<div id="hud-controls">
-  <!-- Переключение камеры -->
-  <button class="hud-btn" id="btn-toggle-camera" title="Переключить камеру">🔄</button>
-  <!-- Список квестов -->
-  <button class="hud-btn" id="btn-quests" title="Квесты">🎯</button>
-  <!-- Ачивки -->
-  <button class="hud-btn" id="btn-achievements" title="Достижения">🏆</button>
-  <!-- Энциклопедия -->
-  <button class="hud-btn" title="Энциклопедия" onclick="window.location.href='/encyclopedia'" style="color:#aa88ff">📖</button>
-  <!-- Профиль -->
-  <button class="hud-btn" id="btn-profile" title="Профиль" onclick="window.location.href='/profile'" style="color:var(--success)">👤</button>
-  <!-- Выход -->
-  <button class="hud-btn" id="btn-logout" title="Выйти" style="color:var(--danger)">🚪</button>
-</div>
-
-<!-- ============================================================
-     HUD — НИЖНЯЯ ПАНЕЛЬ (активный квест)
-     ============================================================ -->
+<!-- ── HUD BOTTOM — карточка активного квеста ────────────── -->
 <div id="hud-bottom">
-  <!-- Карточка активного квеста -->
   <div id="active-quest-card">
-    <div id="quest-card-label">🔍 АКТИВНЫЙ КВЕСТ</div>
+    <div id="quest-card-label">🎯 АКТИВНЫЙ КВЕСТ</div>
     <div id="quest-card-title">Загрузка...</div>
     <div id="quest-card-desc"></div>
     <div id="quest-card-xp"></div>
   </div>
-  <!-- Если нет активного квеста -->
   <div id="no-active-quest" class="hidden">
-    Нет активного квеста.
-    <span onclick="QuestEngine.openModal()">Выбрать →</span>
+    Нет активного квеста —
+    <span onclick="QuestEngine.openModal()">выбрать →</span>
   </div>
 </div>
 
-<!-- ============================================================
-     МОДАЛКА — СПИСОК КВЕСТОВ
-     ============================================================ -->
+<!-- ── TAB BAR ────────────────────────────────────────────── -->
+<nav id="tab-bar">
+
+  <!-- Камера -->
+  <button class="tab-item" id="tab-camera" onclick="Tab.camera()">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+    <span class="tab-label">Камера</span>
+  </button>
+
+  <!-- Задания -->
+  <button class="tab-item" id="tab-quests" onclick="Tab.quests()">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    <span class="tab-label">Задания</span>
+  </button>
+
+  <!-- Энциклопедия -->
+  <button class="tab-item" id="tab-encyclopedia" onclick="Tab.encyclopedia()">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+    <span class="tab-label">Справочник</span>
+  </button>
+
+  <!-- Профиль -->
+  <button class="tab-item" id="tab-profile" onclick="Tab.profile()">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span class="tab-label">Профиль</span>
+  </button>
+
+</nav>
+
+<!-- ── МОДАЛКА — ЗАДАНИЯ (квесты + ачивки) ───────────────── -->
 <div id="quest-modal">
   <div id="quest-modal-inner">
+
+    <!-- Шапка с табами -->
     <div id="quest-modal-header">
-      <span id="quest-modal-title">🎯 Квесты</span>
-      <button class="btn" id="btn-close-modal" style="padding:6px 14px;font-size:13px">
-        Закрыть
+      <div id="quest-tabs">
+        <button class="quest-tab active" id="qtab-quests"
+          onclick="QuestEngine.switchTab('quests')">Квесты</button>
+        <button class="quest-tab" id="qtab-achievements"
+          onclick="QuestEngine.switchTab('achievements')">Ачивки</button>
+      </div>
+      <button class="modal-close-btn" onclick="QuestEngine.closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
     </div>
-    <div id="quest-list" class="scroll-y" style="max-height:60vh;padding-right:4px">
-      <!-- Заполняется quest-engine.js -->
-    </div>
+
+    <!-- Список квестов -->
+    <div id="quest-list-panel" class="scroll-y modal-panel"></div>
+
+    <!-- Список ачивок -->
+    <div id="achievements-list-panel" class="scroll-y modal-panel hidden"></div>
+
   </div>
 </div>
 
-<!-- ============================================================
-     МОДАЛКА — АЧИВКИ
-     ============================================================ -->
-<div id="achievements-modal" style="
-  position:fixed;inset:0;
-  background:rgba(7,11,20,0.7);
-  backdrop-filter:blur(4px);
-  z-index:50;display:flex;
-  align-items:flex-end;
-  opacity:0;pointer-events:none;
-  transition:opacity 0.3s;
-">
-  <div style="
-    width:100%;max-height:80vh;
-    background:var(--bg-dark);
-    border-top:1px solid var(--border-bright);
-    border-radius:20px 20px 0 0;
-    padding:16px 16px 32px;
-    transform:translateY(100%);
-    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
-  " id="achievements-modal-inner">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">
-      <span style="font-size:17px;font-weight:700">🏆 Достижения</span>
-      <button class="btn" id="btn-close-achievements" style="padding:6px 14px;font-size:13px">Закрыть</button>
-    </div>
-    <div id="achievements-list" class="scroll-y" style="max-height:60vh;padding-right:4px"></div>
-  </div>
-</div>
-
-<!-- ============================================================
-     ВСПЛЫВАЮЩИЕ УВЕДОМЛЕНИЯ
-     ============================================================ -->
+<!-- ── УВЕДОМЛЕНИЯ ────────────────────────────────────────── -->
 <div id="xp-popup" class="xp-popup">+50 XP</div>
-
 <div id="levelup-popup">
   <div id="levelup-inner">
     <h2>🎉</h2>
@@ -137,9 +128,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     СКРИПТЫ
-     ============================================================ -->
+<!-- ── СКРИПТЫ ────────────────────────────────────────────── -->
 <script src="/static/js/api.js"></script>
 <script src="/static/js/camera.js"></script>
 <script src="/static/js/ar-overlay.js"></script>
@@ -152,6 +141,19 @@
 <script src="/static/js/mascot.js"></script>
 <script src="/static/js/onboarding.js"></script>
 <script src="/static/js/app.js"></script>
+
+<script>
+  // Tab actions
+  const Tab = {
+    camera()      { Camera.toggle().then(m => {
+      document.getElementById('tab-camera').classList.add('flash');
+      setTimeout(() => document.getElementById('tab-camera').classList.remove('flash'), 300);
+    }); },
+    quests()      { QuestEngine.openModal('quests'); },
+    encyclopedia(){ window.location.href = '/encyclopedia'; },
+    profile()     { window.location.href = '/profile'; },
+  };
+</script>
 
 </body>
 </html>

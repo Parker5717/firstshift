@@ -1,332 +1,271 @@
 /* ============================================================
-   CASPER AR Assistant — HUD стили (поверх камеры)
+   FirstShift — HUD стили
    ============================================================ */
 
-/* ---- Контейнер камеры — на весь экран ---- */
 #camera-container {
-  position: fixed;
-  inset: 0;
-  background: #000;
+  position: fixed; inset: 0; background: #000;
 }
-
-#video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
+#video { width: 100%; height: 100%; object-fit: cover; display: block; }
 #ar-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; pointer-events: none;
 }
 
-/* ---- Верхняя панель: профиль + XP ---- */
+/* ── HUD Top ─────────────────────────────────────────────── */
 #hud-top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(to bottom, rgba(7,11,20,0.9), transparent);
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 10px 14px 8px;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(to bottom, rgba(7,11,20,0.88), transparent);
   z-index: 10;
 }
 
 #hud-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent-glow);
-  border: 2px solid var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent-glow); border: 1.5px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+  color: var(--text-primary);
 }
 
-#hud-profile {
-  flex: 1;
-  min-width: 0;
+#hud-profile { flex: 1; min-width: 0; }
+
+#hud-header-row {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 4px;
 }
 
 #hud-username {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13px; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 #hud-level-label {
-  font-size: 11px;
-  color: var(--accent);
-  font-family: var(--font-mono);
-  margin-bottom: 4px;
+  font-size: 11px; color: var(--accent);
+  font-family: var(--font-mono); flex-shrink: 0; margin-left: 8px;
 }
 
-#hud-xp-bar { margin-top: 4px; }
+#hud-xp-text { display: none; }
 
-#hud-xp-text {
-  font-size: 10px;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  margin-top: 2px;
-}
-
-/* ---- Правые кнопки (переключение камеры + квесты) ---- */
-#hud-controls {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 10;
-}
-
-.hud-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  color: var(--accent);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-.hud-btn:hover  { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-.hud-btn:active { transform: scale(0.92); }
-
-/* ---- Нижняя панель: активный квест ---- */
+/* ── HUD Bottom ──────────────────────────────────────────── */
 #hud-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px 24px;
-  background: linear-gradient(to top, rgba(7,11,20,0.95), transparent);
+  position: fixed; bottom: 68px; left: 0; right: 0;
+  padding: 8px 14px 4px;
+  background: linear-gradient(to top, rgba(7,11,20,0.88) 60%, transparent);
   z-index: 10;
 }
 
 #active-quest-card {
-  border-radius: 10px;
-  padding: 12px 16px;
+  border-radius: 12px; padding: 10px 14px;
   border: 1px solid var(--border);
-  background: var(--bg-panel);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  cursor: pointer;
-  transition: all var(--transition);
+  background: rgba(7,11,20,0.75);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  cursor: pointer; transition: border-color var(--transition);
 }
 #active-quest-card:hover { border-color: var(--accent); }
 
 #quest-card-label {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--accent);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
+  font-size: 10px; font-family: var(--font-mono);
+  color: var(--accent); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 3px;
 }
-
 #quest-card-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+  font-size: 14px; font-weight: 700;
+  color: var(--text-primary); margin-bottom: 2px;
 }
-
 #quest-card-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 12px; color: var(--text-secondary); line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
 }
-
 #quest-card-xp {
-  font-size: 12px;
-  color: var(--success);
-  font-weight: 700;
-  font-family: var(--font-mono);
-  margin-top: 6px;
+  font-size: 12px; color: var(--success);
+  font-weight: 700; font-family: var(--font-mono); margin-top: 4px;
 }
 
 #no-active-quest {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 13px;
-  padding: 8px 0;
+  text-align: center; color: var(--text-secondary);
+  font-size: 13px; padding: 6px 0;
 }
-#no-active-quest span {
-  color: var(--accent);
-  cursor: pointer;
-  text-decoration: underline;
+#no-active-quest span { color: var(--accent); cursor: pointer; }
+
+/* ── Tab Bar ─────────────────────────────────────────────── */
+#tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 68px;
+  display: flex; align-items: center;
+  background: rgba(7,11,20,0.96);
+  border-top: 1px solid rgba(0,170,255,0.15);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 20;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-/* ---- Сканирующая рамка (AR feedback) ---- */
-.scan-corner {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border-color: var(--success);
-  border-style: solid;
-  opacity: 0;
-  transition: opacity 0.3s;
+.tab-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; padding: 8px 0;
+  border: none; background: transparent;
+  color: #4a5568;
+  cursor: pointer; transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
-.scan-corner.tl { top: 0; left: 0; border-width: 3px 0 0 3px; }
-.scan-corner.tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
-.scan-corner.bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
-.scan-corner.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
-.scan-corner.show { opacity: 1; }
+.tab-item:hover  { color: var(--accent); }
+.tab-item.active { color: var(--accent); }
+.tab-item.flash  { color: var(--success); }
 
-/* ---- Модалка списка квестов ---- */
+.tab-item.active::after {
+  content: '';
+  position: absolute; top: 0; left: 25%; right: 25%;
+  height: 2px; border-radius: 0 0 2px 2px;
+  background: var(--accent);
+}
+
+.tab-icon {
+  width: 22px; height: 22px;
+  stroke: currentColor; fill: none;
+  transition: stroke 0.2s;
+}
+
+.tab-label {
+  font-size: 10px; font-family: var(--font-mono);
+  letter-spacing: 0.3px; white-space: nowrap;
+}
+
+/* ── Модалка заданий ─────────────────────────────────────── */
 #quest-modal {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(7,11,20,0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 50;
-  display: flex;
-  align-items: flex-end;
-  padding: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  z-index: 50; display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
 }
-#quest-modal.open {
-  opacity: 1;
-  pointer-events: all;
-}
+#quest-modal.open { opacity: 1; pointer-events: all; }
 
 #quest-modal-inner {
-  width: 100%;
-  max-height: 80vh;
+  width: 100%; max-height: 82vh;
   background: var(--bg-dark);
-  border-top: 1px solid var(--border-bright);
+  border-top: 1px solid rgba(0,170,255,0.25);
   border-radius: 20px 20px 0 0;
-  padding: 16px 16px 32px;
+  padding: 0 0 32px;
   transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
 }
 #quest-modal.open #quest-modal-inner { transform: translateY(0); }
 
+/* Шапка модалки */
 #quest-modal-header {
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid var(--border);
-}
-#quest-modal-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-#quest-list { display: flex; flex-direction: column; gap: 8px; }
-
-.quest-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg-glass);
-  cursor: pointer;
-  transition: all var(--transition);
-}
-.quest-item:hover:not(.locked) { border-color: var(--accent); background: var(--accent-glow); }
-.quest-item.locked { opacity: 0.5; cursor: default; }
-.quest-item.completed { opacity: 0.6; }
-
-.quest-item-icon {
-  font-size: 22px;
   flex-shrink: 0;
-  width: 36px;
-  text-align: center;
 }
+
+/* Таб-переключатель */
+#quest-tabs {
+  display: flex; gap: 0;
+  background: rgba(0,170,255,0.07);
+  border: 1px solid rgba(0,170,255,0.2);
+  border-radius: 10px; padding: 3px;
+}
+.quest-tab {
+  padding: 7px 20px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; font-family: var(--font-mono);
+  cursor: pointer; transition: all 0.18s;
+  background: transparent; color: var(--text-secondary);
+}
+.quest-tab.active {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 2px 10px rgba(0,170,255,0.35);
+}
+
+/* Кнопка закрытия */
+.modal-close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border); border-radius: 50%;
+  background: var(--bg-panel); color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.18s;
+}
+.modal-close-btn:hover { border-color: var(--danger); color: var(--danger); }
+.modal-close-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+/* Панели контента */
+.modal-panel {
+  flex: 1; padding: 14px 16px 0;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.modal-panel.hidden { display: none !important; }
+
+/* ── Квест-айтемы ────────────────────────────────────────── */
+.quest-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg-glass);
+  cursor: pointer; transition: all var(--transition);
+}
+.quest-item:hover:not(.locked):not(.completed) {
+  border-color: var(--accent); background: var(--accent-glow);
+}
+.quest-item.locked   { opacity: 0.45; cursor: default; }
+.quest-item.completed { opacity: 0.55; }
+.quest-item.active   { border-color: var(--accent); background: var(--accent-glow); }
+
+.quest-item-icon { font-size: 22px; flex-shrink: 0; width: 36px; text-align: center; }
 .quest-item-info { flex: 1; min-width: 0; }
 .quest-item-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-primary); margin-bottom: 3px;
 }
 .quest-item-xp {
-  font-size: 12px;
-  color: var(--success);
-  font-family: var(--font-mono);
-  font-weight: 700;
+  font-size: 12px; color: var(--success);
+  font-family: var(--font-mono); font-weight: 700;
 }
 
-/* ---- Попап level-up ---- */
+/* ── Level-up попап ──────────────────────────────────────── */
 #levelup-popup {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s;
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; pointer-events: none;
+  opacity: 0; transition: opacity 0.4s;
 }
 #levelup-popup.show { opacity: 1; }
 #levelup-inner {
-  background: var(--bg-panel);
-  border: 2px solid var(--success);
-  border-radius: 20px;
-  padding: 32px 48px;
-  text-align: center;
+  background: var(--bg-panel); border: 2px solid var(--success);
+  border-radius: 20px; padding: 32px 48px; text-align: center;
   box-shadow: 0 0 60px var(--success-glow);
 }
 #levelup-inner h2 { font-size: 42px; margin-bottom: 8px; }
 #levelup-inner p  { color: var(--success); font-size: 18px; font-weight: 700; }
-#levelup-inner small { color: var(--text-secondary); font-size: 13px; display: block; margin-top: 4px; }
+#levelup-inner small {
+  color: var(--text-secondary); font-size: 13px;
+  display: block; margin-top: 4px;
+}
 
-/* ---- Камера недоступна ---- */
+/* ── Ошибка камеры ───────────────────────────────────────── */
 #camera-error {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: var(--bg-dark);
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 24px;
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; background: var(--bg-dark);
+  color: var(--text-secondary); text-align: center; padding: 24px;
 }
 #camera-error .icon { font-size: 48px; }
 #camera-error h3 { color: var(--text-primary); font-size: 18px; }
-#camera-error p { font-size: 14px; line-height: 1.5; }
+#camera-error p  { font-size: 14px; line-height: 1.5; }
 
-/* Ачивки модалка */
-#achievements-modal.open {
-  opacity: 1;
-  pointer-events: all;
+/* ── XP попап ────────────────────────────────────────────── */
+.xp-popup {
+  position: fixed; top: 56px; left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: var(--success); color: #000; font-weight: 800;
+  font-family: var(--font-mono); padding: 6px 16px;
+  border-radius: 20px; font-size: 15px; z-index: 90;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
 }
-#achievements-modal.open #achievements-modal-inner {
-  transform: translateY(0);
-}
+.xp-popup.show { opacity: 1; transform: translateX(-50%) translateY(0); }

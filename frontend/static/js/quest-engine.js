@@ -1,30 +1,34 @@
 /**
- * CASPER Quest Engine
- * Управляет состоянием квестов на фронтенде.
+ * FirstShift Quest Engine
+ * Управляет состоянием квестов и ачивок в единой модалке.
  */
 
 const QuestEngine = (() => {
   let _quests = [];
   let _activeQuest = null;
+  let _activeTab = 'quests'; // 'quests' | 'achievements'
 
   const ICONS = {
-    discovery:  '🔍',
-    safety:     '🦺',
-    knowledge:  '📚',
-    speed_run:  '⚡',
+    discovery: '🔍',
+    safety:    '🦺',
+    knowledge: '📚',
+    speed_run: '⚡',
   };
 
   const STATUS_LABELS = {
-    available:  'Доступен',
-    active:     'Активен',
-    completed:  'Выполнен',
-    locked:     'Заблокирован',
-    failed:     'Провален',
+    available: 'Доступен',
+    active:    'Активен',
+    completed: 'Выполнен',
+    locked:    'Заблокирован',
+    failed:    'Провален',
   };
 
-  /**
-   * Загрузить квесты с сервера и обновить UI.
-   */
+  const ACH_ICONS = {
+    eye: '👁', shield: '🛡', zap: '⚡',
+    map: '🗺', star: '⭐', trophy: '🏆',
+  };
+
+  // ── Загрузка ────────────────────────────────────────────────
   async function load() {
     try {
       const data = await API.getQuests();
@@ -39,17 +43,14 @@ const QuestEngine = (() => {
     }
   }
 
-  /**
-   * Начать квест.
-   */
+  // ── Старт квеста ─────────────────────────────────────────────
   async function start(slug) {
     try {
       await API.startQuest(slug);
       if (typeof Mascot !== 'undefined') Mascot.onQuestStart();
       await load();
-      // Запускаем SpeedRun трекер если это speed_run квест
       const quest = _quests.find(q => q.slug === slug);
-      if (quest && quest.type === 'speed_run' && typeof SpeedRun !== 'undefined') {
+      if (quest?.type === 'speed_run' && typeof SpeedRun !== 'undefined') {
         SpeedRun.start(quest);
       }
       return true;
@@ -60,9 +61,7 @@ const QuestEngine = (() => {
     }
   }
 
-  /**
-   * Завершить активный квест (вызывается после успешного сканирования).
-   */
+  // ── Завершение квеста ────────────────────────────────────────
   async function complete(slug) {
     try {
       const result = await API.completeQuest(slug);
@@ -74,7 +73,7 @@ const QuestEngine = (() => {
         else Mascot.onQuestComplete();
       }
       if (result.newly_unlocked_achievements?.length > 0) {
-        setTimeout(() => Achievements.notifyNew(result.newly_unlocked_achievements), 1500);
+        setTimeout(() => _notifyAchievements(result.newly_unlocked_achievements), 1500);
       }
       await load();
       return result;
@@ -88,12 +87,12 @@ const QuestEngine = (() => {
   function getActive() { return _activeQuest; }
   function getAll()    { return _quests; }
 
-  // ---- Рендер списка квестов в модалке ----
+  // ── Рендер списка квестов ─────────────────────────────────────
   function _renderQuestList() {
-    const list = document.getElementById('quest-list');
+    const list = document.getElementById('quest-list-panel');
     if (!list) return;
-
     list.innerHTML = '';
+
     _quests.forEach(q => {
       const item = document.createElement('div');
       item.className = `quest-item ${q.status}`;
@@ -114,30 +113,106 @@ const QuestEngine = (() => {
           }
         });
       } else if (q.status === 'active') {
-        item.addEventListener('click', () => {
-          closeModal();
-          _renderActiveCard();
-        });
+        item.addEventListener('click', () => closeModal());
       }
 
       list.appendChild(item);
     });
   }
 
-  // ---- Рендер карточки активного квеста в нижней панели ----
+  // ── Рендер ачивок ────────────────────────────────────────────
+  async function _renderAchievements() {
+    const panel = document.getElementById('achievements-list-panel');
+    if (!panel) return;
+    panel.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:20px;font-size:13px">Загрузка...</div>';
+
+    try {
+      const list = await API.get('/api/progress/achievements');
+      panel.innerHTML = '';
+
+      const unlocked = list.filter(a => a.unlocked);
+      const locked   = list.filter(a => !a.unlocked);
+
+      // Счётчик
+      const counter = document.createElement('div');
+      counter.style.cssText = 'font-size:12px;color:var(--text-secondary);margin-bottom:12px;font-family:var(--font-mono);padding:0 2px';
+      counter.textContent = `РАЗБЛОКИРОВАНО: ${unlocked.length} / ${list.length}`;
+      panel.appendChild(counter);
+
+      [...unlocked, ...locked].forEach(ach => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+          display:flex; align-items:center; gap:12px;
+          padding:12px 14px; border-radius:12px; margin-bottom:8px;
+          border:1px solid ${ach.unlocked ? 'rgba(0,170,255,0.3)' : 'var(--border)'};
+          background:${ach.unlocked ? 'rgba(0,170,255,0.06)' : 'transparent'};
+          opacity:${ach.unlocked ? '1' : '0.4'};
+        `;
+        item.innerHTML = `
+          <div style="font-size:28px;width:40px;text-align:center;flex-shrink:0">${ACH_ICONS[ach.icon] || '🏆'}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:3px">${ach.title}</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.4">${ach.description}</div>
+            ${ach.xp_bonus ? `<div style="font-size:11px;color:var(--success);font-family:var(--font-mono);margin-top:3px;font-weight:700">+${ach.xp_bonus} XP бонус</div>` : ''}
+          </div>
+          <div style="font-size:18px;flex-shrink:0">${ach.unlocked ? '✅' : '🔒'}</div>
+        `;
+        panel.appendChild(item);
+      });
+    } catch (e) {
+      panel.innerHTML = '<div style="color:var(--danger);text-align:center;padding:20px;font-size:13px">Ошибка загрузки ачивок</div>';
+    }
+  }
+
+  // ── Уведомление о новых ачивках ──────────────────────────────
+  async function _notifyAchievements(newAchs) {
+    for (const ach of newAchs) {
+      await _showAchNotification(ach);
+      await new Promise(r => setTimeout(r, 600));
+    }
+  }
+
+  function _showAchNotification(ach) {
+    return new Promise(resolve => {
+      const popup = document.createElement('div');
+      popup.style.cssText = `
+        position:fixed; top:80px; right:16px; z-index:200;
+        background:var(--bg-panel); border:1px solid var(--success);
+        border-radius:14px; padding:14px 18px;
+        display:flex; align-items:center; gap:12px;
+        box-shadow:0 0 30px rgba(0,255,136,0.3);
+        transform:translateX(120%); transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+        max-width:280px;
+      `;
+      popup.innerHTML = `
+        <div style="font-size:32px">${ACH_ICONS[ach.icon] || '🏆'}</div>
+        <div>
+          <div style="font-size:11px;color:var(--success);font-family:var(--font-mono);letter-spacing:1px;font-weight:700">АЧИВКА РАЗБЛОКИРОВАНА!</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin:2px 0">${ach.title}</div>
+          ${ach.xp_bonus ? `<div style="font-size:12px;color:var(--success);font-family:var(--font-mono)">+${ach.xp_bonus} XP</div>` : ''}
+        </div>
+      `;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.style.transform = 'translateX(0)', 50);
+      setTimeout(() => {
+        popup.style.transform = 'translateX(120%)';
+        setTimeout(() => { popup.remove(); resolve(); }, 400);
+      }, 3000);
+    });
+  }
+
+  // ── Рендер карточки активного квеста ─────────────────────────
   function _renderActiveCard() {
-    const card = document.getElementById('active-quest-card');
+    const card    = document.getElementById('active-quest-card');
     const noQuest = document.getElementById('no-active-quest');
     if (!card || !noQuest) return;
 
     if (_activeQuest) {
       card.classList.remove('hidden');
       noQuest.classList.add('hidden');
-
       document.getElementById('quest-card-title').textContent = _activeQuest.title;
       document.getElementById('quest-card-desc').textContent  = _activeQuest.description;
       document.getElementById('quest-card-xp').textContent    = `+${_activeQuest.xp_reward} XP`;
-
       const label = document.getElementById('quest-card-label');
       if (label) label.textContent = `${ICONS[_activeQuest.type] || '🎯'} АКТИВНЫЙ КВЕСТ`;
     } else {
@@ -146,23 +221,29 @@ const QuestEngine = (() => {
     }
   }
 
-  function openModal() {
+  // ── Переключение табов внутри модалки ────────────────────────
+  function switchTab(tab) {
+    _activeTab = tab;
+
+    document.getElementById('qtab-quests')?.classList.toggle('active',       tab === 'quests');
+    document.getElementById('qtab-achievements')?.classList.toggle('active', tab === 'achievements');
+    document.getElementById('quest-list-panel')?.classList.toggle('hidden',       tab !== 'quests');
+    document.getElementById('achievements-list-panel')?.classList.toggle('hidden', tab !== 'achievements');
+
+    if (tab === 'achievements') _renderAchievements();
+  }
+
+  // ── Открытие / закрытие модалки ──────────────────────────────
+  function openModal(tab = 'quests') {
     const modal = document.getElementById('quest-modal');
-    const inner = document.getElementById('quest-modal-inner');
     if (!modal) return;
-    modal.style.opacity = '1';
-    modal.style.pointerEvents = 'all';
-    if (inner) inner.style.transform = 'translateY(0)';
+    modal.classList.add('open');
+    switchTab(tab);
   }
 
   function closeModal() {
-    const modal = document.getElementById('quest-modal');
-    const inner = document.getElementById('quest-modal-inner');
-    if (!modal) return;
-    modal.style.opacity = '0';
-    modal.style.pointerEvents = 'none';
-    if (inner) inner.style.transform = 'translateY(100%)';
+    document.getElementById('quest-modal')?.classList.remove('open');
   }
 
-  return { load, start, complete, getActive, getAll, openModal, closeModal };
+  return { load, start, complete, getActive, getAll, openModal, closeModal, switchTab };
 })();
