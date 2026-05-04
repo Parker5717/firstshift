@@ -11,7 +11,7 @@ Admin роутер — эндпоинты для HR, наставников и �
 import logging
 from datetime import date, datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -249,3 +249,34 @@ def safety_today(
             last_check_at=last_check.timestamp if last_check else None,
         ))
     return result
+
+
+@router.get(
+    "/users/{user_id}/report.pdf",
+    summary="PDF-отчёт по сотруднику",
+    response_class=Response,
+)
+def get_employee_report(
+    user_id: int,
+    period: int = 7,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("hr", "admin")),
+) -> Response:
+    """
+    Скачать PDF-отчёт по сотруднику.
+    ?period=7  — Safety Check за 7 дней (по умолчанию)
+    ?period=30 — Safety Check за 30 дней
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    from app.game.report_generator import generate_employee_report
+    pdf_bytes = generate_employee_report(db=db, user=user, period_days=period)
+
+    filename = f"report_{user.username}_{period}d.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

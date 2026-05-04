@@ -233,7 +233,11 @@
       <div id="detail-name">—</div>
       <div id="detail-meta">—</div>
     </div>
-    <button id="detail-close" onclick="closeDetail()">✕</button>
+    <div style="display:flex;gap:8px;margin-left:auto;align-items:center">
+      <button onclick="downloadPDF(7)"  class="btn-sm" title="PDF за 7 дней">📄 7 дней</button>
+      <button onclick="downloadPDF(30)" class="btn-sm" title="PDF за 30 дней">📄 30 дней</button>
+      <button id="detail-close" onclick="closeDetail()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg-panel);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
   </div>
   <div id="detail-body">
     <div class="loading">Выбери сотрудника</div>
@@ -420,7 +424,10 @@
   }
 
   // ── Детальная панель квестов ──────────────────────────────
+  let _currentUserId = null;
+
   function openDetail(user) {
+    _currentUserId = user.id;
     document.getElementById('detail-name').textContent = user.display_name || user.username;
     document.getElementById('detail-meta').textContent =
       `LVL ${user.level} · ${user.level_title} · ${user.total_xp} XP`;
@@ -497,6 +504,31 @@
       document.getElementById('safety-grid').style.display    = 'grid';
     } catch(e) {
       document.getElementById('safety-loading').textContent = 'Ошибка: ' + e.message;
+    }
+  }
+
+  async function downloadPDF(period) {
+    if (!_currentUserId) return;
+    const btn = event.target;
+    const origText = btn.textContent;
+    btn.textContent = '⏳';
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch(`/api/admin/users/${_currentUserId}/report.pdf?period=${period}`, { headers });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const blob = await resp.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `report_${period}d.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch(e) {
+      alert('Ошибка генерации PDF: ' + e.message);
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
     }
   }
 
