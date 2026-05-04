@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstShift — Admin</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body { min-height:100vh; overflow-y:auto; padding:0 0 48px; display:block; background:#070b14; }
+
+    /* ── Top bar ── */
+    #top-bar {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 20px; background:rgba(7,11,20,0.96);
+      border-bottom:1px solid rgba(0,170,255,0.15);
+      position:sticky; top:0; z-index:20;
+    }
+    .logo { font-family:monospace; font-size:15px; font-weight:700; color:var(--accent); letter-spacing:2px; }
+    .admin-badge {
+      padding:3px 10px; border-radius:20px; font-size:10px;
+      font-family:monospace; font-weight:700; letter-spacing:1px;
+      background:rgba(255,170,0,0.12); border:1px solid rgba(255,170,0,0.4); color:#ffaa00;
+    }
+    #top-bar-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+    .top-user { font-size:13px; color:var(--text-secondary); }
+    .btn-sm {
+      padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600;
+      border:1px solid var(--border); background:transparent;
+      color:var(--text-secondary); cursor:pointer; transition:all 0.2s; font-family:inherit;
+    }
+    .btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-danger { border-color:rgba(255,51,85,0.4) !important; color:#ff3355 !important; }
+    .btn-danger:hover { background:rgba(255,51,85,0.1) !important; }
+
+    /* ── Layout ── */
+    .page { max-width:1100px; margin:0 auto; padding:24px 20px; }
+
+    /* ── Stats row ── */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+    .stat-card {
+      padding:16px 18px; border-radius:14px;
+      border:1px solid var(--border); background:var(--bg-glass);
+    }
+    .stat-card .val { font-size:28px; font-weight:900; color:var(--text-primary); }
+    .stat-card .lbl { font-size:11px; color:var(--text-secondary); margin-top:4px; font-family:monospace; letter-spacing:0.5px; }
+
+    /* ── Section ── */
+    .section { margin-bottom:32px; }
+    .section-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .section-title {
+      font-size:12px; font-family:monospace; color:var(--accent);
+      letter-spacing:1px; text-transform:uppercase; font-weight:700;
+    }
+
+    /* ── Search ── */
+    .search-input {
+      padding:8px 14px; border-radius:10px;
+      border:1px solid var(--border); background:rgba(0,170,255,0.05);
+      color:var(--text-primary); font-size:13px; font-family:inherit;
+      outline:none; width:200px; transition:all 0.2s;
+    }
+    .search-input:focus { border-color:var(--accent); width:240px; }
+
+    /* ── Employee table ── */
+    .emp-table { width:100%; border-collapse:collapse; }
+    .emp-table th {
+      text-align:left; padding:10px 14px;
+      font-size:10px; font-family:monospace; color:var(--text-dim);
+      letter-spacing:1px; text-transform:uppercase;
+      border-bottom:1px solid var(--border);
+    }
+    .emp-table td { padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .emp-table tr:hover td { background:rgba(0,170,255,0.03); }
+
+    .emp-avatar {
+      width:34px; height:34px; border-radius:50%;
+      background:linear-gradient(135deg,#0055aa,#00aaff);
+      border:1.5px solid var(--accent);
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+    .emp-name { font-size:14px; font-weight:600; color:var(--text-primary); }
+    .emp-username { font-size:11px; color:var(--text-dim); font-family:monospace; }
+
+    .role-badge {
+      padding:3px 9px; border-radius:20px; font-size:10px;
+      font-family:monospace; font-weight:700; letter-spacing:0.5px;
+      white-space:nowrap;
+    }
+    .role-admin    { background:rgba(255,51,85,0.12);  border:1px solid rgba(255,51,85,0.4);  color:#ff3355; }
+    .role-hr       { background:rgba(255,170,0,0.12);  border:1px solid rgba(255,170,0,0.4);  color:#ffaa00; }
+    .role-mentor   { background:rgba(170,136,255,0.12);border:1px solid rgba(170,136,255,0.4);color:#aa88ff; }
+    .role-employee { background:rgba(0,170,255,0.08);  border:1px solid rgba(0,170,255,0.25); color:var(--accent); }
+
+    .progress-wrap { width:120px; }
+    .progress-bar-bg {
+      height:5px; background:rgba(255,255,255,0.07);
+      border-radius:3px; overflow:hidden;
+    }
+    .progress-bar-fill { height:100%; border-radius:3px; background:var(--accent); transition:width 0.4s; }
+    .progress-label { font-size:11px; color:var(--text-secondary); font-family:monospace; margin-top:3px; }
+
+    .xp-cell { font-size:13px; font-weight:700; color:var(--success); font-family:monospace; }
+    .level-cell { font-size:13px; color:var(--text-primary); }
+    .date-cell { font-size:11px; color:var(--text-dim); font-family:monospace; }
+
+    /* Смена роли */
+    .role-select {
+      padding:5px 8px; border-radius:8px; font-size:12px;
+      border:1px solid var(--border); background:var(--bg-panel);
+      color:var(--text-primary); cursor:pointer; font-family:monospace;
+    }
+
+    /* ── Safety Check ── */
+    .safety-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .safety-col-title {
+      font-size:12px; font-family:monospace; font-weight:700;
+      margin-bottom:10px; display:flex; align-items:center; gap:6px;
+    }
+    .safety-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:10px;
+      border:1px solid var(--border); background:var(--bg-glass);
+      margin-bottom:8px;
+    }
+    .safety-item.passed { border-color:rgba(0,255,136,0.25); background:rgba(0,255,136,0.04); }
+    .safety-item.failed { border-color:rgba(255,51,85,0.2); }
+    .safety-status { font-size:18px; flex-shrink:0; }
+    .safety-name { font-size:13px; font-weight:600; color:var(--text-primary); }
+    .safety-time { font-size:11px; color:var(--text-dim); font-family:monospace; }
+
+    /* ── Loading / empty ── */
+    .loading { text-align:center; padding:40px; color:var(--text-dim); font-size:14px; }
+    .empty   { text-align:center; padding:20px; color:var(--text-dim); font-size:13px; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div id="top-bar">
+  <div class="logo">FIRSTSHIFT</div>
+  <div class="admin-badge">ADMIN PANEL</div>
+  <div id="top-bar-right">
+    <span class="top-user" id="top-username">Загрузка...</span>
+    <button class="btn-sm" onclick="window.location.href='/app'">← Приложение</button>
+    <button class="btn-sm btn-danger" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">Выйти</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Сводная статистика -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="val" id="stat-total">—</div>
+      <div class="lbl">СОТРУДНИКОВ</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-active">—</div>
+      <div class="lbl">АКТИВНЫ СЕГОДНЯ</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-safety">—</div>
+      <div class="lbl">SAFETY CHECK ✅</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-avg">—</div>
+      <div class="lbl">СРЕДНЕЕ ВЫПОЛНЕНИЕ</div>
+    </div>
+  </div>
+
+  <!-- Сотрудники -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">👥 Сотрудники</div>
+      <input class="search-input" id="search" placeholder="🔍 Поиск..." oninput="filterTable()">
+    </div>
+    <div id="emp-loading" class="loading">Загрузка...</div>
+    <table class="emp-table" id="emp-table" style="display:none">
+      <thead>
+        <tr>
+          <th>Сотрудник</th>
+          <th>Роль</th>
+          <th>Уровень</th>
+          <th>XP</th>
+          <th>Прогресс квестов</th>
+          <th>Последняя активность</th>
+          <th>Сменить роль</th>
+        </tr>
+      </thead>
+      <tbody id="emp-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Safety Check сегодня -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">🛡️ Safety Check — сегодня</div>
+      <button class="btn-sm" onclick="loadSafety()">↻ Обновить</button>
+    </div>
+    <div id="safety-loading" class="loading">Загрузка...</div>
+    <div class="safety-grid" id="safety-grid" style="display:none">
+      <div>
+        <div class="safety-col-title">✅ Прошли</div>
+        <div id="safety-passed"></div>
+      </div>
+      <div>
+        <div class="safety-col-title">❌ Не прошли</div>
+        <div id="safety-failed"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  // ── Проверка доступа ──────────────────────────────────────
+  if (!API.hasToken()) { window.location.href = '/'; }
+
+  const token = sessionStorage.getItem('casper_token');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+
+  async function apiFetch(path, opts = {}) {
+    const resp = await fetch(path, { headers, ...opts });
+    if (resp.status === 401) { sessionStorage.removeItem('casper_token'); window.location.href = '/'; }
+    if (resp.status === 403) { window.location.href = '/app'; }  // нет прав
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+  }
+
+  // ── Утилиты ───────────────────────────────────────────────
+  const ROLE_LABELS = { employee:'Сотрудник', mentor:'Наставник', hr:'HR', admin:'Администратор' };
+
+  function roleBadge(role) {
+    return `<span class="role-badge role-${role}">${ROLE_LABELS[role] || role}</span>`;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 60000);
+    if (diff < 1)   return 'только что';
+    if (diff < 60)  return `${diff} мин. назад`;
+    if (diff < 1440) return `${Math.floor(diff/60)} ч. назад`;
+    return d.toLocaleDateString('ru-RU');
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ── Загрузка сотрудников ──────────────────────────────────
+  let _allEmployees = [];
+  let _myRole = '';
+
+  async function loadEmployees() {
+    try {
+      const profile = await API.getProfile();
+      _myRole = profile.role;
+      document.getElementById('top-username').textContent = `${profile.display_name} · ${ROLE_LABELS[profile.role] || profile.role}`;
+
+      // Редирект если нет прав
+      if (!['hr','admin'].includes(profile.role)) {
+        window.location.href = '/app';
+        return;
+      }
+
+      const users = await apiFetch('/api/admin/users');
+      _allEmployees = users;
+
+      // Статистика
+      const today = new Date(); today.setHours(0,0,0,0);
+      const activeToday = users.filter(u => new Date(u.last_active_at) >= today).length;
+      const avgPct = users.length
+        ? Math.round(users.reduce((s,u) => s + u.completion_pct, 0) / users.length)
+        : 0;
+
+      document.getElementById('stat-total').textContent  = users.length;
+      document.getElementById('stat-active').textContent = activeToday;
+      document.getElementById('stat-avg').textContent    = avgPct + '%';
+
+      renderTable(users);
+    } catch(e) {
+      document.getElementById('emp-loading').textContent = 'Ошибка загрузки: ' + e.message;
+    }
+  }
+
+  function renderTable(users) {
+    const tbody = document.getElementById('emp-tbody');
+    tbody.innerHTML = '';
+
+    if (!users.length) {
+      document.getElementById('emp-loading').textContent = 'Нет сотрудников';
+      return;
+    }
+
+    document.getElementById('emp-loading').style.display = 'none';
+    document.getElementById('emp-table').style.display   = 'table';
+
+    users.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.dataset.name = (u.display_name + ' ' + u.username).toLowerCase();
+
+      const roleOptions = ['employee','mentor','hr','admin']
+        .map(r => `<option value="${r}" ${r===u.role?'selected':''}>${ROLE_LABELS[r]}</option>`)
+        .join('');
+
+      tr.innerHTML = `
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="emp-avatar">${(u.display_name||u.username).charAt(0).toUpperCase()}</div>
+            <div>
+              <div class="emp-name">${u.display_name || u.username}</div>
+              <div class="emp-username">@${u.username}</div>
+            </div>
+          </div>
+        </td>
+        <td>${roleBadge(u.role)}</td>
+        <td class="level-cell">LVL ${u.level}<br><span style="font-size:10px;color:var(--text-dim)">${u.level_title}</span></td>
+        <td class="xp-cell">${u.total_xp}</td>
+        <td>
+          <div class="progress-wrap">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:${u.completion_pct}%"></div>
+            </div>
+            <div class="progress-label">${u.quests_completed}/${u.quests_total} (${u.completion_pct}%)</div>
+          </div>
+        </td>
+        <td class="date-cell">${fmtDate(u.last_active_at)}</td>
+        <td>
+          ${_myRole === 'admin'
+            ? `<select class="role-select" data-uid="${u.id}" onchange="changeRole(this)">${roleOptions}</select>`
+            : roleBadge(u.role)
+          }
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterTable() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const filtered = _allEmployees.filter(u =>
+      (u.display_name + ' ' + u.username).toLowerCase().includes(q)
+    );
+    renderTable(filtered);
+  }
+
+  async function changeRole(select) {
+    const uid  = parseInt(select.dataset.uid);
+    const role = select.value;
+    try {
+      await apiFetch(`/api/admin/users/${uid}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role }),
+      });
+      await loadEmployees();  // перезагружаем таблицу
+    } catch(e) {
+      alert('Ошибка смены роли: ' + e.message);
+      await loadEmployees();
+    }
+  }
+
+  // ── Safety Check ──────────────────────────────────────────
+  async function loadSafety() {
+    document.getElementById('safety-loading').style.display = 'block';
+    document.getElementById('safety-grid').style.display    = 'none';
+
+    try {
+      const data = await apiFetch('/api/admin/safety/today');
+
+      const passed = data.filter(u => u.passed_today);
+      const failed = data.filter(u => !u.passed_today);
+
+      document.getElementById('stat-safety').textContent = passed.length;
+
+      const passedEl = document.getElementById('safety-passed');
+      const failedEl = document.getElementById('safety-failed');
+
+      passedEl.innerHTML = passed.length
+        ? passed.map(u => `
+            <div class="safety-item passed">
+              <div class="safety-status">✅</div>
+              <div>
+                <div class="safety-name">${u.display_name}</div>
+                <div class="safety-time">${fmtTime(u.last_check_at)}</div>
+              </div>
+            </div>`).join('')
+        : '<div class="empty">Никто не прошёл</div>';
+
+      failedEl.innerHTML = failed.length
+        ? failed.map(u => `
+            <div class="safety-item failed">
+              <div class="safety-status">❌</div>
+              <div>
+                <div class="safety-name">${u.display_name}</div>
+                <div class="safety-time">не проходил сегодня</div>
+              </div>
+            </div>`).join('')
+        : '<div class="empty">Все прошли! 🎉</div>';
+
+      document.getElementById('safety-loading').style.display = 'none';
+      document.getElementById('safety-grid').style.display    = 'grid';
+    } catch(e) {
+      document.getElementById('safety-loading').textContent = 'Ошибка: ' + e.message;
+    }
+  }
+
+  // ── Инициализация ─────────────────────────────────────────
+  loadEmployees();
+  loadSafety();
+</script>
+</body>
+</html>
