@@ -3,142 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CASPER — Энциклопедия</title>
+  <title>FirstShift — Энциклопедия</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <style>
-    body { min-height: 100vh; overflow-y: auto; padding: 0 0 48px; display: block; }
+    body { min-height:100vh; overflow-y:auto; padding:0 0 48px; display:block; }
 
     #top-bar {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 10;
+      display:flex; align-items:center; gap:12px;
+      padding:12px 16px; background:var(--bg-dark);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:10;
     }
-    #top-bar h1 { font-size: 16px; font-weight: 700; flex: 1; }
-
-    .section { padding: 16px 16px 0; }
-    .section-title {
-      font-size: 11px; font-family: var(--font-mono);
-      color: var(--accent); letter-spacing: 1px;
-      text-transform: uppercase; margin-bottom: 12px;
-    }
+    #top-bar h1 { font-size:16px; font-weight:700; flex:1; }
 
     #search-wrap {
-      padding: 12px 16px;
-      position: sticky; top: 53px; z-index: 9;
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border);
+      padding:12px 16px; position:sticky; top:53px; z-index:9;
+      background:var(--bg-dark); border-bottom:1px solid var(--border);
     }
     #search-input {
-      width: 100%;
-      padding: 10px 14px;
-      background: var(--bg-glass);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: var(--font-main);
-      outline: none;
+      width:100%; padding:10px 14px;
+      background:var(--bg-glass); border:1px solid var(--border);
+      border-radius:10px; color:var(--text-primary);
+      font-size:14px; font-family:var(--font-main); outline:none; box-sizing:border-box;
     }
-    #search-input:focus { border-color: var(--accent); }
-    #search-input::placeholder { color: var(--text-dim); }
+    #search-input:focus { border-color:var(--accent); }
+    #search-input::placeholder { color:var(--text-dim); }
 
-    #objects-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      padding: 16px;
+    .section { padding:16px 16px 0; }
+    .section-title {
+      font-size:11px; font-family:var(--font-mono);
+      color:var(--accent); letter-spacing:1px;
+      text-transform:uppercase; margin-bottom:12px;
     }
+
+    #objects-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:16px; }
 
     .obj-card {
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--bg-glass);
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.2s;
+      border-radius:14px; border:1px solid var(--border);
+      background:var(--bg-glass); overflow:hidden;
+      cursor:pointer; transition:all 0.2s;
     }
-    .obj-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .obj-card.locked { opacity: 0.35; cursor: default; }
-    .obj-card.locked:hover { transform: none; border-color: var(--border); }
+    .obj-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+    .obj-card.locked { opacity:0.35; cursor:default; }
+    .obj-card.locked:hover { transform:none; border-color:var(--border); }
 
-    .obj-icon {
-      font-size: 40px;
-      text-align: center;
-      padding: 20px 0 12px;
-      background: rgba(0,170,255,0.04);
-    }
-    .obj-body { padding: 10px 12px 14px; }
-    .obj-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-    .obj-marker {
-      font-size: 10px; font-family: var(--font-mono);
-      color: var(--text-dim); margin-bottom: 6px;
-    }
+    .obj-icon { font-size:40px; text-align:center; padding:20px 0 12px; background:rgba(0,170,255,0.04); }
+    .obj-body { padding:10px 12px 14px; }
+    .obj-name { font-size:14px; font-weight:700; margin-bottom:4px; }
+    .obj-marker { font-size:10px; font-family:var(--font-mono); color:var(--text-dim); margin-bottom:6px; }
     .obj-status {
-      font-size: 11px; font-weight: 700;
-      padding: 3px 8px; border-radius: 20px;
-      display: inline-block;
+      font-size:11px; font-weight:700; padding:3px 8px;
+      border-radius:20px; display:inline-block;
     }
-    .obj-status.found    { background: rgba(0,255,136,0.12); color: var(--success); }
-    .obj-status.notfound { background: rgba(68,85,102,0.2);  color: var(--locked); }
+    .obj-status.found    { background:rgba(0,255,136,0.12); color:var(--success); }
+    .obj-status.notfound { background:rgba(68,85,102,0.2);  color:var(--locked); }
 
-    /* Модалка детали объекта */
     #detail-modal {
-      position: fixed; inset: 0;
-      background: rgba(7,11,20,0.85);
-      backdrop-filter: blur(6px);
-      z-index: 50;
-      display: flex; align-items: flex-end;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
+      position:fixed; inset:0; background:rgba(7,11,20,0.85);
+      backdrop-filter:blur(6px); z-index:50;
+      display:flex; align-items:flex-end;
+      opacity:0; pointer-events:none; transition:opacity 0.3s;
     }
-    #detail-modal.open { opacity: 1; pointer-events: all; }
+    #detail-modal.open { opacity:1; pointer-events:all; }
     #detail-inner {
-      width: 100%; max-height: 85vh;
-      background: var(--bg-dark);
-      border-top: 1px solid var(--border-bright);
-      border-radius: 20px 20px 0 0;
-      padding: 20px 20px 40px;
-      transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-      overflow-y: auto;
+      width:100%; max-height:85vh; background:var(--bg-dark);
+      border-top:1px solid var(--border-bright);
+      border-radius:20px 20px 0 0; padding:20px 20px 40px;
+      transform:translateY(100%);
+      transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      overflow-y:auto; position:relative;
     }
-    #detail-modal.open #detail-inner { transform: translateY(0); }
+    #detail-modal.open #detail-inner { transform:translateY(0); }
 
-    #detail-icon  { font-size: 56px; text-align: center; margin-bottom: 12px; }
-    #detail-name  { font-size: 22px; font-weight: 800; margin-bottom: 6px; text-align: center; }
-    #detail-badge { text-align: center; margin-bottom: 16px; }
-    #detail-desc  {
-      font-size: 14px; color: var(--text-secondary);
-      line-height: 1.7; margin-bottom: 16px;
-    }
+    #detail-icon  { font-size:56px; text-align:center; margin-bottom:12px; }
+    #detail-name  { font-size:22px; font-weight:800; margin-bottom:6px; text-align:center; }
+    #detail-badge { text-align:center; margin-bottom:16px; }
+    #detail-desc  { font-size:14px; color:var(--text-secondary); line-height:1.7; margin-bottom:16px; }
 
-    .detail-section { margin-bottom: 14px; }
+    .detail-section { margin-bottom:14px; }
     .detail-section h4 {
-      font-size: 11px; font-family: var(--font-mono);
-      color: var(--accent); letter-spacing: 1px;
-      text-transform: uppercase; margin-bottom: 8px;
+      font-size:11px; font-family:var(--font-mono); color:var(--accent);
+      letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;
     }
     .detail-rule {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 8px 12px; border-radius: 8px;
-      background: var(--bg-glass); margin-bottom: 6px;
-      font-size: 13px; color: var(--text-primary); line-height: 1.5;
+      display:flex; align-items:flex-start; gap:10px;
+      padding:8px 12px; border-radius:8px;
+      background:var(--bg-glass); margin-bottom:6px;
+      font-size:13px; color:var(--text-primary); line-height:1.5;
     }
-    .detail-rule .rule-icon { flex-shrink: 0; font-size: 16px; }
+    .detail-rule .rule-icon { flex-shrink:0; font-size:16px; }
 
     #detail-close {
-      position: absolute; top: 16px; right: 16px;
-      background: none; border: none;
-      color: var(--text-secondary); font-size: 22px; cursor: pointer;
+      position:absolute; top:16px; right:16px;
+      background:none; border:none;
+      color:var(--text-secondary); font-size:22px; cursor:pointer;
     }
 
-    #empty-state {
-      text-align: center; padding: 48px 24px;
-      color: var(--text-secondary);
+    #empty-state { text-align:center; padding:48px 24px; color:var(--text-secondary); }
+    #empty-state .icon { font-size:48px; margin-bottom:12px; }
+
+    .progress-hint {
+      text-align:center; padding:12px 16px;
+      font-size:12px; color:var(--text-dim);
+      font-family:var(--font-mono);
     }
-    #empty-state .icon { font-size: 48px; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -152,15 +120,16 @@
   <input id="search-input" type="text" placeholder="🔍 Поиск по названию...">
 </div>
 
+<div class="progress-hint" id="progress-hint">Найди объекты камерой чтобы разблокировать записи</div>
+
 <div id="objects-grid"></div>
 <div id="empty-state" class="hidden">
   <div class="icon">🔍</div>
   <div>Ничего не найдено</div>
 </div>
 
-<!-- Модалка детали -->
 <div id="detail-modal">
-  <div id="detail-inner" style="position:relative">
+  <div id="detail-inner">
     <button id="detail-close">✕</button>
     <div id="detail-icon">❓</div>
     <div id="detail-name">Объект</div>
@@ -174,13 +143,10 @@
 <script>
 if (!API.hasToken()) window.location.href = '/';
 
-// База знаний объектов
 const OBJECTS_DB = [
   {
     id: 'marker_0',
-    icon: '🚪',
-    name: 'Входная зона',
-    marker: 'ArUco ID: 0',
+    icon: '🚪', name: 'Входная зона', marker: 'ArUco ID: 0',
     desc: 'Контрольная точка входа в производственный цех. Каждый сотрудник проходит через неё в начале и конце смены.',
     rules: [
       { icon: '✅', text: 'Всегда носи бейдж при входе в цех' },
@@ -191,9 +157,7 @@ const OBJECTS_DB = [
   },
   {
     id: 'marker_1',
-    icon: '🛑',
-    name: 'Кнопка аварийного стопа',
-    marker: 'ArUco ID: 1',
+    icon: '🛑', name: 'Кнопка аварийного стопа', marker: 'ArUco ID: 1',
     desc: 'Красная кнопка экстренной остановки всего оборудования в зоне. Используется только в аварийных ситуациях.',
     rules: [
       { icon: '🚨', text: 'Нажать при угрозе жизни или серьёзной неисправности' },
@@ -204,9 +168,7 @@ const OBJECTS_DB = [
   },
   {
     id: 'marker_2',
-    icon: '⚙️',
-    name: 'Рабочий станок',
-    marker: 'ArUco ID: 2',
+    icon: '⚙️', name: 'Рабочий станок', marker: 'ArUco ID: 2',
     desc: 'Основное производственное оборудование рабочего места. Требует обязательного инструктажа перед работой.',
     rules: [
       { icon: '✅', text: 'Пройди инструктаж перед первым включением' },
@@ -218,9 +180,7 @@ const OBJECTS_DB = [
   },
   {
     id: 'marker_3',
-    icon: '🔧',
-    name: 'Зона хранения инструмента',
-    marker: 'ArUco ID: 3',
+    icon: '🔧', name: 'Зона хранения инструмента', marker: 'ArUco ID: 3',
     desc: 'Место хранения ручного и измерительного инструмента. Каждый инструмент имеет своё место.',
     rules: [
       { icon: '✅', text: 'Возвращай инструмент после использования' },
@@ -231,9 +191,7 @@ const OBJECTS_DB = [
   },
   {
     id: 'marker_4',
-    icon: '🧯',
-    name: 'Огнетушитель',
-    marker: 'ArUco ID: 4',
+    icon: '🧯', name: 'Огнетушитель', marker: 'ArUco ID: 4',
     desc: 'Первичное средство пожаротушения. Порошковый огнетушитель ОП-5 для тушения любых видов возгораний.',
     rules: [
       { icon: '🚨', text: 'При возгорании — сначала эвакуируй людей, потом туши' },
@@ -245,9 +203,7 @@ const OBJECTS_DB = [
   },
   {
     id: 'ppe_helmet',
-    icon: '⛑',
-    name: 'Защитная каска',
-    marker: 'ArUco ID: 10 (Safety Check)',
+    icon: '⛑', name: 'Защитная каска', marker: 'ArUco ID: 10 (Safety Check)',
     desc: 'Средство защиты головы от ударов и падающих предметов. Обязательна во всех производственных зонах.',
     rules: [
       { icon: '✅', text: 'Надевай перед входом в производственную зону' },
@@ -259,9 +215,7 @@ const OBJECTS_DB = [
   },
   {
     id: 'ppe_vest',
-    icon: '🦺',
-    name: 'Сигнальный жилет',
-    marker: 'ArUco ID: 11 (Safety Check)',
+    icon: '🦺', name: 'Сигнальный жилет', marker: 'ArUco ID: 11 (Safety Check)',
     desc: 'Сигнальная одежда повышенной видимости. Делает сотрудника заметным в условиях недостаточного освещения.',
     rules: [
       { icon: '✅', text: 'Носи поверх рабочей одежды' },
@@ -280,40 +234,44 @@ async function loadScanned() {
     const stats = await API.get('/api/progress/scanned_objects');
     _scannedIds = new Set(stats.scanned || []);
   } catch (e) {
-    // Если эндпоинт ещё нет — считаем все незнакомыми
+    // Эндпоинт недоступен — все объекты заблокированы
     _scannedIds = new Set();
   }
+
+  const found = _scannedIds.size;
+  const total = OBJECTS_DB.length;
+  document.getElementById('progress-hint').textContent =
+    found > 0
+      ? `📖 Изучено: ${found} / ${total}`
+      : 'Найди объекты камерой чтобы разблокировать записи';
+
   renderGrid(_filteredObjects);
 }
 
 function renderGrid(objects) {
-  const grid = document.getElementById('objects-grid');
+  const grid  = document.getElementById('objects-grid');
   const empty = document.getElementById('empty-state');
   grid.innerHTML = '';
 
-  if (objects.length === 0) {
-    empty.classList.remove('hidden');
-    return;
-  }
+  if (!objects.length) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
   objects.forEach(obj => {
-    const found = _scannedIds.has(obj.id) || true; // показываем все, locked = не найдены
-    const card = document.createElement('div');
+    // ✅ ФИКС: убран || true — объект открыт только если реально отсканирован
+    const found = _scannedIds.has(obj.id);
+    const card  = document.createElement('div');
     card.className = `obj-card${found ? '' : ' locked'}`;
     card.innerHTML = `
-      <div class="obj-icon">${obj.icon}</div>
+      <div class="obj-icon">${found ? obj.icon : '🔒'}</div>
       <div class="obj-body">
-        <div class="obj-name">${obj.name}</div>
+        <div class="obj-name">${found ? obj.name : '???'}</div>
         <div class="obj-marker">${obj.marker}</div>
         <span class="obj-status ${found ? 'found' : 'notfound'}">
           ${found ? '✅ Изучен' : '🔒 Не найден'}
         </span>
       </div>
     `;
-    if (found) {
-      card.addEventListener('click', () => openDetail(obj));
-    }
+    if (found) card.addEventListener('click', () => openDetail(obj));
     grid.appendChild(card);
   });
 }
@@ -330,11 +288,10 @@ function openDetail(obj) {
   const sections = document.getElementById('detail-sections');
   sections.innerHTML = '';
 
-  // Правила
   if (obj.rules?.length) {
     const s = document.createElement('div');
     s.className = 'detail-section';
-    s.innerHTML = `<h4>📋 Правила безопасности</h4>`;
+    s.innerHTML = '<h4>📋 Правила безопасности</h4>';
     obj.rules.forEach(r => {
       const row = document.createElement('div');
       row.className = 'detail-rule';
@@ -344,11 +301,10 @@ function openDetail(obj) {
     sections.appendChild(s);
   }
 
-  // Факты
   if (obj.facts?.length) {
     const s = document.createElement('div');
     s.className = 'detail-section';
-    s.innerHTML = `<h4>💡 Интересные факты</h4>`;
+    s.innerHTML = '<h4>💡 Интересные факты</h4>';
     obj.facts.forEach(f => {
       const row = document.createElement('div');
       row.className = 'detail-rule';
@@ -358,20 +314,13 @@ function openDetail(obj) {
     sections.appendChild(s);
   }
 
-  const modal = document.getElementById('detail-modal');
-  modal.style.opacity = '1';
-  modal.style.pointerEvents = 'all';
-  document.getElementById('detail-inner').style.transform = 'translateY(0)';
+  document.getElementById('detail-modal').classList.add('open');
 }
 
 function closeDetail() {
-  const modal = document.getElementById('detail-modal');
-  modal.style.opacity = '0';
-  modal.style.pointerEvents = 'none';
-  document.getElementById('detail-inner').style.transform = 'translateY(100%)';
+  document.getElementById('detail-modal').classList.remove('open');
 }
 
-// Поиск
 document.getElementById('search-input').addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
   _filteredObjects = OBJECTS_DB.filter(o =>
@@ -380,7 +329,6 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderGrid(_filteredObjects);
 });
 
-// Закрытие модалки
 document.getElementById('detail-close').addEventListener('click', closeDetail);
 document.getElementById('detail-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('detail-modal')) closeDetail();
@@ -388,10 +336,10 @@ document.getElementById('detail-modal').addEventListener('click', e => {
 
 loadScanned().then(() => {
   const params = new URLSearchParams(window.location.search);
-  const targetObjId = params.get("obj");
+  const targetObjId = params.get('obj');
   if (targetObjId) {
     const obj = OBJECTS_DB.find(o => o.id === targetObjId);
-    if (obj) setTimeout(() => openDetail(obj), 300);
+    if (obj && _scannedIds.has(obj.id)) setTimeout(() => openDetail(obj), 300);
   }
 });
 </script>

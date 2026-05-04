@@ -155,6 +155,73 @@ def safety_history(
     ]
 
 
+@router.get("/scanned_objects", summary="Список отсканированных объектов энциклопедии")
+def get_scanned_objects(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """
+    Возвращает список ID объектов которые пользователь уже отсканировал.
+    Используется энциклопедией для разблокировки карточек.
+
+    Маппинг marker_id → encyclopedia object id:
+      0 → marker_0, 1 → marker_1, 2 → marker_2,
+      3 → marker_3, 4 → marker_4,
+      10 → ppe_helmet, 11 → ppe_vest
+    """
+    MARKER_TO_ENC = {
+        0: 'marker_0', 1: 'marker_1', 2: 'marker_2',
+        3: 'marker_3', 4: 'marker_4',
+        10: 'ppe_helmet', 11: 'ppe_vest',
+    }
+    CLASS_TO_ENC = {
+        'fire_extinguisher': 'marker_4',
+        'safety_check':      'ppe_helmet',  # safety check открывает оба СИЗ
+    }
+
+    scanned = set()
+
+    # По ArUco маркерам
+    marker_events = (
+        db.query(ScanEvent.marker_id)
+        .filter(
+            ScanEvent.user_id == current_user.id,
+            ScanEvent.marker_id.isnot(None),
+        )
+        .distinct()
+        .all()
+    )
+    for (mid,) in marker_events:
+        if mid in MARKER_TO_ENC:
+            scanned.add(MARKER_TO_ENC[mid])
+
+    # По YOLO классам
+    class_events = (
+        db.query(ScanEvent.detected_class)
+        .filter(
+            ScanEvent.user_id == current_user.id,
+            ScanEvent.detected_class.isnot(None),
+        )
+        .distinct()
+        .all()
+    )
+    for (cls,) in class_events:
+        if cls in CLASS_TO_ENC:
+            scanned.add(CLASS_TO_ENC[cls])
+
+    # Safety Check открывает СИЗ объекты
+    safety_count = (
+        db.query(SafetyCheck)
+        .filter(SafetyCheck.user_id == current_user.id)
+        .count()
+    )
+    if safety_count > 0:
+        scanned.add('ppe_helmet')
+        scanned.add('ppe_vest')
+
+    return {"scanned": list(scanned), "total": len(MARKER_TO_ENC) + 1}
+
+
 @router.get("/stats", summary="Сводная статистика пользователя")
 def get_stats(
     db: Session = Depends(get_db),
