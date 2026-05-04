@@ -126,3 +126,11 @@ async def serve_encyclopedia() -> FileResponse:
 async def serve_admin() -> FileResponse:
     """HR-панель управления."""
     return FileResponse(str(settings.frontend_static_path / "admin.html"))
+
+@app.get("/sw.js", include_in_schema=False)
+async def serve_sw() -> FileResponse:
+    """Service Worker — должен быть в корне для правильного scope."""
+    return FileResponse(
+        str(settings.frontend_static_path / "sw.js"),
+        headers={"Content-Type": "application/javascript", "Service-Worker-Allowed": "/"},
+    )

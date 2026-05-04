@@ -81,6 +81,11 @@
 <div id="top-bar">
   <button class="btn" id="btn-back" style="padding:8px 14px;font-size:13px">← Выйти</button>
   <h1>🦺 Проверка снаряжения</h1>
+  <span id="offline-badge" style="
+    display:none; font-size:10px; font-family:monospace;
+    padding:3px 8px; border-radius:20px; font-weight:700;
+    background:rgba(255,170,0,0.15); border:1px solid rgba(255,170,0,0.4); color:#ffaa00;
+  ">📵 ОФЛАЙН</span>
 </div>
 
 <div id="camera-wrap">
@@ -125,6 +130,7 @@
   </button>
 </div>
 
+<script src="/static/js/sw-register.js"></script>
 <script src="/static/js/api.js"></script>
 <script src="/static/js/camera.js"></script>
 <script>
@@ -207,26 +213,83 @@
     btnConfirm.textContent = 'Засчитываем...';
     btnConfirm.disabled = true;
 
-    try {
-      const token = sessionStorage.getItem('casper_token');
-      // Записываем Safety Check с деталями по каждому СИЗ
-      await fetch('/api/progress/safety_check', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
-        body: JSON.stringify({
-          helmet:    _lastPPE?.helmet  ?? false,
-          vest:      _lastPPE?.vest    ?? false,
-          goggles:   _lastPPE?.goggles ?? false,
-          client_id: crypto.randomUUID(),  // UUID для дедупликации офлайн
-        }),
-      }).catch(e => console.error('[Safety] Ошибка записи:', e));
-    } catch (e) {
-      console.error('[Safety] Ошибка:', e);
+    const token     = sessionStorage.getItem('casper_token');
+    const clientId  = crypto.randomUUID();
+    const payload   = {
+      helmet:    _lastPPE?.helmet  ?? false,
+      vest:      _lastPPE?.vest    ?? false,
+      goggles:   _lastPPE?.goggles ?? false,
+      client_id: clientId,
+    };
+
+    const online = navigator.onLine;
+
+    if (online) {
+      // Онлайн — отправляем сразу
+      try {
+        await fetch('/api/progress/safety_check', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body:    JSON.stringify(payload),
+        });
+        console.log('[Safety] Записано онлайн:', clientId);
+      } catch (e) {
+        // Сеть упала в процессе — падаем в офлайн-путь
+        await saveToOfflineQueue(token, payload);
+      }
+    } else {
+      // Офлайн — сохраняем в IndexedDB
+      await saveToOfflineQueue(token, payload);
     }
 
     Camera.stop();
     window.location.href = '/app';
   });
+
+  // ── Офлайн: сохраняем Safety Check в IndexedDB ───────────────────────────
+  async function saveToOfflineQueue(token, payload) {
+    console.log('[Safety] Офлайн — сохраняем в очередь:', payload.client_id);
+    try {
+      const db = await new Promise((resolve, reject) => {
+        const req = indexedDB.open('firstshift-offline', 1);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('safety_queue')) {
+            db.createObjectStore('safety_queue', { keyPath: 'id', autoIncrement: true });
+          }
+        };
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror   = e => reject(e.target.error);
+      });
+
+      await new Promise((resolve, reject) => {
+        const tx  = db.transaction('safety_queue', 'readwrite');
+        const req = tx.objectStore('safety_queue').add({ token, ...payload, queued_at: Date.now() });
+        req.onsuccess = () => resolve();
+        req.onerror   = e => reject(e.target.error);
+      });
+
+      console.log('[Safety] Сохранено офлайн, будет отправлено при появлении сети');
+
+      // Регистрируем Background Sync
+      if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        const reg = await navigator.serviceWorker.ready;
+        await reg.sync.register('safety-check-sync');
+        console.log('[Safety] Background Sync зарегистрирован');
+      }
+    } catch (e) {
+      console.error('[Safety] Ошибка сохранения офлайн:', e);
+    }
+  }
+
+  // ── Офлайн-индикатор ─────────────────────────────────────────────────────
+  function updateOnlineStatus() {
+    const badge = document.getElementById('offline-badge');
+    if (badge) badge.style.display = navigator.onLine ? 'none' : 'inline';
+  }
+  window.addEventListener('online',  updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
 </script>
 </body>
 </html>
