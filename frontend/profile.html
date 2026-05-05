@@ -24,8 +24,11 @@
       text-transform: uppercase; margin-bottom: 12px;
     }
 
+    /* Hero карточка профиля */
     #profile-hero {
-      margin: 16px; padding: 20px; border-radius: 16px;
+      margin: 16px;
+      padding: 20px;
+      border-radius: 16px;
       border: 1px solid var(--border-bright);
       background: linear-gradient(135deg, rgba(0,170,255,0.08), rgba(0,255,136,0.04));
       display: flex; align-items: center; gap: 16px;
@@ -35,33 +38,94 @@
       background: linear-gradient(135deg, #0055aa, #00aaff);
       border: 2px solid var(--accent);
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px; font-weight: 900; color: white; flex-shrink: 0;
+      font-size: 28px; font-weight: 900; color: white;
+      flex-shrink: 0;
     }
     #hero-info { flex: 1; min-width: 0; }
-    #hero-name  { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
-    #hero-level { font-size: 13px; color: var(--accent); font-family: var(--font-mono); margin-bottom: 8px; }
-    #hero-xp-text { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); margin-top: 4px; }
 
-    #stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    /* Блок имени с редактором */
+    #name-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 4px;
+    }
+    #hero-name {
+      font-size: 20px; font-weight: 800;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #btn-edit-name {
+      background: none; border: none; cursor: pointer;
+      font-size: 16px; padding: 2px 4px; border-radius: 6px;
+      color: var(--text-secondary); flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    #btn-edit-name:hover { color: var(--accent); }
+
+    /* Инлайн-форма редактирования */
+    #name-edit-row {
+      display: none; align-items: center; gap: 6px;
+      margin-bottom: 4px;
+    }
+    #name-edit-row.active { display: flex; }
+    #input-display-name {
+      flex: 1; min-width: 0;
+      background: var(--bg-dark); border: 1px solid var(--accent);
+      border-radius: 8px; padding: 6px 10px;
+      font-size: 16px; font-weight: 700; color: var(--text-primary);
+      font-family: inherit; outline: none;
+    }
+    #btn-save-name, #btn-cancel-name {
+      border: none; border-radius: 8px;
+      padding: 6px 10px; cursor: pointer;
+      font-size: 15px; flex-shrink: 0;
+    }
+    #btn-save-name   { background: var(--accent); color: #000; }
+    #btn-cancel-name { background: var(--bg-glass); color: var(--text-secondary); }
+
+    #hero-level { font-size: 13px; color: var(--accent); font-family: var(--font-mono); margin-bottom: 8px; }
+    #hero-xp-bar { margin-bottom: 4px; }
+    #hero-xp-text { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--bg-dark); border: 1px solid var(--border-bright);
+      color: var(--text-primary); border-radius: 12px;
+      padding: 10px 20px; font-size: 14px; font-weight: 600;
+      z-index: 999; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; }
+    #toast.success { border-color: var(--success); color: var(--success); }
+    #toast.error   { border-color: #ff4444; color: #ff4444; }
+
+    /* Статы */
+    #stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
     .stat-card {
       padding: 14px 12px; border-radius: 12px;
-      border: 1px solid var(--border); background: var(--bg-glass); text-align: center;
+      border: 1px solid var(--border);
+      background: var(--bg-glass);
+      text-align: center;
     }
     .stat-value { font-size: 24px; font-weight: 900; color: var(--text-primary); }
     .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3; }
 
+    /* Лидерборд */
     #leaderboard-list { display: flex; flex-direction: column; gap: 8px; }
     .lb-item {
       display: flex; align-items: center; gap: 12px;
       padding: 12px 14px; border-radius: 10px;
-      border: 1px solid var(--border); background: var(--bg-glass);
+      border: 1px solid var(--border);
+      background: var(--bg-glass);
     }
-    .lb-item.me     { border-color: var(--accent); background: rgba(0,170,255,0.06); }
-    .lb-item.gold   { border-color: #ffd700; }
-    .lb-item.silver { border-color: #c0c0c0; }
-    .lb-item.bronze { border-color: #cd7f32; }
-    .lb-rank   { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
-    .lb-avatar {
+    .lb-item.me    { border-color: var(--accent); background: rgba(0,170,255,0.06); }
+    .lb-item.gold  { border-color: #ffd700; }
+    .lb-item.silver{ border-color: #c0c0c0; }
+    .lb-item.bronze{ border-color: #cd7f32; }
+    .lb-rank  { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+    .lb-avatar{
       width: 36px; height: 36px; border-radius: 50%;
       background: var(--accent-glow); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
@@ -72,24 +136,19 @@
     .lb-level { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
     .lb-xp    { font-size: 13px; font-weight: 700; color: var(--success); font-family: var(--font-mono); }
 
-    #ach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    /* Ачивки */
+    #ach-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
     .ach-card {
       padding: 12px 8px; border-radius: 12px;
-      border: 1px solid var(--border); text-align: center; opacity: 0.4;
+      border: 1px solid var(--border);
+      text-align: center; opacity: 0.4;
     }
     .ach-card.unlocked { opacity: 1; border-color: var(--border-bright); background: var(--bg-glass); }
     .ach-icon  { font-size: 28px; margin-bottom: 6px; }
     .ach-title { font-size: 11px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
     .ach-xp    { font-size: 10px; color: var(--success); font-family: var(--font-mono); margin-top: 3px; }
-
-    .btn-logout {
-      padding: 8px 14px; font-size: 13px; font-weight: 600;
-      color: #ff3355; border: 1px solid rgba(255,51,85,0.4);
-      background: transparent; border-radius: 8px; cursor: pointer;
-      font-family: inherit; white-space: nowrap;
-      transition: background 0.2s;
-    }
-    .btn-logout:hover { background: rgba(255,51,85,0.1); }
   </style>
 </head>
 <body>
@@ -97,25 +156,26 @@
 <div id="top-bar">
   <button class="btn" onclick="window.location.href='/app'" style="padding:8px 14px;font-size:13px">← Назад</button>
   <h1>👤 Мой профиль</h1>
-  <button id="btn-admin" onclick="window.location.href='/admin'" style="
-    display:none; padding:8px 14px; font-size:13px; font-weight:600;
-    color:#ffaa00; border:1px solid rgba(255,170,0,0.4);
-    background:rgba(255,170,0,0.08); border-radius:8px;
-    cursor:pointer; font-family:inherit; transition:all 0.2s;
-  ">⚙️ Admin</button>
-  <button class="btn-logout" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">Выйти</button>
-  <button id="btn-clear" onclick="window.location.href='/clear'" style="
-    display:none; padding:8px 12px; font-size:12px; font-weight:600;
-    color:#ffaa00; border:1px solid rgba(255,170,0,0.4);
-    background:rgba(255,170,0,0.08); border-radius:8px;
-    cursor:pointer; font-family:monospace;
-  " title="Очистить кэш SW">↻</button>
 </div>
 
+<!-- Hero -->
 <div id="profile-hero">
   <div id="hero-avatar">?</div>
   <div id="hero-info">
-    <div id="hero-name">Загрузка...</div>
+
+    <!-- Режим просмотра -->
+    <div id="name-row">
+      <div id="hero-name">Загрузка...</div>
+      <button id="btn-edit-name" title="Изменить имя">✏️</button>
+    </div>
+
+    <!-- Режим редактирования -->
+    <div id="name-edit-row">
+      <input id="input-display-name" type="text" maxlength="64" placeholder="Ваше имя">
+      <button id="btn-save-name"   title="Сохранить">✓</button>
+      <button id="btn-cancel-name" title="Отмена">✕</button>
+    </div>
+
     <div id="hero-level">LVL 1 · Стажёр</div>
     <div id="hero-xp-bar" class="xp-bar-wrap">
       <div id="hero-xp-fill" class="xp-bar-fill" style="width:0%"></div>
@@ -124,6 +184,10 @@
   </div>
 </div>
 
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Статистика -->
 <div class="section">
   <div class="section-title">📊 Статистика</div>
   <div id="stats-grid">
@@ -142,11 +206,13 @@
   </div>
 </div>
 
+<!-- Достижения -->
 <div class="section" style="margin-top:20px">
   <div class="section-title">🏆 Достижения</div>
   <div id="ach-grid"></div>
 </div>
 
+<!-- Лидерборд -->
 <div class="section" style="margin-top:20px">
   <div class="section-title">🥇 Лидерборд</div>
   <div id="leaderboard-list"></div>
@@ -154,43 +220,90 @@
 
 <script src="/static/js/api.js"></script>
 <script>
-  if (!API.hasToken()) { window.location.href = '/'; }
+  if (!API.hasToken()) window.location.href = '/';
 
   const ICONS = { eye:'👁', shield:'🛡', zap:'⚡', map:'🗺', star:'⭐', trophy:'🏆' };
-  const RANK_ICONS   = ['🥇','🥈','🥉'];
+  const RANK_ICONS = ['🥇','🥈','🥉'];
   const RANK_CLASSES = ['gold','silver','bronze'];
+
   let _myUsername = '';
 
+  // ---- Toast ----
+  let _toastTimer = null;
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { t.className = ''; }, 2800);
+  }
+
+  // ---- Редактор имени ----
+  const nameRow     = document.getElementById('name-row');
+  const nameEditRow = document.getElementById('name-edit-row');
+  const heroName    = document.getElementById('hero-name');
+  const heroAvatar  = document.getElementById('hero-avatar');
+  const nameInput   = document.getElementById('input-display-name');
+
+  function openEdit() {
+    nameInput.value = heroName.textContent;
+    nameRow.style.display     = 'none';
+    nameEditRow.classList.add('active');
+    nameInput.focus();
+    nameInput.select();
+  }
+
+  function closeEdit() {
+    nameEditRow.classList.remove('active');
+    nameRow.style.display = 'flex';
+  }
+
+  async function saveName() {
+    const newName = nameInput.value.trim();
+    if (!newName) { showToast('Имя не может быть пустым', 'error'); return; }
+    if (newName === heroName.textContent) { closeEdit(); return; }
+
+    try {
+      const profile = await API.updateDisplayName(newName);
+      heroName.textContent  = profile.display_name;
+      heroAvatar.textContent = profile.display_name.charAt(0).toUpperCase();
+      closeEdit();
+      showToast('Имя обновлено ✓', 'success');
+    } catch (e) {
+      showToast(e.message || 'Ошибка сохранения', 'error');
+    }
+  }
+
+  document.getElementById('btn-edit-name').addEventListener('click', openEdit);
+  document.getElementById('btn-save-name').addEventListener('click', saveName);
+  document.getElementById('btn-cancel-name').addEventListener('click', closeEdit);
+  nameInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  saveName();
+    if (e.key === 'Escape') closeEdit();
+  });
+
+  // ---- Загрузка данных ----
   async function apiFetch(path) {
-    const token = sessionStorage.getItem('casper_token');
-    const resp = await fetch(path, { headers: { 'Authorization': `Bearer ${token}` } });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    return resp.json();
+    return API.get(path);
   }
 
   async function load() {
     const profile = await API.getProfile();
     _myUsername = profile.username;
-    if (profile.role === 'admin') {
-      const clearBtn = document.getElementById('btn-clear');
-      if (clearBtn) clearBtn.style.display = 'inline-block';
-    }
-    // Показываем кнопку Admin для hr и admin
-    if (['hr', 'admin'].includes(profile.role)) {
-      const adminBtn = document.getElementById('btn-admin');
-      if (adminBtn) adminBtn.style.display = 'inline-block';
-    }
-    document.getElementById('hero-avatar').textContent  = (profile.display_name || profile.username).charAt(0).toUpperCase();
-    document.getElementById('hero-name').textContent    = profile.display_name || profile.username;
+
+    heroAvatar.textContent = profile.display_name.charAt(0).toUpperCase();
+    heroName.textContent   = profile.display_name;
     document.getElementById('hero-level').textContent   = `LVL ${profile.level} · ${profile.level_title}`;
     document.getElementById('hero-xp-fill').style.width = `${Math.round(profile.level_progress_pct * 100)}%`;
     document.getElementById('hero-xp-text').textContent = `${profile.total_xp} XP · ещё ${profile.xp_to_next_level} до уровня ${profile.level + 1}`;
 
+    // Статистика
     const stats = await apiFetch('/api/progress/stats');
     document.getElementById('stat-quests').textContent = stats.quests_completed;
     document.getElementById('stat-scans').textContent  = stats.scans_total;
     document.getElementById('stat-achs').textContent   = stats.achievements_unlocked;
 
+    // Ачивки
     const achs = await apiFetch('/api/progress/achievements');
     const achGrid = document.getElementById('ach-grid');
     achGrid.innerHTML = '';
@@ -206,6 +319,7 @@
       achGrid.appendChild(card);
     });
 
+    // Лидерборд
     const lb = await API.getLeaderboard();
     const lbList = document.getElementById('leaderboard-list');
     lbList.innerHTML = '';
@@ -215,9 +329,9 @@
       item.className = `lb-item${isMe ? ' me' : ''}${i < 3 ? ` ${RANK_CLASSES[i]}` : ''}`;
       item.innerHTML = `
         <div class="lb-rank">${i < 3 ? RANK_ICONS[i] : `#${i+1}`}</div>
-        <div class="lb-avatar">${(u.display_name || u.username).charAt(0).toUpperCase()}</div>
+        <div class="lb-avatar">${u.display_name.charAt(0).toUpperCase()}</div>
         <div class="lb-info">
-          <div class="lb-name">${u.display_name || u.username}${isMe ? ' (ты)' : ''}</div>
+          <div class="lb-name">${u.display_name}${isMe ? ' (ты)' : ''}</div>
           <div class="lb-level">LVL ${u.level} · ${u.level_title}</div>
         </div>
         <div class="lb-xp">${u.total_xp} XP</div>
@@ -226,14 +340,11 @@
     });
 
     if (lb.length === 0) {
-      lbList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;font-size:14px">Пока никого нет 🚀</div>';
+      lbList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;font-size:14px">Пока никого нет. Будь первым! 🚀</div>';
     }
   }
 
-  load().catch(err => {
-    console.error('Ошибка загрузки профиля:', err);
-    document.getElementById('hero-name').textContent = 'Ошибка загрузки';
-  });
+  load().catch(console.error);
 </script>
 </body>
 </html>

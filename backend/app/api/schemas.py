@@ -5,6 +5,9 @@ Pydantic v2 схемы — контракт API между backend и frontend.
 - LoginIn     — добавлено поле password
 - RegisterIn  — новая схема для регистрации
 - UserProfileOut — добавлено поле role
+
+Изменения (шаг 11):
+- DisplayNameIn — схема для смены display_name
 """
 
 from pydantic import BaseModel, Field
@@ -62,6 +65,14 @@ class LoginOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserProfileOut
+
+
+class DisplayNameIn(BaseModel):
+    display_name: str = Field(
+        min_length=1,
+        max_length=64,
+        strip_whitespace=True,
+    )
 
 
 # ---------------------------------------------------------------------------
