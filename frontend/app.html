@@ -23,6 +23,11 @@
 
 <!-- ── HUD TOP — тонкая полоска XP ───────────────────────── -->
 <div id="hud-top">
+  <button id="btn-clear-cache" onclick="Tab.clearCache()" title="Очистить кэш и обновить"
+    style="display:none;position:absolute;top:8px;right:8px;
+    padding:4px 8px;border-radius:6px;border:1px solid rgba(255,170,0,0.4);
+    background:rgba(255,170,0,0.08);color:#ffaa00;font-size:10px;
+    cursor:pointer;font-family:monospace;z-index:5">↻ кэш</button>
   <div id="hud-avatar">?</div>
   <div id="hud-profile">
     <div id="hud-header-row">
@@ -163,6 +168,16 @@
     encyclopedia(){ window.location.href = '/encyclopedia'; },
     profile()     { window.location.href = '/profile'; },
     admin()       { window.location.href = '/admin'; },
+    clearCache()  {
+      if (!('serviceWorker' in navigator)) { location.reload(true); return; }
+      caches.keys().then(keys =>
+        Promise.all(keys.map(k => caches.delete(k))).then(() =>
+          navigator.serviceWorker.getRegistrations().then(regs =>
+            Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true))
+          )
+        )
+      );
+    },
   };
 </script>
 

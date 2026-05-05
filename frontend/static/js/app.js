@@ -49,6 +49,11 @@
       const adminTab = document.getElementById('tab-admin');
       if (adminTab) adminTab.style.display = 'flex';
     }
+    // Кнопка очистки кэша — только для admin (для отладки в Opera GX и др.)
+    if (profile.role === 'admin') {
+      const cacheBtn = document.getElementById('btn-clear-cache');
+      if (cacheBtn) cacheBtn.style.display = 'block';
+    }
     if (profile.total_xp < 50) sessionStorage.removeItem('casper_onboarding_done');
     setTimeout(() => Onboarding.maybeShow(), 300);
   } catch (err) {
