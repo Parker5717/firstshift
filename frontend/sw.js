@@ -6,7 +6,7 @@
  * 2. Офлайн-очередь Safety Check через IndexedDB + Background Sync
  */
 
-const CACHE_NAME   = 'firstshift-v2';
+const CACHE_NAME   = 'firstshift-v3';
 const SYNC_TAG     = 'safety-check-sync';
 const IDB_NAME     = 'firstshift-offline';
 const IDB_STORE    = 'safety_queue';
@@ -76,6 +76,26 @@ self.addEventListener('fetch', event => {
   // API-запросы — только сеть (не кэшируем динамику)
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/ws/')) {
     return; // браузер обработает сам
+  }
+
+  // Хард-рефреш (Ctrl+Shift+R) — Cache-Control: no-cache → идём в сеть
+  const cacheControl = event.request.headers.get('Cache-Control');
+  const isHardRefresh = cacheControl === 'no-cache';
+
+  if (isHardRefresh) {
+    // При хард-рефреше обходим кэш и обновляем его
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok && event.request.method === 'GET') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
   }
 
   // Статика — cache-first
