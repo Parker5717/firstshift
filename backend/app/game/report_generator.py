@@ -58,10 +58,24 @@ def _fdt(dt):
 class PDF(FPDF):
     _uni = False
 
-    def _setup(self):
-        for p in [r"C:\Windows\Fonts\arial.ttf", r"C:\Windows\Fonts\Arial.ttf",
-                  "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]:
-            if os.path.exists(p):
+    def _setup(self, font_dir: str = ""):
+        # Ищем шрифт с поддержкой кириллицы
+        candidates = [
+            # Сначала проверяем папку проекта (backend/fonts/)
+            os.path.join(font_dir, "DejaVuSans.ttf"),
+            # Windows - Arial
+            r"C:\Windows\Fonts\arial.ttf",
+            r"C:\Windows\Fonts\Arial.ttf",
+            r"C:\Windows\Fonts\ARIAL.TTF",
+            # Windows - другие шрифты с кириллицей
+            r"C:\Windows\Fonts\times.ttf",
+            r"C:\Windows\Fonts\calibri.ttf",
+            # Linux
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        ]
+        for p in candidates:
+            if p and os.path.exists(p):
                 try:
                     self.add_font("U","",p); self.add_font("U","B",p); self.add_font("U","I",p)
                     self._uni = True; break
@@ -114,7 +128,9 @@ class PDF(FPDF):
 
 
 def generate_employee_report(db: Session, user: User, period_days: int = 30) -> bytes:
-    pdf = PDF(); pdf._setup(); pdf.add_page()
+    # Определяем путь к папке с шрифтами (backend/fonts/ рядом с этим файлом)
+    _font_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fonts")
+    pdf = PDF(); pdf._setup(_font_dir); pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=20)
 
     # Шапка
