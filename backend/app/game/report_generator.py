@@ -91,7 +91,7 @@ class PDF(FPDF):
 
     def footer(self):
         self.set_y(-15); self._f("I",8); self.set_text_color(*C_GRAY)
-        self.cell(0,10,f"FirstShift | {datetime.now().strftime('%d.%m.%Y %H:%M')} | Str.{self.page_no()}",align="C")
+        self.cell(0,10,f"FirstShift | {datetime.now().strftime('%d.%m.%Y %H:%M')} | Стр. {self.page_no()}",align="C")
 
     def sec(self, title):
         self.ln(4); self.set_fill_color(*C_DARK); self.set_text_color(*C_WHITE)
@@ -137,81 +137,81 @@ def generate_employee_report(db: Session, user: User, period_days: int = 30) -> 
     pdf.ln(6); pdf._f("B",20); pdf.set_text_color(*C_DARK)
     pdf.cell(0,12,pdf._s(user.display_name or user.username),ln=True)
     pdf._f("",10); pdf.set_text_color(*C_GRAY)
-    roles = {"employee":"Sotrudnik","mentor":"Nastavnik","hr":"HR","admin":"Admin"}
+    roles = {"employee":"Сотрудник","mentor":"Наставник","hr":"HR","admin":"Администратор"}
     pdf.cell(0,6,f"@{user.username}  |  {roles.get(user.role,user.role)}  |  {_fd(user.created_at)}",ln=True)
     pdf.ln(3)
     pdf.set_draw_color(*C_ACCENT); pdf.set_line_width(0.5)
     pdf.line(10,pdf.get_y(),200,pdf.get_y()); pdf.ln(4)
 
     # Профиль
-    pdf.sec("Profil")
-    pdf.kv("Uroven:", f"{user.level} - {pdf._s(level_title(user.level))}", fill=True)
-    pdf.kv("XP:", str(user.total_xp))
-    pdf.kv("Aktivnost:", _fdt(user.last_active_at), fill=True)
+    pdf.sec("Профиль")
+    pdf.kv("Уровень:", f"{user.level} - {pdf._s(level_title(user.level))}", fill=True)
+    pdf.kv("Итого XP:", str(user.total_xp))
+    pdf.kv("Последняя активность:", _fdt(user.last_active_at), fill=True)
 
     tq = db.query(UserQuestProgress).filter(UserQuestProgress.user_id==user.id).count()
     dq = db.query(UserQuestProgress).filter(
         UserQuestProgress.user_id==user.id,
         UserQuestProgress.status==QuestStatus.COMPLETED.value).count()
     pdf.ln(3); pdf._f("B",9); pdf.set_text_color(*C_GRAY)
-    pdf.cell(55,6,pdf._s("Progress:")); pdf.set_text_color(0,0,0); pdf.ln(6)
+    pdf.cell(55,6,pdf._s("Прогресс онбординга:")); pdf.set_text_color(0,0,0); pdf.ln(6)
     pdf.set_x(65); pdf.pbar(dq/tq if tq else 0, f"{dq}/{tq}")
 
     # Квесты
-    pdf.sec("Kvesty")
+    pdf.sec("Квесты")
     pl = db.query(UserQuestProgress).filter(UserQuestProgress.user_id==user.id).join(UserQuestProgress.quest).all()
-    ST = {"completed":"Vypolnen","active":"Aktiven","available":"Dostupan","locked":"Zabl.","failed":"Proval"}
+    ST = {"completed":"Выполнен","active":"Активен","available":"Доступен","locked":"Заблокирован","failed":"Провален"}
     if pl:
-        pdf.thead([("Kvest",80),("Status",38),("XP",22),("Data",50)])
+        pdf.thead([("Квест",80),("Статус",38),("XP",22),("Дата",50)])
         for i,p in enumerate(pl):
             t = (p.quest.title[:37]+"..") if len(p.quest.title)>39 else p.quest.title
             pdf.trow([(pdf._s(t),80),(ST.get(p.status,p.status),38),
                       (f"+{p.quest.xp_reward}" if p.status=="completed" else "-",22),
                       (_fd(p.completed_at),50)], i)
     else:
-        pdf._f("I",9); pdf.set_text_color(*C_GRAY); pdf.cell(0,6,"Net dannyh",ln=True); pdf.set_text_color(0,0,0)
+        pdf._f("I",9); pdf.set_text_color(*C_GRAY); pdf.cell(0,6,"Нет данных",ln=True); pdf.set_text_color(0,0,0)
 
     # Safety Check
-    pdf.sec(f"Safety Check - {period_days} dnej")
+    pdf.sec(f"Safety Check — последние {period_days} дн.")
     since = datetime.now(timezone.utc) - timedelta(days=period_days)
     checks = db.query(SafetyCheck).filter(SafetyCheck.user_id==user.id,SafetyCheck.timestamp>=since).order_by(SafetyCheck.timestamp.desc()).all()
     if checks:
         passed = sum(1 for c in checks if c.passed)
-        pdf._f("",9); pdf.cell(0,6,f"Vsego: {len(checks)}  Uspesh: {passed}  Narush: {len(checks)-passed}",ln=True); pdf.ln(2)
-        pdf.thead([("Data",58),("Rezultat",35),("Kaska",28),("Zhilet",28),("Otsutst.",41)])
+        pdf._f("",9); pdf.cell(0,6,f"Всего: {len(checks)}   Успешных: {passed}   Нарушений: {len(checks)-passed}",ln=True); pdf.ln(2)
+        pdf.thead([("Дата и время",58),("Результат",35),("Каска",28),("Жилет",28),("Отсутствует",35)])
         for i,c in enumerate(checks):
             miss = ", ".join(json.loads(c.missing_items or "[]")) or "-"
-            res  = "OK" if c.passed else "Narushenie"
+            res  = "✓ Пройдена" if c.passed else "Нарушение"
             saved_color = None
             if not c.passed:
                 pdf.set_text_color(*C_DANGER)
             else:
                 pdf.set_text_color(0,150,80)
             pdf.trow([(_fdt(c.timestamp),58),(res,35),
-                      ("Da" if c.helmet else "Net",28),
-                      ("Da" if c.vest else "Net",28),(miss,41)], i)
+                      ("Да" if c.helmet else "Нет",28),
+                      ("Да" if c.vest else "Нет",28),(miss,41)], i)
             pdf.set_text_color(0,0,0)
     else:
         pdf._f("I",9); pdf.set_text_color(*C_GRAY)
-        pdf.cell(0,6,f"Net dannyh za {period_days} dnej",ln=True); pdf.set_text_color(0,0,0)
+        pdf.cell(0,6,f"Нет данных за последние {period_days} дней",ln=True); pdf.set_text_color(0,0,0)
 
     # Ачивки
-    pdf.sec("Dostizheniya")
+    pdf.sec("Достижения")
     al = db.query(UserAchievement).filter(UserAchievement.user_id==user.id).join(UserAchievement.achievement).order_by(UserAchievement.unlocked_at.desc()).all()
     ta = db.query(Achievement).count()
     if al:
         pdf._f("",9); pdf.set_text_color(*C_GRAY)
-        pdf.cell(0,6,f"Razblokirovano: {len(al)} iz {ta}",ln=True); pdf.set_text_color(0,0,0); pdf.ln(2)
-        pdf.thead([("Nazvanie",100),("XP bonus",40),("Data",50)])
+        pdf.cell(0,6,f"Разблокировано: {len(al)} из {ta}",ln=True); pdf.set_text_color(0,0,0); pdf.ln(2)
+        pdf.thead([("Достижение",100),("Бонус XP",40),("Дата",50)])
         for i,ua in enumerate(al):
             pdf.trow([(pdf._s(ua.achievement.title),100),(f"+{ua.achievement.xp_bonus}",40),(_fd(ua.unlocked_at),50)],i)
     else:
-        pdf._f("I",9); pdf.set_text_color(*C_GRAY); pdf.cell(0,6,"Net",ln=True); pdf.set_text_color(0,0,0)
+        pdf._f("I",9); pdf.set_text_color(*C_GRAY); pdf.cell(0,6,"Нет",ln=True); pdf.set_text_color(0,0,0)
 
     # Итог
     pdf.ln(8); pdf.set_draw_color(*C_ACCENT)
     pdf.line(10,pdf.get_y(),200,pdf.get_y()); pdf.ln(4)
     pdf._f("I",8); pdf.set_text_color(*C_GRAY)
-    pdf.cell(0,6,f"@{user.username} | Period: {period_days}d | FirstShift v0.2",ln=True)
+    pdf.cell(0,6,f"@{user.username} | Период: {period_days} дн. | FirstShift v0.2",ln=True)
 
     buf = BytesIO(); pdf.output(buf); return buf.getvalue()
