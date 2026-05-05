@@ -127,6 +127,12 @@ async def serve_admin() -> FileResponse:
     """HR-панель управления."""
     return FileResponse(str(settings.frontend_static_path / "admin.html"))
 
+@app.get("/clear", include_in_schema=False)
+async def serve_clear() -> FileResponse:
+    """Утилита очистки кэша SW."""
+    return FileResponse(str(settings.frontend_static_path / "clear.html"))
+
+
 @app.get("/sw.js", include_in_schema=False)
 async def serve_sw() -> FileResponse:
     """Service Worker — должен быть в корне для правильного scope."""

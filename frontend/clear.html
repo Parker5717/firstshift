@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstShift — Очистка кэша</title>
+  <style>
+    body {
+      background:#070b14; color:#fff;
+      font-family:monospace;
+      display:flex; align-items:center; justify-content:center;
+      min-height:100vh; margin:0; flex-direction:column; gap:16px;
+    }
+    h2 { color:#00aaff; margin:0; }
+    p  { color:#8899aa; margin:0; font-size:13px; }
+    button {
+      padding:14px 32px; border-radius:12px; border:none;
+      background:#00aaff; color:#000; font-size:15px; font-weight:700;
+      cursor:pointer; font-family:monospace;
+    }
+    button:hover { background:#22bbff; }
+    #status { color:#00ff88; font-size:13px; min-height:20px; }
+  </style>
+</head>
+<body>
+  <h2>🧹 Очистка кэша</h2>
+  <p>Удаляет Service Worker и кэш браузера</p>
+  <button onclick="clearAll()">Очистить и перезагрузить</button>
+  <div id="status"></div>
+
+  <script>
+    async function clearAll() {
+      const s = document.getElementById('status');
+      s.textContent = 'Удаляем кэш...';
+
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+      s.textContent = `Удалено ${keys.length} кэшей...`;
+
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+      s.textContent = `SW отключён. Перезагружаем...`;
+
+      setTimeout(() => location.replace('/'), 800);
+    }
+  </script>
+</body>
+</html>
