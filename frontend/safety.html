@@ -81,6 +81,12 @@
 <div id="top-bar">
   <button class="btn" id="btn-back" style="padding:8px 14px;font-size:13px">← Выйти</button>
   <h1>🦺 Проверка снаряжения</h1>
+  <button onclick="window.location.href='/app'" style="
+    padding:6px 12px; background:transparent;
+    border:1px solid rgba(255,255,255,0.15); border-radius:8px;
+    color:var(--text-dim); font-size:11px; cursor:pointer;
+    white-space:nowrap; flex-shrink:0;
+  ">Пропустить →</button>
   <span id="offline-badge" style="
     display:none; font-size:10px; font-family:monospace;
     padding:3px 8px; border-radius:20px; font-weight:700;
@@ -142,10 +148,7 @@
 
   <button id="btn-confirm" disabled>Начать смену →</button>
 
-  <button onclick="window.location.href='/app'"
-    style="width:100%;padding:10px;background:transparent;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;margin-top:4px">
-    Пропустить проверку →
-  </button>
+
 </div>
 </div>
 
