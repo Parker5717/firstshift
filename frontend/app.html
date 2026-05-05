@@ -92,6 +92,17 @@
     <span class="tab-label">Профиль</span>
   </button>
 
+  <!-- Наставник — показывается только для mentor -->
+  <button class="tab-item" id="tab-mentor" onclick="Tab.mentor()" style="display:none;color:#aa88ff">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+    <span class="tab-label">Наставник</span>
+  </button>
+
   <!-- Admin — показывается только для hr/admin -->
   <button class="tab-item" id="tab-admin" onclick="Tab.admin()" style="display:none;color:#ffaa00">
     <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -167,6 +178,7 @@
     quests()      { QuestEngine.openModal('quests'); },
     encyclopedia(){ window.location.href = '/encyclopedia'; },
     profile()     { window.location.href = '/profile'; },
+    mentor()      { window.location.href = '/mentor'; },
     admin()       { window.location.href = '/admin'; },
     clearCache()  {
       if (!('serviceWorker' in navigator)) { location.reload(true); return; }

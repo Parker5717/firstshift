@@ -45,6 +45,11 @@
     const profile = await API.getProfile();
     XPBar.update(profile);
     // Показываем Admin кнопку для hr и admin
+    // Кнопка Наставник для роли mentor
+    if (profile.role === 'mentor') {
+      const mentorTab = document.getElementById('tab-mentor');
+      if (mentorTab) mentorTab.style.display = 'flex';
+    }
     if (['hr', 'admin'].includes(profile.role)) {
       const adminTab = document.getElementById('tab-admin');
       if (adminTab) adminTab.style.display = 'flex';

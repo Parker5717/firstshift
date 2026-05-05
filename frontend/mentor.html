@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstShift — Мои подопечные</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body { min-height:100vh; overflow-y:auto; padding:0 0 48px; display:block; background:#070b14; }
+
+    #top-bar {
+      display:flex; align-items:center; gap:12px; padding:12px 16px;
+      background:rgba(7,11,20,0.96); border-bottom:1px solid rgba(170,136,255,0.2);
+      position:sticky; top:0; z-index:20;
+    }
+    .logo { font-family:monospace; font-size:15px; font-weight:700; color:#aa88ff; letter-spacing:2px; }
+    .mentor-badge {
+      padding:3px 10px; border-radius:20px; font-size:10px;
+      font-family:monospace; font-weight:700; letter-spacing:1px;
+      background:rgba(170,136,255,0.12); border:1px solid rgba(170,136,255,0.4); color:#aa88ff;
+    }
+    #top-bar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .top-user { font-size:13px; color:var(--text-secondary); }
+    .btn-sm {
+      padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600;
+      border:1px solid var(--border); background:transparent;
+      color:var(--text-secondary); cursor:pointer; transition:all 0.2s; font-family:inherit;
+    }
+    .btn-sm:hover { border-color:#aa88ff; color:#aa88ff; }
+    .btn-danger { border-color:rgba(255,51,85,0.4) !important; color:#ff3355 !important; }
+    .btn-danger:hover { background:rgba(255,51,85,0.1) !important; }
+
+    .page { max-width:900px; margin:0 auto; padding:20px 16px; }
+
+    /* Статы */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
+    .stat-card { padding:14px 16px; border-radius:14px; border:1px solid var(--border); background:var(--bg-glass); }
+    .stat-card .val { font-size:26px; font-weight:900; color:var(--text-primary); }
+    .stat-card .lbl { font-size:11px; color:var(--text-secondary); margin-top:4px; font-family:monospace; }
+
+    .section-title {
+      font-size:12px; font-family:monospace; color:#aa88ff;
+      letter-spacing:1px; text-transform:uppercase; font-weight:700;
+      margin-bottom:14px;
+    }
+
+    /* Карточки подопечных */
+    .mentee-card {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 16px; border-radius:14px;
+      border:1px solid var(--border); background:var(--bg-glass);
+      margin-bottom:10px; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .mentee-card:hover { border-color:#aa88ff; background:rgba(170,136,255,0.06); }
+
+    .mentee-avatar {
+      width:42px; height:42px; border-radius:50%;
+      background:linear-gradient(135deg,#5500aa,#aa88ff);
+      border:2px solid #aa88ff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+    .mentee-info { flex:1; min-width:0; }
+    .mentee-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+    .mentee-meta { font-size:12px; color:var(--text-secondary); font-family:monospace; }
+
+    .mentee-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+    .xp-badge {
+      font-size:12px; font-weight:700; color:var(--success);
+      font-family:monospace;
+    }
+    .safety-badge {
+      font-size:11px; padding:3px 8px; border-radius:20px; font-weight:600;
+    }
+    .safety-ok     { background:rgba(0,255,136,0.12); color:var(--success); border:1px solid rgba(0,255,136,0.3); }
+    .safety-miss   { background:rgba(255,170,0,0.12); color:#ffaa00; border:1px solid rgba(255,170,0,0.3); }
+
+    .progress-mini { width:80px; }
+    .progress-mini-bg { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+    .progress-mini-fill { height:100%; background:#aa88ff; border-radius:2px; }
+    .progress-mini-txt { font-size:10px; color:var(--text-dim); font-family:monospace; margin-top:2px; text-align:right; }
+
+    /* Пустое состояние */
+    .empty-state {
+      text-align:center; padding:60px 24px;
+      color:var(--text-secondary);
+    }
+    .empty-state .icon { font-size:56px; margin-bottom:16px; }
+    .empty-state h3 { font-size:18px; font-weight:700; margin-bottom:8px; color:var(--text-primary); }
+    .empty-state p { font-size:14px; line-height:1.6; }
+
+    .loading { text-align:center; padding:40px; color:var(--text-dim); font-size:14px; }
+
+    /* Боковая панель */
+    #detail-panel {
+      position:fixed; top:0; right:0; bottom:0; width:360px;
+      background:var(--bg-dark); border-left:1px solid rgba(170,136,255,0.2);
+      z-index:30; transform:translateX(100%);
+      transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      display:flex; flex-direction:column;
+    }
+    #detail-panel.open { transform:translateX(0); }
+
+    #detail-header {
+      padding:16px 18px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:12px; flex-shrink:0;
+    }
+    #detail-avatar {
+      width:40px; height:40px; border-radius:50%;
+      background:linear-gradient(135deg,#5500aa,#aa88ff);
+      border:2px solid #aa88ff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+    #detail-name { font-size:16px; font-weight:700; color:var(--text-primary); }
+    #detail-meta { font-size:12px; color:var(--text-secondary); margin-top:2px; }
+    #detail-close {
+      width:30px; height:30px; border-radius:50%;
+      border:1px solid var(--border); background:transparent;
+      color:var(--text-secondary); cursor:pointer; font-size:16px;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s; margin-left:auto; flex-shrink:0;
+    }
+    #detail-close:hover { border-color:#ff3355; color:#ff3355; }
+    #detail-body { flex:1; overflow-y:auto; padding:16px 18px; }
+
+    .quest-row {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:10px;
+      border:1px solid var(--border); background:var(--bg-glass);
+      margin-bottom:8px;
+    }
+    .quest-row.completed { border-color:rgba(0,255,136,0.25); background:rgba(0,255,136,0.04); }
+    .quest-row.active    { border-color:rgba(170,136,255,0.35); }
+    .quest-row.locked    { opacity:0.4; }
+    .quest-icon { font-size:18px; flex-shrink:0; width:28px; text-align:center; }
+    .quest-info { flex:1; min-width:0; }
+    .quest-title { font-size:13px; font-weight:600; color:var(--text-primary); }
+    .quest-status { font-size:11px; font-family:monospace; margin-top:2px; }
+    .quest-status.completed { color:var(--success); }
+    .quest-status.active    { color:#aa88ff; }
+    .quest-status.available { color:var(--text-secondary); }
+    .quest-status.locked    { color:var(--text-dim); }
+    .quest-xp { font-size:12px; font-family:monospace; color:var(--success); font-weight:700; flex-shrink:0; }
+
+    #overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5);
+      z-index:25; opacity:0; pointer-events:none; transition:opacity 0.3s;
+    }
+    #overlay.open { opacity:1; pointer-events:all; }
+
+    @media (max-width:768px) {
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+      #detail-panel { width:100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div class="logo">FIRSTSHIFT</div>
+  <div class="mentor-badge">НАСТАВНИК</div>
+  <div id="top-bar-right">
+    <span class="top-user" id="top-username"></span>
+    <button class="btn-sm" onclick="window.location.href='/app'">← Приложение</button>
+    <button class="btn-sm btn-danger" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">Выйти</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="val" id="stat-total">—</div><div class="lbl">ПОДОПЕЧНЫХ</div></div>
+    <div class="stat-card"><div class="val" id="stat-safety">—</div><div class="lbl">SAFETY CHECK ✅</div></div>
+    <div class="stat-card"><div class="val" id="stat-avg">—</div><div class="lbl">СРЕДНЕЕ ВЫПОЛНЕНИЕ</div></div>
+  </div>
+
+  <div class="section-title">👥 Мои подопечные</div>
+  <div id="mentees-list"><div class="loading">Загрузка...</div></div>
+
+</div>
+
+<div id="overlay" onclick="closeDetail()"></div>
+
+<div id="detail-panel">
+  <div id="detail-header">
+    <div id="detail-avatar">?</div>
+    <div>
+      <div id="detail-name">—</div>
+      <div id="detail-meta">—</div>
+    </div>
+    <button id="detail-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div id="detail-body">
+    <div class="loading">Выбери подопечного</div>
+  </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  if (!API.hasToken()) { window.location.href = '/'; }
+
+  const token  = sessionStorage.getItem('casper_token');
+  const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
+
+  async function apiFetch(path) {
+    const resp = await fetch(path, { headers });
+    if (resp.status === 401) { sessionStorage.removeItem('casper_token'); window.location.href = '/'; }
+    if (resp.status === 403) { window.location.href = '/app'; }
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+  }
+
+  const QUEST_ICONS = { discovery:'🔍', safety:'🦺', knowledge:'📚', speed_run:'⚡' };
+  const STATUS_RU   = { completed:'✅ Выполнен', active:'▶ Активен', available:'○ Доступен', locked:'🔒 Заблокирован' };
+
+  let _safetyMap = {};
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const dt = iso.endsWith('Z') ? iso : iso + 'Z';
+    const diff = Math.floor((Date.now() - new Date(dt)) / 60000);
+    if (diff < 1)    return 'только что';
+    if (diff < 60)   return `${diff} мин. назад`;
+    if (diff < 1440) return `${Math.floor(diff/60)} ч. назад`;
+    return new Date(dt).toLocaleDateString('ru-RU');
+  }
+
+  async function load() {
+    try {
+      const profile = await API.getProfile();
+
+      // Проверяем роль
+      if (!['mentor','hr','admin'].includes(profile.role)) {
+        window.location.href = '/app'; return;
+      }
+      document.getElementById('top-username').textContent = profile.display_name || profile.username;
+
+      // Загружаем Safety Check и подопечных параллельно
+      const [mentees, safetyData] = await Promise.all([
+        apiFetch('/api/admin/mentor/employees'),
+        apiFetch('/api/admin/safety/today').catch(() => []),
+      ]);
+
+      // Safety map по user_id
+      _safetyMap = {};
+      safetyData.forEach(s => _safetyMap[s.user_id] = s);
+
+      // Статистика
+      const safetyOk = mentees.filter(m => _safetyMap[m.id]?.passed_today).length;
+      const avgPct   = mentees.length
+        ? Math.round(mentees.reduce((s,m) => s + m.completion_pct, 0) / mentees.length)
+        : 0;
+
+      document.getElementById('stat-total').textContent   = mentees.length;
+      document.getElementById('stat-safety').textContent  = `${safetyOk}/${mentees.length}`;
+      document.getElementById('stat-avg').textContent     = avgPct + '%';
+
+      renderMentees(mentees);
+    } catch(e) {
+      document.getElementById('mentees-list').innerHTML =
+        `<div class="loading">Ошибка: ${e.message}</div>`;
+    }
+  }
+
+  function renderMentees(mentees) {
+    const list = document.getElementById('mentees-list');
+
+    if (!mentees.length) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">👥</div>
+          <h3>Подопечных пока нет</h3>
+          <p>HR-менеджер назначит тебе новых сотрудников.<br>Они появятся здесь автоматически.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    mentees.forEach(m => {
+      const safety    = _safetyMap[m.id];
+      const safetyOk  = safety?.passed_today;
+      const pct       = m.completion_pct;
+
+      const card = document.createElement('div');
+      card.className = 'mentee-card';
+      card.innerHTML = `
+        <div class="mentee-avatar">${(m.display_name||m.username).charAt(0).toUpperCase()}</div>
+        <div class="mentee-info">
+          <div class="mentee-name">${m.display_name || m.username}</div>
+          <div class="mentee-meta">@${m.username} · LVL ${m.level} · ${m.level_title}</div>
+          <div class="mentee-meta" style="margin-top:2px">Активность: ${fmtDate(m.last_active_at)}</div>
+        </div>
+        <div class="mentee-right">
+          <div class="xp-badge">${m.total_xp} XP</div>
+          <span class="safety-badge ${safetyOk ? 'safety-ok' : 'safety-miss'}">
+            ${safetyOk ? '✅ Safety OK' : '🕐 Не проходил'}
+          </span>
+          <div class="progress-mini">
+            <div class="progress-mini-bg">
+              <div class="progress-mini-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="progress-mini-txt">${m.quests_completed}/${m.quests_total} квестов</div>
+          </div>
+        </div>
+      `;
+      card.addEventListener('click', () => openDetail(m));
+      list.appendChild(card);
+    });
+  }
+
+  // ── Боковая панель ────────────────────────────────────────────────────────
+  function openDetail(mentee) {
+    document.getElementById('detail-avatar').textContent =
+      (mentee.display_name || mentee.username).charAt(0).toUpperCase();
+    document.getElementById('detail-name').textContent =
+      mentee.display_name || mentee.username;
+    document.getElementById('detail-meta').textContent =
+      `LVL ${mentee.level} · ${mentee.level_title} · ${mentee.total_xp} XP`;
+    document.getElementById('detail-body').innerHTML =
+      '<div class="loading">Загрузка квестов...</div>';
+    document.getElementById('detail-panel').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+    loadQuests(mentee.id);
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-panel').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  async function loadQuests(userId) {
+    try {
+      const quests = await apiFetch(`/api/admin/users/${userId}/quests`);
+      const body   = document.getElementById('detail-body');
+      body.innerHTML = '';
+
+      if (!quests.length) {
+        body.innerHTML = '<div class="loading">Нет данных о квестах</div>';
+        return;
+      }
+
+      quests.forEach(q => {
+        const div = document.createElement('div');
+        div.className = `quest-row ${q.status}`;
+        div.innerHTML = `
+          <div class="quest-icon">${QUEST_ICONS[q.type] || '🎯'}</div>
+          <div class="quest-info">
+            <div class="quest-title">${q.title}</div>
+            <div class="quest-status ${q.status}">
+              ${STATUS_RU[q.status] || q.status}
+              ${q.completed_at ? ' · ' + new Date(q.completed_at.endsWith('Z') ? q.completed_at : q.completed_at+'Z').toLocaleDateString('ru-RU') : ''}
+            </div>
+          </div>
+          <div class="quest-xp">+${q.xp_reward} XP</div>
+        `;
+        body.appendChild(div);
+      });
+    } catch(e) {
+      document.getElementById('detail-body').innerHTML =
+        `<div class="loading">Ошибка: ${e.message}</div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

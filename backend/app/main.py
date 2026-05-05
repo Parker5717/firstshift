@@ -127,6 +127,12 @@ async def serve_admin() -> FileResponse:
     """HR-панель управления."""
     return FileResponse(str(settings.frontend_static_path / "admin.html"))
 
+
+@app.get("/mentor", include_in_schema=False)
+async def serve_mentor() -> FileResponse:
+    """Панель наставника."""
+    return FileResponse(str(settings.frontend_static_path / "mentor.html"))
+
 @app.get("/clear", include_in_schema=False)
 async def serve_clear() -> FileResponse:
     """Утилита очистки кэша SW."""
