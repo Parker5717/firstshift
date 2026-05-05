@@ -42,5 +42,12 @@ def leaderboard(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> list[UserProfileOut]:
-    top = db.query(User).order_by(User.total_xp.desc()).limit(10).all()
+    # Только employee в лидерборде — hr/admin/mentor не участвуют
+    top = (
+        db.query(User)
+        .filter(User.role == "employee")
+        .order_by(User.total_xp.desc())
+        .limit(10)
+        .all()
+    )
     return [_build_profile(u) for u in top]
