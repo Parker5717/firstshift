@@ -104,6 +104,12 @@
     cursor:pointer; font-family:inherit; transition:all 0.2s;
   ">⚙️ Admin</button>
   <button class="btn-logout" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">Выйти</button>
+  <button id="btn-clear" onclick="window.location.href='/clear'" style="
+    display:none; padding:8px 12px; font-size:12px; font-weight:600;
+    color:#ffaa00; border:1px solid rgba(255,170,0,0.4);
+    background:rgba(255,170,0,0.08); border-radius:8px;
+    cursor:pointer; font-family:monospace;
+  " title="Очистить кэш SW">↻</button>
 </div>
 
 <div id="profile-hero">
@@ -165,6 +171,10 @@
   async function load() {
     const profile = await API.getProfile();
     _myUsername = profile.username;
+    if (profile.role === 'admin') {
+      const clearBtn = document.getElementById('btn-clear');
+      if (clearBtn) clearBtn.style.display = 'inline-block';
+    }
     // Показываем кнопку Admin для hr и admin
     if (['hr', 'admin'].includes(profile.role)) {
       const adminBtn = document.getElementById('btn-admin');
