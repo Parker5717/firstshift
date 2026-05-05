@@ -1,51 +1,151 @@
 /**
- * CASPER Onboarding
- * Показывает обучающий попап при первом входе нового пользователя.
- * Сохраняет флаг в sessionStorage — повторно не показывает.
+ * FirstShift Onboarding
+ * Показывает обучающий попап при первом входе.
+ * Контент зависит от роли пользователя.
  */
 
 const Onboarding = (() => {
   const SEEN_KEY = 'casper_onboarding_done';
 
-  const STEPS = [
+  // ── Шаги по ролям ────────────────────────────────────────────────────────
+
+  const STEPS_EMPLOYEE = [
     {
       icon: '🤖',
-      title: 'Привет! Я КАСПЕР',
-      text: 'Твой цифровой напарник на производстве. Я помогу освоиться, объясню правила и покажу где что находится.',
+      title: 'Привет! Я Алекс',
+      text: 'Твой цифровой напарник на производстве. Помогу освоиться, покажу где что находится и объясню правила безопасности.',
+    },
+    {
+      icon: '🛡️',
+      title: 'Safety Check при входе',
+      text: 'Каждый день при входе в смену проходи проверку снаряжения — каска и жилет. Это занимает 10 секунд.',
     },
     {
       icon: '🎯',
       title: 'Выполняй квесты',
-      text: 'Нажми кнопку 🎯 справа чтобы открыть список квестов. Начни с «Первого шага» — он простой и даст тебе первый XP.',
+      text: 'Нажми «Задания» внизу чтобы открыть список. Начни с «Первого шага» — наведи камеру на маркер у входа.',
     },
     {
       icon: '📷',
-      title: 'Наводи камеру',
-      text: 'Найди объект квеста, наведи камеру и держи секунду. Появится зелёная рамка и кнопка «Засчитать».',
+      title: 'Как работает камера',
+      text: 'Найди объект квеста, наведи заднюю камеру и держи 3 секунды. Система сама засчитает квест когда распознает маркер.',
     },
     {
       icon: '🏆',
-      title: 'Получай уровни и ачивки',
-      text: 'За квесты начисляется XP. Копи опыт — расти от Стажёра до Специалиста. Ачивки открывают бонусный XP.',
-    },
-    {
-      icon: '🖨️',
-      title: 'Маркеры для объектов',
-      text: 'Распечатай маркеры на странице /markers и прикрепи к объектам в цеху — тогда камера их распознает.',
+      title: 'XP и достижения',
+      text: 'За квесты получаешь опыт и растёшь от Стажёра до Специалиста. Открывай ачивки и попадай в лидерборд!',
     },
   ];
 
+  const STEPS_MENTOR = [
+    {
+      icon: '🤖',
+      title: 'Привет! Я Алекс',
+      text: 'Панель наставника FirstShift. Ты отвечаешь за адаптацию новых сотрудников на производстве.',
+    },
+    {
+      icon: '👥',
+      title: 'Твои подопечные',
+      text: 'HR назначит тебе новых сотрудников. Следи за их прогрессом в разделе «Профиль» → перейди в панель наставника.',
+    },
+    {
+      icon: '📊',
+      title: 'Прогресс онбординга',
+      text: 'Ты видишь кто прошёл Safety Check, какие квесты выполнены и на каком уровне твои подопечные.',
+    },
+    {
+      icon: '🔔',
+      title: 'Уведомления',
+      text: 'Ты будешь получать уведомления когда подопечный повышает уровень или пропускает Safety Check.',
+    },
+  ];
+
+  const STEPS_HR = [
+    {
+      icon: '🤖',
+      title: 'Добро пожаловать в FirstShift',
+      text: 'Панель HR-менеджера. Здесь ты управляешь адаптацией всех сотрудников предприятия.',
+    },
+    {
+      icon: '⚙️',
+      title: 'Панель администратора',
+      text: 'Нажми кнопку «Admin» в правом нижнем углу. Там список всех сотрудников, их прогресс и статус Safety Check.',
+    },
+    {
+      icon: '👤',
+      title: 'Назначай наставников',
+      text: 'В панели Admin → строка сотрудника → колонка «Наставник». Выбери наставника из списка.',
+    },
+    {
+      icon: '📄',
+      title: 'PDF-отчёты',
+      text: 'Кликни на сотрудника в панели Admin → внизу боковой панели кнопки «PDF за 7 дней» и «PDF за 30 дней».',
+    },
+    {
+      icon: '🛡️',
+      title: 'Safety Check журнал',
+      text: 'В панели Admin → раздел Safety Check. Видишь кто прошёл проверку сегодня, а кто нет.',
+    },
+  ];
+
+  const STEPS_ADMIN = [
+    {
+      icon: '🤖',
+      title: 'Добро пожаловать, администратор',
+      text: 'У тебя полный доступ к платформе FirstShift. Управляй ролями, наставниками и данными всех пользователей.',
+    },
+    {
+      icon: '⚙️',
+      title: 'Панель Admin',
+      text: 'Кнопка «Admin» внизу → полный список сотрудников, смена ролей, назначение наставников, PDF-отчёты.',
+    },
+    {
+      icon: '🔑',
+      title: 'Управление ролями',
+      text: 'В панели Admin → колонка «Управление» → дропдаун роли. Назначь HR-менеджерам роль hr, наставникам — mentor.',
+    },
+    {
+      icon: '🧹',
+      title: 'Очистка кэша',
+      text: 'Если интерфейс не обновляется — открой localhost:8000/clear и нажми кнопку. Это сбросит кэш браузера.',
+    },
+  ];
+
+  const STEPS_BY_ROLE = {
+    employee: STEPS_EMPLOYEE,
+    mentor:   STEPS_MENTOR,
+    hr:       STEPS_HR,
+    admin:    STEPS_ADMIN,
+  };
+
   let _current = 0;
+  let _steps   = STEPS_EMPLOYEE;
   let _overlay = null;
 
-  function maybeShow() {
+  // ── Публичный API ─────────────────────────────────────────────────────────
+
+  async function maybeShow() {
     if (sessionStorage.getItem(SEEN_KEY)) return;
+
+    // Определяем роль и выбираем шаги
+    try {
+      const profile = await API.getProfile();
+      _steps = STEPS_BY_ROLE[profile.role] || STEPS_EMPLOYEE;
+    } catch (_) {
+      _steps = STEPS_EMPLOYEE;
+    }
+
     _current = 0;
     _show();
   }
 
+  // ── Рендер ────────────────────────────────────────────────────────────────
+
   function _show() {
     if (_overlay) _overlay.remove();
+
+    const step   = _steps[_current];
+    const isLast = _current === _steps.length - 1;
 
     _overlay = document.createElement('div');
     _overlay.style.cssText = `
@@ -54,15 +154,24 @@ const Onboarding = (() => {
       backdrop-filter:blur(6px);
       display:flex; align-items:center; justify-content:center;
       padding:24px;
-      animation: fadeIn 0.3s ease;
+      animation:obFadeIn 0.3s ease;
     `;
 
-    const step = STEPS[_current];
-    const isLast = _current === STEPS.length - 1;
+    const dots = _steps.map((_, i) => `
+      <div style="
+        width:${i === _current ? 20 : 8}px; height:8px;
+        border-radius:4px;
+        background:${i === _current ? 'var(--accent)' : 'var(--border)'};
+        transition:all 0.3s;
+      "></div>
+    `).join('');
 
     _overlay.innerHTML = `
       <style>
-        @keyframes fadeIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+        @keyframes obFadeIn {
+          from { opacity:0; transform:scale(0.95); }
+          to   { opacity:1; transform:scale(1); }
+        }
       </style>
       <div style="
         width:100%; max-width:360px;
@@ -74,19 +183,15 @@ const Onboarding = (() => {
         box-shadow:0 0 60px rgba(0,170,255,0.2);
       ">
         <div style="font-size:56px;margin-bottom:16px">${step.icon}</div>
-        <div style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:10px">${step.title}</div>
-        <div style="font-size:14px;color:var(--text-secondary);line-height:1.65;margin-bottom:24px">${step.text}</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:10px">
+          ${step.title}
+        </div>
+        <div style="font-size:14px;color:var(--text-secondary);line-height:1.65;margin-bottom:24px">
+          ${step.text}
+        </div>
 
-        <!-- Индикатор прогресса -->
         <div style="display:flex;justify-content:center;gap:6px;margin-bottom:24px">
-          ${STEPS.map((_, i) => `
-            <div style="
-              width:${i === _current ? 20 : 8}px; height:8px;
-              border-radius:4px;
-              background:${i === _current ? 'var(--accent)' : 'var(--border)'};
-              transition:all 0.3s;
-            "></div>
-          `).join('')}
+          ${dots}
         </div>
 
         <div style="display:flex;gap:10px">
@@ -94,13 +199,13 @@ const Onboarding = (() => {
             flex:1; padding:12px;
             background:transparent; border:1px solid var(--border);
             border-radius:10px; color:var(--text-secondary);
-            font-size:13px; cursor:pointer;
+            font-size:13px; cursor:pointer; font-family:inherit;
           ">Пропустить</button>
           <button id="ob-next" style="
             flex:2; padding:12px;
             background:var(--accent); border:none;
             border-radius:10px; color:var(--bg-dark);
-            font-size:15px; font-weight:700; cursor:pointer;
+            font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
           ">${isLast ? '🚀 Начать!' : 'Далее →'}</button>
         </div>
       </div>
@@ -118,15 +223,19 @@ const Onboarding = (() => {
   function _done() {
     sessionStorage.setItem(SEEN_KEY, '1');
     if (_overlay) {
-      _overlay.style.opacity = '0';
+      _overlay.style.opacity    = '0';
       _overlay.style.transition = 'opacity 0.3s';
       setTimeout(() => { _overlay?.remove(); _overlay = null; }, 300);
     }
-    // После онбординга маскот говорит приветствие
     if (typeof Mascot !== 'undefined') {
       setTimeout(() => Mascot.say('welcome'), 500);
     }
   }
 
-  return { maybeShow };
+  // Сброс для повторного показа (для тестирования)
+  function reset() {
+    sessionStorage.removeItem(SEEN_KEY);
+  }
+
+  return { maybeShow, reset };
 })();
