@@ -75,6 +75,9 @@ def record_safety_check(
     Дедуплицирует по client_id (для офлайн-синхронизации).
     Также пишет ScanEvent для ачивок (обратная совместимость).
     """
+    if current_user.role in ("mentor", "hr", "admin"):
+        return {"recorded": False, "bypassed": True, "message": "Safety Check не требуется для данной роли"}
+
     passed = payload.helmet and payload.vest
     missing = []
     if not payload.helmet: missing.append("helmet")

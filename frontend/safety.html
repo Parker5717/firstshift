@@ -158,6 +158,16 @@
 <script>
   if (!API.hasToken()) window.location.href = '/';
 
+  // Bypass Safety Check для mentor/hr/admin — сразу в приложение
+  (async () => {
+    try {
+      const profile = await API.getProfile();
+      if (['mentor', 'hr', 'admin'].includes(profile.role)) {
+        window.location.href = '/app';
+      }
+    } catch (_) {}
+  })();
+
   document.getElementById('btn-back').addEventListener('click', () => {
     Camera.stop();
     API.clearToken();
