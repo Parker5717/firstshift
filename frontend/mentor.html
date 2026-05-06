@@ -207,7 +207,6 @@
   async function apiFetch(path) {
     const resp = await fetch(path, { headers });
     if (resp.status === 401) { sessionStorage.removeItem('firstshift_token'); window.location.href = '/'; }
-    if (resp.status === 403) { window.location.href = '/app'; }
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return resp.json();
   }
