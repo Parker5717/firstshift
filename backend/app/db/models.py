@@ -58,6 +58,8 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     last_active_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     privacy_accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    birth_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ui_mode: Mapped[str] = mapped_column(String(16), default="gamified")
 
     quest_progress: Mapped[list["UserQuestProgress"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

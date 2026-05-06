@@ -33,6 +33,8 @@ def soft_migrate() -> None:
         ("users", "role",                "VARCHAR(16)",  "'employee'"),
         ("users", "mentor_id",           "INTEGER",      "NULL"),
         ("users", "privacy_accepted_at", "DATETIME",     "NULL"),
+        ("users", "birth_year",          "INTEGER",      "NULL"),
+        ("users", "ui_mode",             "VARCHAR(16)",  "'gamified'"),
     ]
 
     with engine.connect() as conn:

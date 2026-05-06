@@ -80,6 +80,7 @@ def _build_profile(user: User) -> UserProfileOut:
         xp_to_next_level=xp_to_next_level(user.total_xp),
         level_progress_pct=level_progress_pct(user.total_xp),
         current_streak=user.current_streak,
+        ui_mode=getattr(user, 'ui_mode', 'gamified') or 'gamified',
     )
 
 
@@ -95,6 +96,11 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
     if db.query(User).filter(User.username == payload.username).first():
         raise HTTPException(status_code=409, detail="Пользователь с таким именем уже существует")
 
+    ui_mode = "gamified"
+    if payload.birth_year:
+        age = datetime.now().year - payload.birth_year
+        ui_mode = "gamified" if age < 30 else "regulation"
+
     user = User(
         username=payload.username,
         display_name=payload.display_name or payload.username,
@@ -103,6 +109,8 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
         level=1,
         total_xp=0,
         privacy_accepted_at=datetime.now(timezone.utc),
+        birth_year=payload.birth_year,
+        ui_mode=ui_mode,
     )
     db.add(user)
     db.flush()

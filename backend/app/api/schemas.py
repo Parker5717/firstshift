@@ -27,6 +27,7 @@ class RegisterIn(BaseModel):
     password: str = Field(min_length=6, max_length=128)
     display_name: str | None = Field(default=None, max_length=64)
     privacy_accepted: bool = False
+    birth_year: int | None = None
 
 
 class LoginIn(BaseModel):
@@ -58,6 +59,7 @@ class UserProfileOut(BaseModel):
     xp_to_next_level: int
     level_progress_pct: float = Field(ge=0.0, le=1.0)
     current_streak: int
+    ui_mode: str = "gamified"
 
     model_config = {"from_attributes": True}
 

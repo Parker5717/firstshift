@@ -30,6 +30,7 @@ def _build_profile(user: User) -> UserProfileOut:
         xp_to_next_level=xp_to_next_level(user.total_xp),
         level_progress_pct=level_progress_pct(user.total_xp),
         current_streak=user.current_streak,
+        ui_mode=getattr(user, 'ui_mode', 'gamified') or 'gamified',
     )
 
 

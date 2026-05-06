@@ -59,6 +59,16 @@
       const cacheBtn = document.getElementById('btn-clear-cache');
       if (cacheBtn) cacheBtn.style.display = 'block';
     }
+    // Regulation mode для сотрудников 30+ лет — убрать геймификацию
+    if (profile.ui_mode === 'regulation') {
+      const hudTop = document.getElementById('hud-top');
+      if (hudTop) hudTop.style.display = 'none';
+      const hudBottom = document.getElementById('hud-bottom');
+      if (hudBottom) hudBottom.style.display = 'none';
+      // Квест-карточка превращается в чеклист — открываем сразу
+      setTimeout(() => QuestEngine.openModal('quests'), 600);
+    }
+
     // Скрыть квесты и XP для не-сотрудников
     if (profile.role !== 'employee') {
       const hudBottom = document.getElementById('hud-bottom');

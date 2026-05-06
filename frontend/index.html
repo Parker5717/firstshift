@@ -234,6 +234,17 @@
         maxlength="64" autocomplete="name">
     </div>
 
+    <div class="input-group" id="group-birthyear" style="display:none">
+      <select id="birthyear-input" style="
+        width:100%; padding:13px 16px; box-sizing:border-box;
+        background:rgba(0,170,255,0.05); border:1px solid rgba(0,170,255,0.2);
+        border-radius:12px; color:var(--text-primary);
+        font-size:16px; font-family:'Inter',sans-serif; outline:none;
+      ">
+        <option value="">Год рождения (необязательно)</option>
+      </select>
+    </div>
+
     <div id="group-privacy" style="display:none;margin-bottom:12px">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-secondary);line-height:1.5">
         <input type="checkbox" id="privacy-checkbox" style="margin-top:2px;flex-shrink:0;accent-color:var(--accent)">
@@ -258,6 +269,18 @@
 <script>
   if (API.hasToken()) window.location.href = '/safety';
 
+  // Заполняем select года рождения
+  (function() {
+    const sel = document.getElementById('birthyear-input');
+    const curYear = new Date().getFullYear();
+    for (let y = curYear - 16; y >= curYear - 65; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      sel.appendChild(opt);
+    }
+  })();
+
   // Частицы фона
   for (let i = 0; i < 20; i++) {
     const p = document.createElement('div');
@@ -275,6 +298,7 @@
     document.getElementById('tab-login').classList.toggle('active',    mode === 'login');
     document.getElementById('tab-register').classList.toggle('active', mode === 'register');
     document.getElementById('group-displayname').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('group-birthyear').style.display   = mode === 'register' ? 'block' : 'none';
     document.getElementById('group-privacy').style.display      = mode === 'register' ? 'block' : 'none';
     document.getElementById('btn-submit').textContent = mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
     document.getElementById('password-input').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
@@ -353,6 +377,7 @@
     const username    = document.getElementById('username-input').value.trim();
     const password    = document.getElementById('password-input').value;
     const displayName = document.getElementById('displayname-input').value.trim();
+    const birthYear   = parseInt(document.getElementById('birthyear-input').value) || null;
 
     btn.disabled = true;
     btn.textContent = '⏳ Подключение...';
@@ -371,7 +396,7 @@
       if (_mode === 'login') {
         await API.login(username, password);
       } else {
-        await API.register(username, password, displayName || null, true);
+        await API.register(username, password, displayName || null, true, birthYear);
       }
       btn.textContent = '✅ Входим...';
       setTimeout(() => window.location.href = '/safety', 400);
