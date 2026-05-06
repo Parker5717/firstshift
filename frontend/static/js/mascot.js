@@ -244,5 +244,11 @@ const Mascot = (() => {
   function onError()         { say('error'); }
   function onSafetyOk()      { say('safety_ok'); }
 
-  return { init, say, onQuestStart, onQuestComplete, onLevelUp, onError, onSafetyOk };
+  function disable() {
+    clearTimeout(_idleTimer);
+    _queue = [];
+    if (_container) _container.style.display = 'none';
+  }
+
+  return { init, say, onQuestStart, onQuestComplete, onLevelUp, onError, onSafetyOk, disable };
 })();

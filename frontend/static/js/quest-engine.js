@@ -7,6 +7,7 @@ const QuestEngine = (() => {
   let _quests = [];
   let _activeQuest = null;
   let _activeTab = 'quests'; // 'quests' | 'achievements'
+  let _regulation = false;
 
   const ICONS = {
     discovery: '🔍',
@@ -28,6 +29,15 @@ const QuestEngine = (() => {
     map: '🗺', star: '⭐', trophy: '🏆',
   };
 
+  // ── Режим «Регламент» — без геймификации ────────────────────
+  function setRegulationMode() {
+    _regulation = true;
+    const achTab = document.getElementById('qtab-achievements');
+    if (achTab) achTab.style.display = 'none';
+    const questsTab = document.getElementById('qtab-quests');
+    if (questsTab) questsTab.textContent = 'Задачи';
+  }
+
   // ── Загрузка ────────────────────────────────────────────────
   async function load() {
     try {
@@ -47,7 +57,7 @@ const QuestEngine = (() => {
   async function start(slug) {
     try {
       await API.startQuest(slug);
-      if (typeof Mascot !== 'undefined') Mascot.onQuestStart();
+      if (!_regulation && typeof Mascot !== 'undefined') Mascot.onQuestStart();
       await load();
       const quest = _quests.find(q => q.slug === slug);
       if (quest?.type === 'speed_run' && typeof SpeedRun !== 'undefined') {
@@ -66,14 +76,16 @@ const QuestEngine = (() => {
     try {
       const result = await API.completeQuest(slug);
       if (typeof SpeedRun !== 'undefined') SpeedRun.stop();
-      XPBar.showXPGain(result.xp_gained, result.leveled_up, result.new_level, result.message);
-      AROverlay.flashSuccess();
-      if (typeof Mascot !== 'undefined') {
-        if (result.leveled_up) Mascot.onLevelUp();
-        else Mascot.onQuestComplete();
-      }
-      if (result.newly_unlocked_achievements?.length > 0) {
-        setTimeout(() => _notifyAchievements(result.newly_unlocked_achievements), 1500);
+      if (!_regulation) {
+        XPBar.showXPGain(result.xp_gained, result.leveled_up, result.new_level, result.message);
+        AROverlay.flashSuccess();
+        if (typeof Mascot !== 'undefined') {
+          if (result.leveled_up) Mascot.onLevelUp();
+          else Mascot.onQuestComplete();
+        }
+        if (result.newly_unlocked_achievements?.length > 0) {
+          setTimeout(() => _notifyAchievements(result.newly_unlocked_achievements), 1500);
+        }
       }
       await load();
       return result;
@@ -96,18 +108,36 @@ const QuestEngine = (() => {
     _quests.forEach(q => {
       const item = document.createElement('div');
       item.className = `quest-item ${q.status}`;
-      item.innerHTML = `
-        <div class="quest-item-icon">${ICONS[q.type] || '🎯'}</div>
-        <div class="quest-item-info">
-          <div class="quest-item-title">${q.title}</div>
-          <div class="quest-item-xp">+${q.xp_reward} XP</div>
-        </div>
-        <span class="badge badge-${q.status}">${STATUS_LABELS[q.status] || q.status}</span>
-      `;
+
+      if (_regulation) {
+        const checkIcon = q.status === 'completed' ? '✅'
+                        : q.status === 'active'    ? '▶'
+                        : q.status === 'locked'    ? '🔒' : '⬜';
+        item.innerHTML = `
+          <div class="quest-item-icon">${checkIcon}</div>
+          <div class="quest-item-info" style="flex:1">
+            <div class="quest-item-title">${q.title}</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;line-height:1.4">${q.description || ''}</div>
+          </div>
+          <span class="badge badge-${q.status}" style="flex-shrink:0">${STATUS_LABELS[q.status] || q.status}</span>
+        `;
+      } else {
+        item.innerHTML = `
+          <div class="quest-item-icon">${ICONS[q.type] || '🎯'}</div>
+          <div class="quest-item-info">
+            <div class="quest-item-title">${q.title}</div>
+            <div class="quest-item-xp">+${q.xp_reward} XP</div>
+          </div>
+          <span class="badge badge-${q.status}">${STATUS_LABELS[q.status] || q.status}</span>
+        `;
+      }
 
       if (q.status === 'available') {
         item.addEventListener('click', async () => {
-          if (confirm(`Начать квест «${q.title}»?\n\n${q.description}`)) {
+          const prompt = _regulation
+            ? `Начать задачу «${q.title}»?\n\n${q.description}`
+            : `Начать квест «${q.title}»?\n\n${q.description}`;
+          if (confirm(prompt)) {
             await start(q.slug);
             closeModal();
           }
@@ -201,8 +231,20 @@ const QuestEngine = (() => {
     });
   }
 
+  // ── Обновление счётчика задач (режим «Регламент») ────────────
+  function _updateRegCounter() {
+    const el = document.getElementById('reg-task-counter');
+    if (!el) return;
+    const done = _quests.filter(q => q.status === 'completed').length;
+    el.textContent = `${done} / ${_quests.length} выполнено`;
+  }
+
   // ── Рендер карточки активного квеста ─────────────────────────
   function _renderActiveCard() {
+    if (_regulation) {
+      _updateRegCounter();
+      return;
+    }
     const card    = document.getElementById('active-quest-card');
     const noQuest = document.getElementById('no-active-quest');
     if (!card || !noQuest) return;
@@ -238,12 +280,12 @@ const QuestEngine = (() => {
     const modal = document.getElementById('quest-modal');
     if (!modal) return;
     modal.classList.add('open');
-    switchTab(tab);
+    switchTab(_regulation ? 'quests' : tab);
   }
 
   function closeModal() {
     document.getElementById('quest-modal')?.classList.remove('open');
   }
 
-  return { load, start, complete, getActive, getAll, openModal, closeModal, switchTab };
+  return { load, start, complete, getActive, getAll, openModal, closeModal, switchTab, setRegulationMode };
 })();

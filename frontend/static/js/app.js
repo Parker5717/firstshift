@@ -59,13 +59,41 @@
       const cacheBtn = document.getElementById('btn-clear-cache');
       if (cacheBtn) cacheBtn.style.display = 'block';
     }
-    // Regulation mode для сотрудников 30+ лет — убрать геймификацию
+    // Regulation mode для сотрудников 30+ лет — без геймификации
     if (profile.ui_mode === 'regulation') {
-      const hudTop = document.getElementById('hud-top');
-      if (hudTop) hudTop.style.display = 'none';
+      QuestEngine.setRegulationMode();
+
+      // Убрать XP-бар и уровень, оставить имя + счётчик задач
+      const levelLabel = document.getElementById('hud-level-label');
+      if (levelLabel) levelLabel.style.display = 'none';
+      const xpBar = document.getElementById('hud-xp-bar');
+      if (xpBar) xpBar.style.display = 'none';
+      const headerRow = document.getElementById('hud-header-row');
+      if (headerRow) {
+        const ctr = document.createElement('span');
+        ctr.id = 'reg-task-counter';
+        ctr.style.cssText = 'font-size:12px;font-family:var(--font-mono);color:var(--accent);white-space:nowrap;margin-left:8px';
+        headerRow.appendChild(ctr);
+      }
+
+      // Скрыть карточку активного квеста внизу
       const hudBottom = document.getElementById('hud-bottom');
       if (hudBottom) hudBottom.style.display = 'none';
-      // Квест-карточка превращается в чеклист — открываем сразу
+
+      // Скрыть всплывающие окна XP и level-up
+      const xpPopup = document.getElementById('xp-popup');
+      if (xpPopup) xpPopup.style.display = 'none';
+      const levelupPopup = document.getElementById('levelup-popup');
+      if (levelupPopup) levelupPopup.style.display = 'none';
+
+      // Отключить маскота
+      if (typeof Mascot !== 'undefined') Mascot.disable();
+
+      // Переименовать вкладку «Задания» → «Задачи»
+      const tabLabel = document.querySelector('#tab-quests .tab-label');
+      if (tabLabel) tabLabel.textContent = 'Задачи';
+
+      // Открыть список задач
       setTimeout(() => QuestEngine.openModal('quests'), 600);
     }
 
