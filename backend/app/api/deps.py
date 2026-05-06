@@ -31,6 +31,7 @@ def get_current_user(
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
         user_id: str | None = payload.get("sub")
+        tenant_id: int | None = payload.get("tid")
         if user_id is None:
             raise ValueError("sub missing")
     except (JWTError, ValueError):
@@ -40,7 +41,10 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    query = db.query(User).filter(User.id == int(user_id))
+    if tenant_id is not None:
+        query = query.filter(User.tenant_id == tenant_id)
+    user = query.first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,6 +52,10 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def get_current_tenant_id(current_user: User = Depends(get_current_user)) -> int:
+    return current_user.tenant_id
 
 
 def require_role(*roles: str):

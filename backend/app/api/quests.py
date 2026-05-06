@@ -60,7 +60,9 @@ def list_quests(
     current_user: User = Depends(get_current_user),
 ) -> QuestListOut:
     """Все квесты с персональным статусом (locked/available/active/completed/failed)."""
-    quests = db.query(Quest).order_by(Quest.story_chapter, Quest.difficulty).all()
+    quests = db.query(Quest).filter(
+        (Quest.tenant_id == None) | (Quest.tenant_id == current_user.tenant_id)  # noqa: E711
+    ).order_by(Quest.story_chapter, Quest.difficulty).all()
     progress_map = _get_user_progress(db, current_user.id)
     out = [_quest_to_out(q, progress_map.get(q.id)) for q in quests]
     return QuestListOut(quests=out, total=len(out))

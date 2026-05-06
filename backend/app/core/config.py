@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # --- База данных ---
-    database_url: str = f"sqlite:///{BACKEND_ROOT / 'app.db'}"
+    database_url: str = f"sqlite:///{BACKEND_ROOT / 'app.db'}"  # переопределяется через DATABASE_URL в .env
 
     # --- Auth ---
     secret_key: str = "firstshift-hackathon-dev-secret-change-me"

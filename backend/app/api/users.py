@@ -31,6 +31,8 @@ def _build_profile(user: User) -> UserProfileOut:
         level_progress_pct=level_progress_pct(user.total_xp),
         current_streak=user.current_streak,
         ui_mode=getattr(user, 'ui_mode', 'gamified') or 'gamified',
+        tenant_id=user.tenant_id,
+        tenant_slug=user.tenant.slug if user.tenant else "",
     )
 
 
@@ -87,8 +89,14 @@ def update_display_name(
 )
 def leaderboard(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> list[UserProfileOut]:
-    """Топ-10 по XP."""
-    top = db.query(User).filter(User.role == "employee").order_by(User.total_xp.desc()).limit(10).all()
+    """Топ-10 по XP в рамках тенанта."""
+    top = (
+        db.query(User)
+        .filter(User.role == "employee", User.tenant_id == current_user.tenant_id)
+        .order_by(User.total_xp.desc())
+        .limit(10)
+        .all()
+    )
     return [_build_profile(u) for u in top]

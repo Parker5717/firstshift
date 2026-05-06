@@ -1,33 +1,31 @@
 """
-reset_db.py — безопасная миграция БД без потери данных.
+reset_db.py — инструмент управления БД FirstShift.
 
-Добавляет новые колонки в существующую SQLite БД если их ещё нет.
-Пересеивает квесты и ачивки из YAML.
+Для разработки (SQLite):
+    python reset_db.py             # мягкая миграция + пересев контента
+    python reset_db.py --hard      # полный сброс БД
 
-Запуск (из директории backend/):
-    python reset_db.py
-
-Флаги:
-    python reset_db.py --hard   # полный сброс: удалить app.db и пересоздать
+Для PostgreSQL (production):
+    python reset_db.py --pg        # alembic upgrade head + seed
+    python reset_db.py --pg --hard # drop all tables + alembic upgrade head + seed
 """
 
 import argparse
 import logging
+import subprocess
 import sys
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger("reset_db")
 
-# Добавляем backend/ в путь чтобы импортировать app.*
 sys.path.insert(0, str(Path(__file__).parent))
 
 
 def soft_migrate() -> None:
-    """Добавить новые колонки без удаления данных."""
+    """Добавить новые колонки в SQLite без потери данных."""
     from app.db.database import engine
 
-    # Список миграций: (таблица, колонка, тип, default)
     migrations = [
         ("users", "password_hash",       "VARCHAR(128)", "NULL"),
         ("users", "role",                "VARCHAR(16)",  "'employee'"),
@@ -35,70 +33,126 @@ def soft_migrate() -> None:
         ("users", "privacy_accepted_at", "DATETIME",     "NULL"),
         ("users", "birth_year",          "INTEGER",      "NULL"),
         ("users", "ui_mode",             "VARCHAR(16)",  "'gamified'"),
+        ("users", "tenant_id",           "INTEGER",      "1"),
+        ("quests", "tenant_id",          "INTEGER",      "NULL"),
+        ("achievements", "tenant_id",    "INTEGER",      "NULL"),
     ]
 
     with engine.connect() as conn:
-        # Получаем список существующих колонок для каждой таблицы
         for table, column, col_type, default in migrations:
             result = conn.exec_driver_sql(f"PRAGMA table_info({table})")
             existing = [row[1] for row in result.fetchall()]
-
             if column not in existing:
                 sql = f"ALTER TABLE {table} ADD COLUMN {column} {col_type} DEFAULT {default}"
                 conn.exec_driver_sql(sql)
                 conn.commit()
-                log.info("✅ Добавлена колонка: %s.%s", table, column)
+                log.info("Добавлена колонка: %s.%s", table, column)
             else:
-                log.info("⏭  Уже есть: %s.%s", table, column)
+                log.info("Уже есть: %s.%s", table, column)
+
+    # Создаём таблицу tenants если её нет (SQLite)
+    with engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='tenants'"
+        )
+        if not result.fetchone():
+            conn.exec_driver_sql("""
+                CREATE TABLE tenants (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name VARCHAR(128) NOT NULL,
+                    slug VARCHAR(64) NOT NULL UNIQUE,
+                    created_at DATETIME NOT NULL
+                )
+            """)
+            conn.commit()
+            log.info("Создана таблица tenants")
+
+        # Создаём дефолтный тенант для существующих пользователей
+        result = conn.exec_driver_sql("SELECT COUNT(*) FROM tenants")
+        if result.fetchone()[0] == 0:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc).isoformat()
+            conn.exec_driver_sql(
+                "INSERT INTO tenants (name, slug, created_at) VALUES (?, ?, ?)",
+                ("default", "default", now),
+            )
+            conn.commit()
+            tenant_id_result = conn.exec_driver_sql("SELECT id FROM tenants WHERE slug='default'")
+            tid = tenant_id_result.fetchone()[0]
+            conn.exec_driver_sql(f"UPDATE users SET tenant_id={tid} WHERE tenant_id IS NULL OR tenant_id=0")
+            conn.commit()
+            log.info("Создан дефолтный тенант (id=%d), все старые пользователи привязаны", tid)
 
 
-def hard_reset() -> None:
-    """Полный сброс: удалить БД и пересоздать с нуля."""
+def hard_reset_sqlite() -> None:
     from app.core.config import get_settings
     settings = get_settings()
-
     db_path = Path(settings.database_url.replace("sqlite:///", ""))
     if db_path.exists():
         db_path.unlink()
-        log.info("🗑  Удалена старая БД: %s", db_path)
-    else:
-        log.info("БД не найдена — создаём с нуля")
+        log.info("Удалена старая БД: %s", db_path)
+
+
+def alembic_upgrade() -> None:
+    backend_dir = Path(__file__).parent
+    result = subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        cwd=backend_dir,
+    )
+    if result.returncode != 0:
+        log.error("alembic upgrade head завершился с ошибкой")
+        sys.exit(1)
+    log.info("alembic upgrade head — OK")
+
+
+def alembic_downgrade_base() -> None:
+    backend_dir = Path(__file__).parent
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "downgrade", "base"],
+        cwd=backend_dir,
+    )
 
 
 def create_tables() -> None:
-    """Создать таблицы которых ещё нет (идемпотентно)."""
     from app.db.database import init_db
     init_db()
-    log.info("✅ Таблицы созданы / обновлены")
+    log.info("Таблицы созданы / обновлены")
 
 
 def seed() -> None:
-    """Засеять квесты и ачивки из YAML."""
     from app.db.seed import seed_content
     seed_content()
-    log.info("✅ Контент засеян")
+    log.info("Контент засеян")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="FirstShift DB migration tool")
-    parser.add_argument("--hard", action="store_true", help="Полный сброс БД (удаляет все данные!)")
+    parser = argparse.ArgumentParser(description="FirstShift DB management tool")
+    parser.add_argument("--hard", action="store_true", help="Полный сброс (удаляет все данные!)")
+    parser.add_argument("--pg", action="store_true", help="Режим PostgreSQL (использует alembic)")
     args = parser.parse_args()
 
-    if args.hard:
-        log.warning("⚠️  HARD RESET — все данные будут удалены!")
-        confirm = input("Введи 'yes' для подтверждения: ").strip().lower()
-        if confirm != "yes":
-            log.info("Отменено.")
-            return
-        hard_reset()
-        create_tables()
+    if args.pg:
+        if args.hard:
+            log.warning("HARD RESET (PostgreSQL) — все данные будут удалены!")
+            confirm = input("Введи 'yes' для подтверждения: ").strip().lower()
+            if confirm != "yes":
+                log.info("Отменено.")
+                return
+            alembic_downgrade_base()
+        alembic_upgrade()
     else:
-        log.info("Мягкая миграция (данные сохраняются)...")
-        create_tables()   # создаём новые таблицы если есть
-        soft_migrate()    # добавляем новые колонки в существующие
+        if args.hard:
+            log.warning("HARD RESET (SQLite) — все данные будут удалены!")
+            confirm = input("Введи 'yes' для подтверждения: ").strip().lower()
+            if confirm != "yes":
+                log.info("Отменено.")
+                return
+            hard_reset_sqlite()
+        create_tables()
+        soft_migrate()
 
     seed()
-    log.info("🚀 Готово! Можно запускать сервер.")
+    log.info("Готово! Можно запускать сервер.")
 
 
 if __name__ == "__main__":

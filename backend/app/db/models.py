@@ -19,6 +19,20 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class Tenant(Base):
+    __tablename__ = "tenants"
+
+    id:         Mapped[int] = mapped_column(primary_key=True)
+    name:       Mapped[str] = mapped_column(String(128))
+    slug:       Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    users: Mapped[list["User"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
+
+    def __repr__(self) -> str:
+        return f"<Tenant {self.slug}>"
+
+
 class UserRole(StrEnum):
     EMPLOYEE = "employee"
     MENTOR   = "mentor"
@@ -43,9 +57,11 @@ class QuestStatus(StrEnum):
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("tenant_id", "username", name="uq_tenant_username"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"), index=True)
+    username: Mapped[str] = mapped_column(String(64), index=True)
     display_name: Mapped[str] = mapped_column(String(128), default="")
     password_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
     role: Mapped[str] = mapped_column(String(16), default=UserRole.EMPLOYEE.value)
@@ -76,6 +92,7 @@ class User(Base):
     mentor: Mapped["User | None"] = relationship(
         "User", foreign_keys=[mentor_id], back_populates="mentees", remote_side="User.id"
     )
+    tenant: Mapped["Tenant"] = relationship(back_populates="users")
 
     def __repr__(self) -> str:
         return f"<User {self.username} role={self.role} lvl={self.level}>"
@@ -85,6 +102,9 @@ class Quest(Base):
     __tablename__ = "quests"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int | None] = mapped_column(
+        ForeignKey("tenants.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     title: Mapped[str] = mapped_column(String(128))
     description: Mapped[str] = mapped_column(Text)
@@ -125,6 +145,9 @@ class Achievement(Base):
     __tablename__ = "achievements"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int | None] = mapped_column(
+        ForeignKey("tenants.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     slug: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     title: Mapped[str] = mapped_column(String(128))
     description: Mapped[str] = mapped_column(Text)

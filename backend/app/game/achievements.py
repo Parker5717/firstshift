@@ -27,7 +27,9 @@ def check_and_unlock_achievements(
     Returns:
         Список только что разблокированных ачивок (для показа уведомлений).
     """
-    all_achievements = db.query(Achievement).all()
+    all_achievements = db.query(Achievement).filter(
+        (Achievement.tenant_id == None) | (Achievement.tenant_id == user.tenant_id)  # noqa: E711
+    ).all()
     already_unlocked = {
         ua.achievement_id
         for ua in db.query(UserAchievement).filter(UserAchievement.user_id == user.id).all()

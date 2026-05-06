@@ -234,6 +234,12 @@
         maxlength="64" autocomplete="name">
     </div>
 
+    <div class="input-group" id="group-company" style="display:none">
+      <input type="text" id="company-input"
+        placeholder="Код компании (напр. zavod-1)"
+        maxlength="64" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+
     <div class="input-group" id="group-birthyear" style="display:none">
       <select id="birthyear-input" style="
         width:100%; padding:13px 16px; box-sizing:border-box;
@@ -298,6 +304,7 @@
     document.getElementById('tab-login').classList.toggle('active',    mode === 'login');
     document.getElementById('tab-register').classList.toggle('active', mode === 'register');
     document.getElementById('group-displayname').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('group-company').style.display     = mode === 'register' ? 'block' : 'none';
     document.getElementById('group-birthyear').style.display   = mode === 'register' ? 'block' : 'none';
     document.getElementById('group-privacy').style.display      = mode === 'register' ? 'block' : 'none';
     document.getElementById('btn-submit').textContent = mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
@@ -378,6 +385,7 @@
     const password    = document.getElementById('password-input').value;
     const displayName = document.getElementById('displayname-input').value.trim();
     const birthYear   = parseInt(document.getElementById('birthyear-input').value) || null;
+    const companyCode = document.getElementById('company-input')?.value.trim() || '';
 
     btn.disabled = true;
     btn.textContent = '⏳ Подключение...';
@@ -390,13 +398,19 @@
         btn.textContent = 'Создать аккаунт →';
         return;
       }
+      if (!companyCode) {
+        showError('Укажите код компании', ['company-input']);
+        btn.disabled = false;
+        btn.textContent = 'Создать аккаунт →';
+        return;
+      }
     }
 
     try {
       if (_mode === 'login') {
         await API.login(username, password);
       } else {
-        await API.register(username, password, displayName || null, true, birthYear);
+        await API.register(username, password, displayName || null, true, birthYear, companyCode);
       }
       btn.textContent = '✅ Входим...';
       setTimeout(() => window.location.href = '/safety', 400);

@@ -42,7 +42,9 @@ def get_achievements(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[dict]:
-    all_achievements = db.query(Achievement).all()
+    all_achievements = db.query(Achievement).filter(
+        (Achievement.tenant_id == None) | (Achievement.tenant_id == current_user.tenant_id)  # noqa: E711
+    ).all()
     unlocked_map = {
         ua.achievement_id: ua.unlocked_at
         for ua in db.query(UserAchievement)

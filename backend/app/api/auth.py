@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from app.api.schemas import LoginIn, LoginOut, RegisterIn, UserProfileOut
 from app.core.config import get_settings
 from app.db.database import get_db
-from app.db.models import Quest, QuestStatus, User, UserQuestProgress
+from app.db.models import Quest, QuestStatus, Tenant, User, UserQuestProgress
 from app.game.xp_engine import level_progress_pct, level_title, xp_to_next_level
 
 log = logging.getLogger("firstshift.auth")
@@ -38,14 +38,27 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def create_access_token(user_id: int, role: str) -> str:
+def create_access_token(user_id: int, role: str, tenant_id: int) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
-    payload = {"sub": str(user_id), "role": role, "exp": expire}
+    payload = {"sub": str(user_id), "role": role, "tid": tenant_id, "exp": expire}
     return jwt.encode(payload, settings.secret_key, algorithm="HS256")
 
 
+def find_or_create_tenant(db: Session, company_code: str) -> tuple["Tenant", bool]:
+    slug = company_code.lower().strip()
+    tenant = db.query(Tenant).filter(Tenant.slug == slug).first()
+    if not tenant:
+        tenant = Tenant(name=company_code, slug=slug)
+        db.add(tenant)
+        db.flush()
+        return tenant, True
+    return tenant, False
+
+
 def _initialize_quest_progress(db: Session, user: User) -> None:
-    all_quests = db.query(Quest).all()
+    all_quests = db.query(Quest).filter(
+        (Quest.tenant_id == None) | (Quest.tenant_id == user.tenant_id)  # noqa: E711
+    ).all()
     existing_slugs = {
         p.quest.slug for p in db.query(UserQuestProgress)
         .filter(UserQuestProgress.user_id == user.id)
@@ -81,6 +94,8 @@ def _build_profile(user: User) -> UserProfileOut:
         level_progress_pct=level_progress_pct(user.total_xp),
         current_streak=user.current_streak,
         ui_mode=getattr(user, 'ui_mode', 'gamified') or 'gamified',
+        tenant_id=user.tenant_id,
+        tenant_slug=user.tenant.slug if user.tenant else "",
     )
 
 
@@ -93,7 +108,13 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
     if not payload.privacy_accepted:
         raise HTTPException(status_code=400, detail="Необходимо принять политику обработки данных")
 
-    if db.query(User).filter(User.username == payload.username).first():
+    tenant, is_new_tenant = find_or_create_tenant(db, payload.company_code)
+
+    # В новом тенанте первый пользователь получает роль admin
+    existing_count = db.query(User).filter(User.tenant_id == tenant.id).count()
+    role = "admin" if existing_count == 0 else "employee"
+
+    if db.query(User).filter(User.tenant_id == tenant.id, User.username == payload.username).first():
         raise HTTPException(status_code=409, detail="Пользователь с таким именем уже существует")
 
     ui_mode = "gamified"
@@ -102,10 +123,11 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
         ui_mode = "gamified" if age < 30 else "regulation"
 
     user = User(
+        tenant_id=tenant.id,
         username=payload.username,
         display_name=payload.display_name or payload.username,
         password_hash=hash_password(payload.password),
-        role="employee",
+        role=role,
         level=1,
         total_xp=0,
         privacy_accepted_at=datetime.now(timezone.utc),
@@ -118,9 +140,9 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
     db.commit()
     db.refresh(user)
 
-    log.info("Новый пользователь: %s (id=%d)", user.username, user.id)
+    log.info("Новый пользователь: %s (id=%d, tenant=%s, role=%s)", user.username, user.id, tenant.slug, user.role)
     return LoginOut(
-        access_token=create_access_token(user.id, user.role),
+        access_token=create_access_token(user.id, user.role, user.tenant_id),
         token_type="bearer",
         user=_build_profile(user),
     )
@@ -128,6 +150,9 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
 
 @router.post("/login", response_model=LoginOut, summary="Вход по паролю")
 def login(payload: LoginIn, db: Session = Depends(get_db)) -> LoginOut:
+    # Ищем пользователя глобально по username (логин уникален только в рамках тенанта,
+    # но для входа нам нужен company_code чтобы различить тенанты.
+    # Пока ищем первый совпадающий — в будущем добавить company_code в форму входа.)
     user = db.query(User).filter(User.username == payload.username).first()
 
     if user is None or user.password_hash is None:
@@ -141,9 +166,9 @@ def login(payload: LoginIn, db: Session = Depends(get_db)) -> LoginOut:
     db.commit()
     db.refresh(user)
 
-    log.info("Вход: %s (id=%d, role=%s)", user.username, user.id, user.role)
+    log.info("Вход: %s (id=%d, role=%s, tenant=%d)", user.username, user.id, user.role, user.tenant_id)
     return LoginOut(
-        access_token=create_access_token(user.id, user.role),
+        access_token=create_access_token(user.id, user.role, user.tenant_id),
         token_type="bearer",
         user=_build_profile(user),
     )

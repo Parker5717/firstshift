@@ -109,9 +109,9 @@ def _employee_out(user: User, db: Session) -> EmployeeOut:
 @router.get("/users", response_model=list[EmployeeOut], summary="Список сотрудников")
 def list_employees(
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("hr", "admin")),
+    current: User = Depends(require_role("hr", "admin")),
 ) -> list[EmployeeOut]:
-    users = db.query(User).order_by(User.total_xp.desc()).all()
+    users = db.query(User).filter(User.tenant_id == current.tenant_id).order_by(User.total_xp.desc()).all()
     return [_employee_out(u, db) for u in users]
 
 
@@ -119,9 +119,9 @@ def list_employees(
 def get_employee(
     user_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("hr", "admin")),
+    current: User = Depends(require_role("hr", "admin")),
 ) -> EmployeeOut:
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id, User.tenant_id == current.tenant_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     return _employee_out(user, db)
@@ -135,9 +135,9 @@ def get_employee(
 def get_employee_quests(
     user_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("hr", "admin", "mentor")),
+    current: User = Depends(require_role("hr", "admin", "mentor")),
 ) -> list[QuestProgressOut]:
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id, User.tenant_id == current.tenant_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 
@@ -172,7 +172,7 @@ def set_role(
 ) -> dict:
     if body.role not in VALID_ROLES:
         raise HTTPException(status_code=400, detail=f"Допустимые роли: {', '.join(VALID_ROLES)}")
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id, User.tenant_id == admin.tenant_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     if user.id == admin.id:
@@ -192,12 +192,12 @@ def set_mentor(
     db: Session = Depends(get_db),
     current: User = Depends(require_role("hr", "admin")),
 ) -> dict:
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id, User.tenant_id == current.tenant_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 
     if body.mentor_id is not None:
-        mentor = db.query(User).filter(User.id == body.mentor_id).first()
+        mentor = db.query(User).filter(User.id == body.mentor_id, User.tenant_id == current.tenant_id).first()
         if not mentor:
             raise HTTPException(status_code=404, detail="Наставник не найден")
         if mentor.role not in ("mentor", "hr", "admin"):
@@ -216,7 +216,10 @@ def my_mentees(
     db: Session = Depends(get_db),
     current: User = Depends(require_role("mentor", "hr", "admin")),
 ) -> list[EmployeeOut]:
-    mentees = db.query(User).filter(User.mentor_id == current.id).all()
+    mentees = db.query(User).filter(
+        User.mentor_id == current.id,
+        User.tenant_id == current.tenant_id,
+    ).all()
     return [_employee_out(u, db) for u in mentees]
 
 
@@ -225,11 +228,11 @@ def my_mentees(
 @router.get("/safety/today", response_model=list[SafetyStatusOut], summary="Safety Check сегодня")
 def safety_today(
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("hr", "admin")),
+    current: User = Depends(require_role("hr", "admin")),
 ) -> list[SafetyStatusOut]:
     from app.db.models import SafetyCheck
     today_start = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=timezone.utc)
-    users = db.query(User).filter(User.role == "employee").all()
+    users = db.query(User).filter(User.role == "employee", User.tenant_id == current.tenant_id).all()
     result = []
     for user in users:
         last_check = (
@@ -260,14 +263,14 @@ def get_employee_report(
     user_id: int,
     period: int = 7,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("hr", "admin")),
+    current: User = Depends(require_role("hr", "admin")),
 ) -> Response:
     """
     Скачать PDF-отчёт по сотруднику.
     ?period=7  — Safety Check за 7 дней (по умолчанию)
     ?period=30 — Safety Check за 30 дней
     """
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id, User.tenant_id == current.tenant_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 

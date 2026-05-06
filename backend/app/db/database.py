@@ -1,8 +1,7 @@
 """
 Подключение к БД.
 
-Используем SQLAlchemy 2.x с DeclarativeBase. SQLite выбран как zero-config
-вариант для хакатона — для прода менять `database_url` в config.py.
+Поддерживает SQLite (для локальной разработки) и PostgreSQL (для production).
 """
 
 from collections.abc import Generator
@@ -14,17 +13,24 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
+_is_sqlite = settings.database_url.startswith("sqlite")
 
-# `check_same_thread=False` нужен только для SQLite, чтобы FastAPI мог использовать
-# одну сессию из разных тредов воркера. Для PostgreSQL/MySQL аргумент игнорируется.
-_connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
-
-engine = create_engine(
-    settings.database_url,
-    connect_args=_connect_args,
-    echo=settings.debug,  # SQL-логи только в debug-режиме
-    future=True,
-)
+if _is_sqlite:
+    engine = create_engine(
+        settings.database_url,
+        connect_args={"check_same_thread": False},
+        echo=settings.debug,
+        future=True,
+    )
+else:
+    engine = create_engine(
+        settings.database_url,
+        echo=settings.debug,
+        future=True,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+    )
 
 SessionLocal = sessionmaker(
     bind=engine,

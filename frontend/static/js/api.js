@@ -69,13 +69,14 @@ const API = (() => {
     return data;  // { access_token, user }
   }
 
-  async function register(username, password, displayName, privacyAccepted = false, birthYear = null) {
+  async function register(username, password, displayName, privacyAccepted = false, birthYear = null, companyCode = '') {
     const data = await post('/api/auth/register', {
       username,
       password,
       display_name: displayName || null,
       privacy_accepted: privacyAccepted,
       birth_year: birthYear,
+      company_code: companyCode,
     });
     setToken(data.access_token);
     return data;

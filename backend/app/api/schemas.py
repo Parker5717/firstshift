@@ -28,6 +28,12 @@ class RegisterIn(BaseModel):
     display_name: str | None = Field(default=None, max_length=64)
     privacy_accepted: bool = False
     birth_year: int | None = None
+    company_code: str = Field(
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Z0-9_\-]+$",
+        examples=["zavod-1"],
+    )
 
 
 class LoginIn(BaseModel):
@@ -60,6 +66,8 @@ class UserProfileOut(BaseModel):
     level_progress_pct: float = Field(ge=0.0, le=1.0)
     current_streak: int
     ui_mode: str = "gamified"
+    tenant_id: int = 0
+    tenant_slug: str = ""
 
     model_config = {"from_attributes": True}
 
