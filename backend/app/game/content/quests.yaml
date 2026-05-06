@@ -20,7 +20,7 @@ quests:
       Каждый сотрудник должен знать, где висит огнетушитель в его зоне.
       Найди его и отсканируй маркер рядом с ним.
     type: discovery
-    target_class: null
+    target_class: fire_extinguisher
     target_marker_id: 4
     xp_reward: 75
     prerequisite_slug: first_steps
