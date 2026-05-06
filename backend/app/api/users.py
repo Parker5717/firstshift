@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
-from app.api.schemas import DisplayNameIn, UserProfileOut
+from app.api.schemas import DisplayNameIn, ProfileUpdateIn, UserProfileOut
 from app.db.database import get_db
 from app.db.models import User
 from app.game.xp_engine import level_progress_pct, level_title, xp_to_next_level
@@ -42,6 +42,23 @@ def get_my_profile(
     current_user: User = Depends(get_current_user),
 ) -> UserProfileOut:
     """Возвращает профиль текущего авторизованного пользователя."""
+    return _build_profile(current_user)
+
+
+@router.patch(
+    "/me",
+    response_model=UserProfileOut,
+    summary="Обновить профиль",
+)
+def update_profile(
+    body: ProfileUpdateIn,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserProfileOut:
+    """Обновляет display_name текущего пользователя."""
+    current_user.display_name = body.display_name
+    db.commit()
+    db.refresh(current_user)
     return _build_profile(current_user)
 
 

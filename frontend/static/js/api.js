@@ -77,6 +77,13 @@ const API = (() => {
     return patch('/api/users/me/display-name', { display_name: name });
   }
 
+  async function updateProfile(displayName) {
+    return _fetch('/api/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ display_name: displayName }),
+    });
+  }
+
   async function getQuests() {
     return get('/api/quests');
   }
@@ -102,6 +109,7 @@ const API = (() => {
     patch,
     getProfile,
     updateDisplayName,
+    updateProfile,
     getQuests,
     startQuest,
     completeQuest,

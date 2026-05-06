@@ -264,7 +264,7 @@
     if (newName === heroName.textContent) { closeEdit(); return; }
 
     try {
-      const profile = await API.updateDisplayName(newName);
+      const profile = await API.updateProfile(newName);
       heroName.textContent  = profile.display_name;
       heroAvatar.textContent = profile.display_name.charAt(0).toUpperCase();
       closeEdit();
