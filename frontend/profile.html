@@ -207,13 +207,13 @@
 </div>
 
 <!-- Достижения -->
-<div class="section" style="margin-top:20px">
+<div class="section" id="section-achievements" style="margin-top:20px">
   <div class="section-title">🏆 Достижения</div>
   <div id="ach-grid"></div>
 </div>
 
 <!-- Лидерборд -->
-<div class="section" style="margin-top:20px">
+<div class="section" id="section-leaderboard" style="margin-top:20px">
   <div class="section-title">🥇 Лидерборд</div>
   <div id="leaderboard-list"></div>
 </div>
@@ -296,6 +296,14 @@
     document.getElementById('hero-level').textContent   = `LVL ${profile.level} · ${profile.level_title}`;
     document.getElementById('hero-xp-fill').style.width = `${Math.round(profile.level_progress_pct * 100)}%`;
     document.getElementById('hero-xp-text').textContent = `${profile.total_xp} XP · ещё ${profile.xp_to_next_level} до уровня ${profile.level + 1}`;
+
+    // Скрыть XP, ачивки и лидерборд для не-сотрудников
+    if (profile.role !== 'employee') {
+      document.getElementById('hero-xp-bar').style.display       = 'none';
+      document.getElementById('hero-xp-text').style.display      = 'none';
+      document.getElementById('section-achievements').style.display = 'none';
+      document.getElementById('section-leaderboard').style.display  = 'none';
+    }
 
     // Статистика
     const stats = await apiFetch('/api/progress/stats');

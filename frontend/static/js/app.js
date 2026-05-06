@@ -59,6 +59,17 @@
       const cacheBtn = document.getElementById('btn-clear-cache');
       if (cacheBtn) cacheBtn.style.display = 'block';
     }
+    // Скрыть квесты и XP для не-сотрудников
+    if (profile.role !== 'employee') {
+      const hudBottom = document.getElementById('hud-bottom');
+      if (hudBottom) hudBottom.style.display = 'none';
+      const tabQuests = document.getElementById('tab-quests');
+      if (tabQuests) tabQuests.style.display = 'none';
+      const hudXpBar = document.getElementById('hud-xp-bar');
+      if (hudXpBar) hudXpBar.style.display = 'none';
+      const hudLevel = document.getElementById('hud-level-label');
+      if (hudLevel) hudLevel.style.display = 'none';
+    }
     if (profile.total_xp < 50) sessionStorage.removeItem('firstshift_onboarding_done');
     setTimeout(() => Onboarding.maybeShow(), 300);
   } catch (err) {
