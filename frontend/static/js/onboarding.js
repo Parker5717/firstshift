@@ -111,6 +111,29 @@ const Onboarding = (() => {
     },
   ];
 
+  const STEPS_REGULATION = [
+    {
+      icon: '👷',
+      title: 'Добро пожаловать в FirstShift',
+      text: 'Здесь собраны все задачи вашего онбординга. Выполняйте их по порядку — это займёт несколько смен.',
+    },
+    {
+      icon: '🛡️',
+      title: 'Safety Check при входе',
+      text: 'Каждый день при входе в смену проходите проверку снаряжения — каска и жилет обязательны. Это занимает 10 секунд.',
+    },
+    {
+      icon: '📋',
+      title: 'Список задач',
+      text: 'Нажмите «Задачи» внизу экрана чтобы открыть список. Начните с первой доступной задачи и выполняйте по порядку.',
+    },
+    {
+      icon: '📷',
+      title: 'Как работает камера',
+      text: 'Найдите объект задачи, наведите заднюю камеру и держите 3 секунды. Система засчитает задачу автоматически.',
+    },
+  ];
+
   const STEPS_BY_ROLE = {
     employee: STEPS_EMPLOYEE,
     mentor:   STEPS_MENTOR,
@@ -118,9 +141,10 @@ const Onboarding = (() => {
     admin:    STEPS_ADMIN,
   };
 
-  let _current = 0;
-  let _steps   = STEPS_EMPLOYEE;
-  let _overlay = null;
+  let _current    = 0;
+  let _steps      = STEPS_EMPLOYEE;
+  let _overlay    = null;
+  let _regulation = false;
 
   // ── Публичный API ─────────────────────────────────────────────────────────
 
@@ -130,7 +154,10 @@ const Onboarding = (() => {
     // Определяем роль и выбираем шаги
     try {
       const profile = await API.getProfile();
-      _steps = STEPS_BY_ROLE[profile.role] || STEPS_EMPLOYEE;
+      _regulation = profile.ui_mode === 'regulation';
+      _steps = _regulation
+        ? STEPS_REGULATION
+        : (STEPS_BY_ROLE[profile.role] || STEPS_EMPLOYEE);
     } catch (_) {
       _steps = STEPS_EMPLOYEE;
     }
@@ -227,7 +254,7 @@ const Onboarding = (() => {
       _overlay.style.transition = 'opacity 0.3s';
       setTimeout(() => { _overlay?.remove(); _overlay = null; }, 300);
     }
-    if (typeof Mascot !== 'undefined') {
+    if (!_regulation && typeof Mascot !== 'undefined') {
       setTimeout(() => Mascot.say('welcome'), 500);
     }
   }

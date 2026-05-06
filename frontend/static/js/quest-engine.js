@@ -65,7 +65,7 @@ const QuestEngine = (() => {
       }
       return true;
     } catch (err) {
-      if (typeof Mascot !== 'undefined') Mascot.onError();
+      if (!_regulation && typeof Mascot !== 'undefined') Mascot.onError();
       alert(`Не удалось начать квест: ${err.message}`);
       return false;
     }
@@ -90,7 +90,7 @@ const QuestEngine = (() => {
       await load();
       return result;
     } catch (err) {
-      if (typeof Mascot !== 'undefined') Mascot.onError();
+      if (!_regulation && typeof Mascot !== 'undefined') Mascot.onError();
       console.error('[QuestEngine] Ошибка завершения квеста:', err);
       return null;
     }
