@@ -1,5 +1,5 @@
 /**
- * CASPER XP Bar
+ * FirstShift XP Bar
  * Обновляет HUD-элементы профиля: уровень, XP, прогресс-бар.
  */
 

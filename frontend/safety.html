@@ -189,7 +189,7 @@
     if (!b64) return;
 
     try {
-      const token = sessionStorage.getItem('casper_token');
+      const token = sessionStorage.getItem('firstshift_token');
       const resp = await fetch('/api/vision/detect', {
         method: 'POST',
         headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
@@ -238,7 +238,7 @@
     btnConfirm.textContent = 'Засчитываем...';
     btnConfirm.disabled = true;
 
-    const token     = sessionStorage.getItem('casper_token');
+    const token     = sessionStorage.getItem('firstshift_token');
     const clientId  = crypto.randomUUID();
     const payload   = {
       helmet:    _lastPPE?.helmet  ?? false,

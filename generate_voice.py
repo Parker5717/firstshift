@@ -1,5 +1,5 @@
 """
-Генерация MP3 файлов для маскота CASPER через Google Text-to-Speech (gTTS).
+Генерация MP3 файлов для маскота Алекс через Google Text-to-Speech (gTTS).
 
 Запуск:
     pip install gtts

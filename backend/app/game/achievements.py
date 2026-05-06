@@ -1,5 +1,5 @@
 """
-Движок ачивок CASPER.
+Движок ачивок FirstShift.
 
 После каждого завершения квеста вызываем check_and_unlock_achievements.
 Проверяем условия из achievements.yaml, разблокируем новые и начисляем бонусный XP.
@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.db.models import Achievement, ScanEvent, User, UserAchievement, UserQuestProgress, QuestStatus
 from app.game.xp_engine import add_xp
 
-log = logging.getLogger("casper.game.achievements")
+log = logging.getLogger("firstshift.game.achievements")
 
 
 def check_and_unlock_achievements(

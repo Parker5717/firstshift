@@ -8,7 +8,7 @@ WebSocket Connection Manager.
 import logging
 from fastapi import WebSocket
 
-log = logging.getLogger("casper.ws")
+log = logging.getLogger("firstshift.ws")
 
 
 class WSManager:

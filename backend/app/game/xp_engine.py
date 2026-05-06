@@ -1,5 +1,5 @@
 """
-XP и система уровней CASPER AR Assistant.
+XP и система уровней FirstShift.
 
 Формула: level = floor(sqrt(total_xp / 50)) + 1
 

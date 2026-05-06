@@ -25,7 +25,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
-log = logging.getLogger("casper")
+log = logging.getLogger("firstshift")
 settings = get_settings()
 
 
@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
         from app.cv.object_detector import _load_model
         _load_model()
     else:
-        log.info("Режим: ArUco markers | Для YOLOv8: SET CASPER_YOLO=1")
+        log.info("Режим: ArUco markers | Для YOLOv8: SET FIRSTSHIFT_YOLO=1")
 
     yield
     log.info("Shutting down %s", settings.app_name)

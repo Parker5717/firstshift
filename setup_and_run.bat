@@ -1,11 +1,11 @@
 @echo off
-title CASPER Setup
+title FirstShift Setup
 
 cd /d "C:\Users\demas\PycharmProjects\Tehnostrelka"
 
 echo.
 echo ========================================
-echo  CASPER AR Assistant - Setup ^& Run
+echo  FirstShift AR Assistant - Setup ^& Run
 echo ========================================
 echo.
 
@@ -96,7 +96,7 @@ echo       Dependencies installed.
 :run
 :: --- 5. Start server ---
 echo.
-echo [5/5] Starting CASPER server...
+echo [5/5] Starting FirstShift server...
 echo.
 echo  Server running at: http://localhost:8000
 echo  Press Ctrl+C to stop.

@@ -18,14 +18,14 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 FRONTEND_ROOT = PROJECT_ROOT / "frontend"
 
 # YOLOv8 режим — читаем сразу при импорте модуля
-YOLO_MODE: bool = os.environ.get("CASPER_YOLO", "0") == "1"
+YOLO_MODE: bool = os.environ.get("FIRSTSHIFT_YOLO", "0") == "1"
 
 
 class Settings(BaseSettings):
     """Все runtime-настройки приложения."""
 
     # --- Основное ---
-    app_name: str = "CASPER AR Assistant"
+    app_name: str = "FirstShift AR Assistant"
     app_version: str = "0.1.0"
     debug: bool = True
 
@@ -34,17 +34,17 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # --- База данных ---
-    database_url: str = f"sqlite:///{BACKEND_ROOT / 'casper.db'}"
+    database_url: str = f"sqlite:///{BACKEND_ROOT / 'app.db'}"
 
     # --- Auth ---
-    secret_key: str = "casper-hackathon-dev-secret-change-me"
+    secret_key: str = "firstshift-hackathon-dev-secret-change-me"
     access_token_expire_minutes: int = 60 * 24 * 7
 
     # --- CV ---
     ppe_model_path: Path = BACKEND_ROOT / "models" / "ppe_yolov8.pt"
     equipment_model_path: Path = BACKEND_ROOT / "models" / "equipment_yolov8.pt"
 
-    # YOLOv8 режим — берём из модульной переменной (SET CASPER_YOLO=1)
+    # YOLOv8 режим — берём из модульной переменной (SET FIRSTSHIFT_YOLO=1)
     yolo_mode: bool = YOLO_MODE
 
     # --- Пути ---

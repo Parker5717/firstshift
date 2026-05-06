@@ -14,7 +14,7 @@ import numpy as np
 
 from app.cv.utils import normalize_bbox
 
-log = logging.getLogger("casper.cv.objects")
+log = logging.getLogger("firstshift.cv.objects")
 
 # --- Маппинг COCO классов → квест-объекты ---
 # В демо-режиме некоторые стандартные объекты переименованы в производственные.

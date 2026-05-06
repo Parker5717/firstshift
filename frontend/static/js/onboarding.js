@@ -5,7 +5,7 @@
  */
 
 const Onboarding = (() => {
-  const SEEN_KEY = 'casper_onboarding_done';
+  const SEEN_KEY = 'firstshift_onboarding_done';
 
   // ── Шаги по ролям ────────────────────────────────────────────────────────
 

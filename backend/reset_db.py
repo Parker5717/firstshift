@@ -8,7 +8,7 @@ reset_db.py — безопасная миграция БД без потери �
     python reset_db.py
 
 Флаги:
-    python reset_db.py --hard   # полный сброс: удалить casper.db и пересоздать
+    python reset_db.py --hard   # полный сброс: удалить app.db и пересоздать
 """
 
 import argparse

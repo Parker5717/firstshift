@@ -1,5 +1,5 @@
 """
-Главный CV-пайплайн CASPER.
+Главный CV-пайплайн FirstShift.
 
 Принимает base64-кадр, запускает детекторы, возвращает унифицированный результат.
 Вызывается из REST-эндпоинта POST /api/vision/detect.
@@ -15,7 +15,7 @@ from app.cv.object_detector import detect_objects
 from app.cv.ppe_detector import detect_ppe
 from app.cv.utils import base64_to_bgr
 
-log = logging.getLogger("casper.cv.pipeline")
+log = logging.getLogger("firstshift.cv.pipeline")
 
 
 def process_frame(

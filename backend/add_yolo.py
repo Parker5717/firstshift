@@ -15,7 +15,7 @@ else:
         from app.cv.object_detector import _load_model
         _load_model()
     else:
-        log.info("Режим: ArUco markers | SET CASPER_YOLO=1 для YOLOv8")'''
+        log.info("Режим: ArUco markers | SET FIRSTSHIFT_YOLO=1 для YOLOv8")'''
 
     if old in content:
         content = content.replace(old, new)
@@ -36,7 +36,7 @@ else:
         from app.cv.object_detector import _load_model
         _load_model()
     else:
-        log.info("Режим: ArUco markers | SET CASPER_YOLO=1 для YOLOv8")'''
+        log.info("Режим: ArUco markers | SET FIRSTSHIFT_YOLO=1 для YOLOv8")'''
             content = content[:pos] + insert + content[pos:]
             open(path, 'w', encoding='utf-8').write(content)
             print('YOLO добавлен через regex!')

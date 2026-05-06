@@ -15,7 +15,7 @@ from fastapi.responses import Response
 
 from app.cv.marker_detector import MARKER_LABELS
 
-log = logging.getLogger("casper.api.markers")
+log = logging.getLogger("firstshift.api.markers")
 router = APIRouter()
 
 _DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)

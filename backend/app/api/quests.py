@@ -19,7 +19,7 @@ from app.db.database import get_db
 from app.db.models import Quest, QuestStatus, User, UserQuestProgress
 from app.game.xp_engine import add_xp, level_title
 
-log = logging.getLogger("casper.quests")
+log = logging.getLogger("firstshift.quests")
 router = APIRouter()
 
 

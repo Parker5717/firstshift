@@ -32,7 +32,7 @@ def test_root_endpoint(client):
     response = client.get("/")
     assert response.status_code == 200
     # Теперь / отдаёт index.html, а не JSON
-    assert "CASPER" in response.text or response.status_code == 200
+    assert "FirstShift" in response.text or response.status_code == 200
 
 
 def test_all_tables_created(client):
@@ -57,4 +57,4 @@ def test_openapi_schema_loads(client):
     response = client.get("/openapi.json")
     assert response.status_code == 200
     schema = response.json()
-    assert schema["info"]["title"] == "CASPER AR Assistant"
+    assert schema["info"]["title"] == "FirstShift AR Assistant"

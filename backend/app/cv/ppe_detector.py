@@ -16,7 +16,7 @@ import numpy as np
 
 from app.cv.marker_detector import _DETECTOR
 
-log = logging.getLogger("casper.cv.ppe")
+log = logging.getLogger("firstshift.cv.ppe")
 
 # ID маркеров для демо
 HELMET_MARKER_ID = 10

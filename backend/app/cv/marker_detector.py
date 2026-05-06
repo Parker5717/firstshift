@@ -20,7 +20,7 @@ import numpy as np
 
 from app.cv.utils import normalize_bbox
 
-log = logging.getLogger("casper.cv.marker")
+log = logging.getLogger("firstshift.cv.marker")
 
 _DICT   = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 _PARAMS = cv2.aruco.DetectorParameters()

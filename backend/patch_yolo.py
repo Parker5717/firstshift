@@ -21,7 +21,7 @@ else:
         from app.cv.object_detector import _load_model
         _load_model()
     else:
-        log.info("Режим ArUco | SET CASPER_YOLO=1 для YOLOv8")"""
+        log.info("Режим ArUco | SET FIRSTSHIFT_YOLO=1 для YOLOv8")"""
 
     if 'YOLOv8 режим' not in content:
         content = content[:line_end] + insert + content[line_end:]

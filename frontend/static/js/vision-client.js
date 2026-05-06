@@ -1,5 +1,5 @@
 /**
- * CASPER Vision Client (WebSocket версия, шаг 5)
+ * FirstShift Vision Client (WebSocket версия, шаг 5)
  *
  * Устанавливает постоянное WS-соединение с /ws/vision.
  * Отправляет кадры каждую секунду.
@@ -40,7 +40,7 @@ const VisionClient = (() => {
   }
 
   function _connectWS() {
-    const token = sessionStorage.getItem('casper_token');
+    const token = sessionStorage.getItem('firstshift_token');
     if (!token) return;
 
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -96,7 +96,7 @@ const VisionClient = (() => {
 
   async function _sendREST(b64) {
     try {
-      const token = sessionStorage.getItem('casper_token');
+      const token = sessionStorage.getItem('firstshift_token');
       if (!token) return;
       const resp = await fetch('/api/vision/detect', {
         method: 'POST',

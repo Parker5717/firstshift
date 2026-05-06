@@ -6,7 +6,7 @@
 
 const API = (() => {
   const BASE = '';  // same-origin, сервер FastAPI отдаёт и фронт и API
-  const TOKEN_KEY = 'casper_token';
+  const TOKEN_KEY = 'firstshift_token';
 
   let _token = sessionStorage.getItem(TOKEN_KEY);
 

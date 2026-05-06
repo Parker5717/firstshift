@@ -33,7 +33,7 @@ from app.db.database import SessionLocal
 from app.db.models import User
 from app.game.quest_trigger import process_cv_detections
 
-log = logging.getLogger("casper.ws.vision")
+log = logging.getLogger("firstshift.ws.vision")
 settings = get_settings()
 router = APIRouter()
 

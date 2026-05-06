@@ -17,7 +17,7 @@ from app.db.database import get_db
 from app.db.models import User
 from app.game.quest_trigger import process_cv_detections
 
-log = logging.getLogger("casper.api.vision")
+log = logging.getLogger("firstshift.api.vision")
 router = APIRouter()
 
 

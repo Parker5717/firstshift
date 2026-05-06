@@ -5,7 +5,7 @@
 - Идемпотентность: повторный запуск не дублирует данные (upsert по slug).
 - Источник истины — YAML-файлы. Если YAML изменился — при следующем старте
   приложения изменения применятся автоматически.
-- При добавлении нового квеста в YAML он появится в БД без удаления casper.db.
+- При добавлении нового квеста в YAML он появится в БД без удаления app.db.
 """
 
 import json
@@ -18,7 +18,7 @@ from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Achievement, Quest
 
-log = logging.getLogger("casper.seed")
+log = logging.getLogger("firstshift.seed")
 settings = get_settings()
 
 

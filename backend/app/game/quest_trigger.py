@@ -17,7 +17,7 @@ from app.db.models import Quest, QuestStatus, User, UserQuestProgress
 from app.game.xp_engine import add_xp, level_title
 from app.game.achievements import check_and_unlock_achievements, record_scan_event
 
-log = logging.getLogger("casper.game.trigger")
+log = logging.getLogger("firstshift.game.trigger")
 
 
 def process_cv_detections(

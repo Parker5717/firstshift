@@ -108,10 +108,10 @@ firstshift/
 - [x] Safety Check через фронтальную камеру
 - [x] WebSocket стрим кадров
 - [x] Автозасчитывание квестов через CV
-- [ ] JWT auth с ролями (в разработке)
-- [ ] HR Admin-панель
-- [ ] Офлайн Safety Check (Service Worker)
-- [ ] PDF-отчёты
+- [x] JWT auth с ролями
+- [x] HR Admin-панель
+- [x] Офлайн Safety Check (Service Worker)
+- [x] PDF-отчёты
 - [ ] PostgreSQL + мультитенантность
 - [ ] Fine-tune YOLOv8 под оборудование клиента
 

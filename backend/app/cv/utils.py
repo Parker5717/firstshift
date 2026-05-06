@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-log = logging.getLogger("casper.cv.utils")
+log = logging.getLogger("firstshift.cv.utils")
 
 # Максимальный размер кадра для обработки (ширина в пикселях).
 # Уменьшаем для ускорения: полный 1280px кадр обрабатывается ~200ms,

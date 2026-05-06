@@ -1,5 +1,5 @@
 /**
- * CASPER Achievements
+ * FirstShift Achievements
  * Загрузка, отображение и уведомления о новых ачивках.
  */
 
@@ -149,7 +149,7 @@ const Achievements = (() => {
   // Добавляем метод get в API (если нет)
   if (!API.get) {
     API.get = (path) => fetch(path, {
-      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('casper_token')}` }
+      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('firstshift_token')}` }
     }).then(r => r.json());
   }
 

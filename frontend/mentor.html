@@ -164,7 +164,7 @@
   <div id="top-bar-right">
     <span class="top-user" id="top-username"></span>
     <button class="btn-sm" onclick="window.location.href='/app'">← Приложение</button>
-    <button class="btn-sm btn-danger" onclick="sessionStorage.removeItem('casper_token'); window.location.href='/'">Выйти</button>
+    <button class="btn-sm btn-danger" onclick="sessionStorage.removeItem('firstshift_token'); window.location.href='/'">Выйти</button>
   </div>
 </div>
 
@@ -201,12 +201,12 @@
 <script>
   if (!API.hasToken()) { window.location.href = '/'; }
 
-  const token  = sessionStorage.getItem('casper_token');
+  const token  = sessionStorage.getItem('firstshift_token');
   const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
 
   async function apiFetch(path) {
     const resp = await fetch(path, { headers });
-    if (resp.status === 401) { sessionStorage.removeItem('casper_token'); window.location.href = '/'; }
+    if (resp.status === 401) { sessionStorage.removeItem('firstshift_token'); window.location.href = '/'; }
     if (resp.status === 403) { window.location.href = '/app'; }
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return resp.json();

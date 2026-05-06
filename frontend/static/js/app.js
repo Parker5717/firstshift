@@ -59,7 +59,7 @@
       const cacheBtn = document.getElementById('btn-clear-cache');
       if (cacheBtn) cacheBtn.style.display = 'block';
     }
-    if (profile.total_xp < 50) sessionStorage.removeItem('casper_onboarding_done');
+    if (profile.total_xp < 50) sessionStorage.removeItem('firstshift_onboarding_done');
     setTimeout(() => Onboarding.maybeShow(), 300);
   } catch (err) {
     console.error('[App] Ошибка загрузки профиля:', err);

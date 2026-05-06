@@ -1,5 +1,5 @@
 /**
- * CASPER Camera Manager
+ * FirstShift Camera Manager
  * Управляет видеопотоком через getUserMedia.
  * Поддерживает переключение между фронтальной и задней камерой.
  */

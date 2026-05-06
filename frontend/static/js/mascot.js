@@ -1,5 +1,5 @@
 /**
- * CASPER Mascot v3 — локальные MP3 + Web Speech fallback.
+ * FirstShift Mascot v3 — локальные MP3 + Web Speech fallback.
  *
  * Режимы:
  *   'text'  — только текст (по умолчанию)
@@ -66,7 +66,7 @@ const Mascot = (() => {
   };
 
   const SOUNDS_PATH = '/static/sounds/mascot/';
-  const MODE_KEY    = 'casper_mascot_mode';
+  const MODE_KEY    = 'firstshift_mascot_mode';
 
   let _mode      = sessionStorage.getItem(MODE_KEY) || 'text';
   let _container = null;
