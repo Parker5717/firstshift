@@ -26,6 +26,7 @@ class RegisterIn(BaseModel):
     )
     password: str = Field(min_length=6, max_length=128)
     display_name: str | None = Field(default=None, max_length=64)
+    privacy_accepted: bool = False
 
 
 class LoginIn(BaseModel):

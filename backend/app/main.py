@@ -133,6 +133,11 @@ async def serve_mentor() -> FileResponse:
     """Панель наставника."""
     return FileResponse(str(settings.frontend_static_path / "mentor.html"))
 
+@app.get("/privacy", include_in_schema=False)
+async def serve_privacy() -> FileResponse:
+    """Политика обработки данных."""
+    return FileResponse(str(settings.frontend_static_path / "privacy.html"))
+
 @app.get("/clear", include_in_schema=False)
 async def serve_clear() -> FileResponse:
     """Утилита очистки кэша SW."""

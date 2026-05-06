@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstShift — Политика обработки данных</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body { padding: 0 0 48px; overflow-y: auto; display: block; }
+    #top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    #top-bar h1 { font-size: 16px; font-weight: 700; flex: 1; }
+    .content {
+      max-width: 680px; margin: 0 auto;
+      padding: 24px 20px; font-size: 14px;
+      color: var(--text-secondary); line-height: 1.75;
+    }
+    h2 {
+      font-size: 16px; font-weight: 700;
+      color: var(--text-primary); margin: 24px 0 8px;
+    }
+    h3 {
+      font-size: 13px; font-weight: 700;
+      color: var(--accent); margin: 16px 0 6px;
+      font-family: var(--font-mono); letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    p { margin: 8px 0; }
+    ul { margin: 8px 0 8px 20px; }
+    li { margin: 4px 0; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; font-family: var(--font-mono);
+      background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
+      color: #00ff88; margin-left: 6px; vertical-align: middle;
+    }
+    .contact-block {
+      margin-top: 24px; padding: 16px 18px;
+      border: 1px solid var(--border-bright);
+      border-radius: 12px; background: var(--bg-glass);
+    }
+    .contact-block a { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="top-bar">
+  <button class="btn" onclick="history.back()" style="padding:8px 14px;font-size:13px">← Назад</button>
+  <h1>🔒 Политика обработки данных</h1>
+</div>
+
+<div class="content">
+
+  <p>
+    Настоящая политика описывает, как платформа <strong>FirstShift</strong>
+    обрабатывает данные пользователей в соответствии с Федеральным законом
+    № 152-ФЗ «О персональных данных».
+  </p>
+
+  <h2>1. Какие данные собираются</h2>
+  <ul>
+    <li>Логин и хэш пароля (не хранится в открытом виде)</li>
+    <li>Отображаемое имя (display_name)</li>
+    <li>Прогресс по квестам, баллы XP и уровни</li>
+    <li>Результаты Safety Check — наличие или отсутствие СИЗ (каска, жилет)</li>
+    <li>Дата и время последней активности</li>
+  </ul>
+
+  <h2>2. Биометрические данные <span class="badge">152-ФЗ</span></h2>
+  <p>
+    Система <strong>не сохраняет</strong> видеозаписи, фотографии или биометрические данные.
+    Safety Check анализирует только <em>наличие или отсутствие средств индивидуальной
+    защиты</em> в текущем кадре — изображение не записывается и не передаётся третьим лицам.
+    Идентификация личности по изображению не производится.
+  </p>
+
+  <h3>Что происходит с кадром камеры</h3>
+  <p>
+    Кадр с фронтальной камеры отправляется на сервер предприятия для анализа
+    CV-моделью (ArUco + YOLOv8). Сервер возвращает результат (да/нет для каски и жилета)
+    и <strong>немедленно удаляет кадр из памяти</strong>. Изображение не сохраняется в БД.
+  </p>
+
+  <h2>3. Где хранятся данные</h2>
+  <p>
+    Все данные хранятся исключительно на сервере предприятия-оператора FirstShift.
+    Данные не передаются третьим лицам и не выгружаются в облачные сервисы
+    без явного согласия оператора.
+  </p>
+
+  <h2>4. Цели обработки</h2>
+  <ul>
+    <li>Учёт прохождения адаптационных квестов</li>
+    <li>Ведение журнала Safety Check для HR и наставников</li>
+    <li>Формирование PDF-отчётов по запросу HR</li>
+    <li>Геймификация онбординга (XP, уровни, достижения)</li>
+  </ul>
+
+  <h2>5. Права субъекта данных</h2>
+  <p>
+    Вы вправе запросить доступ к своим данным, их исправление или удаление.
+    Для этого обратитесь к HR-менеджеру вашего предприятия.
+  </p>
+
+  <h2>6. Срок хранения</h2>
+  <p>
+    Данные хранятся в течение срока трудовых отношений и 3 лет после их окончания
+    (в соответствии с нормами трудового законодательства РФ).
+  </p>
+
+  <div class="contact-block">
+    <strong>Контакт для обращений по вопросам обработки данных:</strong><br>
+    HR-менеджер вашего предприятия или администратор системы FirstShift.<br>
+    Email поддержки: <a href="mailto:support@firstshift.ru">support@firstshift.ru</a>
+  </div>
+
+  <p style="margin-top:24px;font-size:12px;color:var(--text-dim)">
+    Актуально на май 2026 г. Оператор данных: предприятие, использующее платформу FirstShift.
+  </p>
+
+</div>
+</body>
+</html>

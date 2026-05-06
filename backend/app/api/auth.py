@@ -89,6 +89,9 @@ def _build_profile(user: User) -> UserProfileOut:
 
 @router.post("/register", response_model=LoginOut, status_code=201, summary="Регистрация")
 def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
+    if not payload.privacy_accepted:
+        raise HTTPException(status_code=400, detail="Необходимо принять политику обработки данных")
+
     if db.query(User).filter(User.username == payload.username).first():
         raise HTTPException(status_code=409, detail="Пользователь с таким именем уже существует")
 
@@ -99,6 +102,7 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)) -> LoginOut:
         role="employee",
         level=1,
         total_xp=0,
+        privacy_accepted_at=datetime.now(timezone.utc),
     )
     db.add(user)
     db.flush()

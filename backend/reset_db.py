@@ -29,9 +29,10 @@ def soft_migrate() -> None:
 
     # Список миграций: (таблица, колонка, тип, default)
     migrations = [
-        ("users", "password_hash", "VARCHAR(128)", "NULL"),
-        ("users", "role",          "VARCHAR(16)",  "'employee'"),
-        ("users", "mentor_id",     "INTEGER",      "NULL"),
+        ("users", "password_hash",       "VARCHAR(128)", "NULL"),
+        ("users", "role",                "VARCHAR(16)",  "'employee'"),
+        ("users", "mentor_id",           "INTEGER",      "NULL"),
+        ("users", "privacy_accepted_at", "DATETIME",     "NULL"),
     ]
 
     with engine.connect() as conn:

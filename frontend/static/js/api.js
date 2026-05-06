@@ -63,10 +63,21 @@ const API = (() => {
 
   // ---------- Методы ----------
 
-  async function login(username) {
-    const data = await post('/api/auth/login', { username });
+  async function login(username, password) {
+    const data = await post('/api/auth/login', { username, password });
     setToken(data.access_token);
     return data;  // { access_token, user }
+  }
+
+  async function register(username, password, displayName, privacyAccepted = false) {
+    const data = await post('/api/auth/register', {
+      username,
+      password,
+      display_name: displayName || null,
+      privacy_accepted: privacyAccepted,
+    });
+    setToken(data.access_token);
+    return data;
   }
 
   async function getProfile() {
@@ -104,6 +115,7 @@ const API = (() => {
     hasToken,
     clearToken,
     login,
+    register,
     get,
     post,
     patch,

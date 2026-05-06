@@ -57,6 +57,7 @@ class User(Base):
     current_streak: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     last_active_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    privacy_accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     quest_progress: Mapped[list["UserQuestProgress"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

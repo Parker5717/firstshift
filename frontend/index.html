@@ -234,6 +234,13 @@
         maxlength="64" autocomplete="name">
     </div>
 
+    <div id="group-privacy" style="display:none;margin-bottom:12px">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-secondary);line-height:1.5">
+        <input type="checkbox" id="privacy-checkbox" style="margin-top:2px;flex-shrink:0;accent-color:var(--accent)">
+        <span>Согласен с <a href="/privacy" target="_blank" style="color:var(--accent)">политикой обработки данных</a> (152-ФЗ). Система не сохраняет биометрию.</span>
+      </label>
+    </div>
+
     <button class="btn-login" id="btn-submit">Войти →</button>
 
     <div class="error-msg" id="error-msg">⚠️ <span id="error-text"></span></div>
@@ -268,6 +275,7 @@
     document.getElementById('tab-login').classList.toggle('active',    mode === 'login');
     document.getElementById('tab-register').classList.toggle('active', mode === 'register');
     document.getElementById('group-displayname').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('group-privacy').style.display      = mode === 'register' ? 'block' : 'none';
     document.getElementById('btn-submit').textContent = mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
     document.getElementById('password-input').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
     hideError();
@@ -349,11 +357,21 @@
     btn.disabled = true;
     btn.textContent = '⏳ Подключение...';
 
+    if (_mode === 'register') {
+      const privacyOk = document.getElementById('privacy-checkbox').checked;
+      if (!privacyOk) {
+        showError('Необходимо принять политику обработки данных', []);
+        btn.disabled = false;
+        btn.textContent = 'Создать аккаунт →';
+        return;
+      }
+    }
+
     try {
       if (_mode === 'login') {
         await API.login(username, password);
       } else {
-        await API.register(username, password, displayName || null);
+        await API.register(username, password, displayName || null, true);
       }
       btn.textContent = '✅ Входим...';
       setTimeout(() => window.location.href = '/safety', 400);
