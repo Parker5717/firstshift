@@ -475,9 +475,11 @@
 
   // ── Детальная панель квестов ──────────────────────────────
   let _currentUserId = null;
+  let _currentUsername = null;
 
   function openDetail(user) {
-    _currentUserId = user.id;
+    _currentUserId   = user.id;
+    _currentUsername = user.username;
     document.getElementById('detail-name').textContent = user.display_name || user.username;
     document.getElementById('detail-meta').textContent =
       `LVL ${user.level} · ${user.level_title} · ${user.total_xp} XP`;
@@ -571,7 +573,7 @@
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href     = url;
-      a.download = `report_${period}d.pdf`;
+      a.download = `report_${_currentUsername}_${period}d.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch(e) {
