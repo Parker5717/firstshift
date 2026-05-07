@@ -80,17 +80,18 @@ async def health() -> JSONResponse:
 
 
 # ── Роутеры API ───────────────────────────────────────────────
-from app.api import auth, quests, users, vision, markers, progress, admin
+from app.api import auth, quests, users, vision, markers, progress, admin, sysadmin
 from app.api import vision_ws
 
-app.include_router(auth.router,       prefix="/api/auth",     tags=["auth"])
-app.include_router(users.router,      prefix="/api/users",    tags=["users"])
-app.include_router(quests.router,     prefix="/api/quests",   tags=["quests"])
-app.include_router(vision.router,     prefix="/api/vision",   tags=["vision"])
-app.include_router(markers.router,    prefix="/api/markers",  tags=["markers"])
-app.include_router(progress.router,   prefix="/api/progress", tags=["progress"])
-app.include_router(vision_ws.router,  prefix="/ws",           tags=["websocket"])
-app.include_router(admin.router,      prefix="/api/admin",    tags=["admin"])
+app.include_router(auth.router,       prefix="/api/auth",      tags=["auth"])
+app.include_router(users.router,      prefix="/api/users",     tags=["users"])
+app.include_router(quests.router,     prefix="/api/quests",    tags=["quests"])
+app.include_router(vision.router,     prefix="/api/vision",    tags=["vision"])
+app.include_router(markers.router,    prefix="/api/markers",   tags=["markers"])
+app.include_router(progress.router,   prefix="/api/progress",  tags=["progress"])
+app.include_router(vision_ws.router,  prefix="/ws",            tags=["websocket"])
+app.include_router(admin.router,      prefix="/api/admin",     tags=["admin"])
+app.include_router(sysadmin.router,   prefix="/api/sysadmin",  tags=["sysadmin"])
 
 # ── Статика ───────────────────────────────────────────────────
 _static = settings.frontend_static_path / "static"
@@ -137,6 +138,11 @@ async def serve_mentor() -> FileResponse:
 async def serve_privacy() -> FileResponse:
     """Политика обработки данных."""
     return FileResponse(str(settings.frontend_static_path / "privacy.html"))
+
+@app.get("/sysadmin", include_in_schema=False)
+async def serve_sysadmin() -> FileResponse:
+    """Панель системного администратора."""
+    return FileResponse(str(settings.frontend_static_path / "sysadmin.html"))
 
 @app.get("/clear", include_in_schema=False)
 async def serve_clear() -> FileResponse:

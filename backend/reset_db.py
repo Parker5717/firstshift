@@ -125,11 +125,61 @@ def seed() -> None:
     log.info("Контент засеян")
 
 
+def create_sysadmin_user(username: str, password: str) -> None:
+    """Создать системного администратора в служебном тенанте __system__."""
+    from datetime import datetime, timezone
+
+    from app.api.auth import hash_password
+    from app.db.database import SessionLocal
+    from app.db.models import Tenant, User
+
+    db = SessionLocal()
+    try:
+        sys_tenant = db.query(Tenant).filter(Tenant.slug == "__system__").first()
+        if not sys_tenant:
+            sys_tenant = Tenant(name="System", slug="__system__", created_at=datetime.now(timezone.utc))
+            db.add(sys_tenant)
+            db.flush()
+
+        existing = db.query(User).filter(
+            User.username == username, User.tenant_id == sys_tenant.id
+        ).first()
+        if existing:
+            log.info("Sysadmin '%s' уже существует (id=%d)", username, existing.id)
+            return
+
+        from app.db.database import init_db
+        init_db()
+
+        user = User(
+            tenant_id=sys_tenant.id,
+            username=username,
+            display_name=username,
+            password_hash=hash_password(password),
+            role="sysadmin",
+        )
+        db.add(user)
+        db.commit()
+        log.info("Sysadmin '%s' создан (id=%d, tenant=__system__)", username, user.id)
+    finally:
+        db.close()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="FirstShift DB management tool")
     parser.add_argument("--hard", action="store_true", help="Полный сброс (удаляет все данные!)")
     parser.add_argument("--pg", action="store_true", help="Режим PostgreSQL (использует alembic)")
+    parser.add_argument("--create-sysadmin", nargs=2, metavar=("USERNAME", "PASSWORD"),
+                        help="Создать системного администратора: --create-sysadmin admin secret")
     args = parser.parse_args()
+
+    if args.create_sysadmin:
+        username, password = args.create_sysadmin
+        create_tables()
+        soft_migrate()
+        create_sysadmin_user(username, password)
+        log.info("Готово!")
+        return
 
     if args.pg:
         if args.hard:

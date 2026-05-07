@@ -484,14 +484,16 @@
     }
 
     try {
+      let data;
       if (_mode === 'login') {
-        await API.login(username, password);
+        data = await API.login(username, password);
       } else {
-        await API.register(username, password, displayName || null, true, birthYear, companyCode);
+        data = await API.register(username, password, displayName || null, true, birthYear, companyCode);
       }
       btn.textContent = '✓ Входим...';
       btn.style.background = 'var(--success)';
-      setTimeout(() => window.location.href = '/safety', 380);
+      const dest = data.user?.role === 'sysadmin' ? '/sysadmin' : '/safety';
+      setTimeout(() => window.location.href = dest, 380);
     } catch (e) {
       showError(e.message || 'Ошибка подключения', ['username', 'password']);
       btn.disabled = false;

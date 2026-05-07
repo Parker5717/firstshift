@@ -162,7 +162,9 @@
   (async () => {
     try {
       const profile = await API.getProfile();
-      if (['mentor', 'hr', 'admin'].includes(profile.role)) {
+      if (profile.role === 'sysadmin') {
+        window.location.href = '/sysadmin';
+      } else if (['mentor', 'hr', 'admin'].includes(profile.role)) {
         window.location.href = '/app';
       }
     } catch (_) {}

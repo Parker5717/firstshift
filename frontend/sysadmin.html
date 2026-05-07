@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstShift — System Admin</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    body { min-height:100vh; overflow-y:auto; padding:0 0 48px; display:block; }
+
+    #top-bar {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 20px; background:rgba(19,18,16,0.97);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:20;
+    }
+    .logo { font-family:var(--font-mono); font-size:15px; font-weight:700; color:var(--accent); letter-spacing:2px; }
+    .sys-badge {
+      padding:3px 10px; border-radius:20px; font-size:10px;
+      font-family:var(--font-mono); font-weight:700; letter-spacing:1px;
+      background:var(--danger-dim); border:1px solid rgba(184,84,84,0.5); color:var(--danger);
+    }
+    #top-bar-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+    .top-user { font-size:13px; color:var(--text-secondary); }
+    .btn-sm {
+      padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600;
+      border:1px solid var(--border); background:transparent;
+      color:var(--text-secondary); cursor:pointer; transition:all 0.2s; font-family:inherit;
+    }
+    .btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-danger { border-color:rgba(184,84,84,0.4) !important; color:var(--danger) !important; }
+    .btn-danger:hover { background:var(--danger-dim) !important; }
+
+    .page { max-width:1100px; margin:0 auto; padding:28px 20px; }
+
+    /* ── Статистика ── */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:32px; }
+    .stat-card {
+      padding:18px 20px; border-radius:14px;
+      border:1px solid var(--border); background:var(--bg-glass);
+    }
+    .stat-card .val { font-size:32px; font-weight:900; color:var(--text-primary); font-family:var(--font-display); }
+    .stat-card .lbl { font-size:11px; color:var(--text-secondary); margin-top:5px; font-family:var(--font-mono); letter-spacing:0.5px; }
+
+    /* ── Заголовок секции ── */
+    .section-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .section-title { font-size:12px; font-family:var(--font-mono); color:var(--accent); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
+
+    /* ── Форма создания тенанта ── */
+    #create-form {
+      display:flex; gap:10px; align-items:stretch;
+      padding:16px; border-radius:14px;
+      border:1px solid var(--border); background:var(--bg-glass);
+      margin-bottom:20px;
+    }
+    #create-form input {
+      flex:1; padding:10px 14px; border-radius:10px;
+      border:1px solid var(--border); background:var(--bg-raised);
+      color:var(--text-primary); font-size:13px; font-family:inherit;
+      outline:none; transition:border-color 0.2s;
+    }
+    #create-form input:focus { border-color:var(--accent); }
+    #create-form input::placeholder { color:var(--text-dim); }
+    #btn-create {
+      padding:10px 20px; border-radius:10px; border:none;
+      background:var(--accent); color:#fff;
+      font-size:13px; font-weight:700; cursor:pointer;
+      transition:all 0.2s; font-family:inherit; white-space:nowrap;
+    }
+    #btn-create:hover { background:var(--accent-light); }
+    #btn-create:disabled { opacity:0.5; cursor:default; }
+
+    /* ── Таблица тенантов ── */
+    .tenant-table { width:100%; border-collapse:collapse; }
+    .tenant-table th {
+      text-align:left; padding:10px 14px;
+      font-size:10px; font-family:var(--font-mono); color:var(--text-dim);
+      letter-spacing:1px; text-transform:uppercase;
+      border-bottom:1px solid var(--border);
+    }
+    .tenant-table td {
+      padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.04);
+      vertical-align:middle;
+    }
+    .tenant-table tr:hover td { background:rgba(212,118,78,0.03); cursor:pointer; }
+
+    .tenant-name { font-size:14px; font-weight:700; color:var(--text-primary); }
+    .tenant-slug { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+    .tenant-count { font-size:14px; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .tenant-date  { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+
+    .actions { display:flex; gap:6px; }
+    .btn-action {
+      padding:5px 10px; border-radius:7px; font-size:11px; font-weight:600;
+      border:1px solid var(--border); background:transparent;
+      color:var(--text-secondary); cursor:pointer; transition:all 0.18s; font-family:var(--font-mono);
+    }
+    .btn-action:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-action.del { border-color:rgba(184,84,84,0.3); color:var(--danger); }
+    .btn-action.del:hover { background:var(--danger-dim); }
+
+    /* ── Боковая панель пользователей ── */
+    #side-panel {
+      position:fixed; top:0; right:0; bottom:0; width:380px;
+      background:var(--bg-surface); border-left:1px solid var(--border);
+      z-index:30; transform:translateX(100%);
+      transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      display:flex; flex-direction:column;
+    }
+    #side-panel.open { transform:translateX(0); }
+
+    #side-header {
+      padding:16px 18px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:12px; flex-shrink:0;
+    }
+    #side-title { font-size:16px; font-weight:700; color:var(--text-primary); flex:1; }
+    #side-slug  { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+    #side-close {
+      width:30px; height:30px; border-radius:50%;
+      border:1px solid var(--border); background:transparent;
+      color:var(--text-secondary); cursor:pointer; font-size:16px;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s; flex-shrink:0;
+    }
+    #side-close:hover { border-color:var(--danger); color:var(--danger); }
+    #side-body { flex:1; overflow-y:auto; padding:12px 16px; }
+
+    .user-row {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:10px;
+      border:1px solid var(--border); background:rgba(255,255,255,0.02);
+      margin-bottom:8px;
+    }
+    .user-avatar {
+      width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,#7A3520,#D4764E);
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+    .user-info { flex:1; min-width:0; }
+    .user-name { font-size:13px; font-weight:600; color:var(--text-primary); }
+    .user-meta { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+    .user-xp   { font-size:12px; font-weight:700; color:var(--success); font-family:var(--font-mono); flex-shrink:0; }
+
+    .role-badge {
+      padding:2px 8px; border-radius:20px; font-size:10px;
+      font-family:var(--font-mono); font-weight:700; white-space:nowrap;
+    }
+    .role-admin    { background:var(--danger-dim); border:1px solid rgba(184,84,84,0.4); color:var(--danger); }
+    .role-hr       { background:var(--warning-dim); border:1px solid rgba(196,150,64,0.4); color:var(--warning); }
+    .role-mentor   { background:var(--accent-dim); border:1px solid var(--border-bright); color:var(--accent-light); }
+    .role-employee { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-secondary); }
+
+    #overlay {
+      position:fixed; inset:0; background:rgba(10,8,6,0.55);
+      z-index:25; opacity:0; pointer-events:none; transition:opacity 0.3s;
+    }
+    #overlay.open { opacity:1; pointer-events:all; }
+
+    .loading { text-align:center; padding:40px; color:var(--text-dim); font-size:14px; }
+    .empty   { text-align:center; padding:24px; color:var(--text-dim); font-size:13px; }
+
+    /* ── Toast ── */
+    #toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:var(--bg-surface); border:1px solid var(--border-bright);
+      color:var(--text-primary); border-radius:12px;
+      padding:10px 20px; font-size:14px; font-weight:600;
+      z-index:999; opacity:0; pointer-events:none; transition:opacity 0.25s; white-space:nowrap;
+    }
+    #toast.show { opacity:1; }
+    #toast.ok   { border-color:var(--success); color:var(--success); }
+    #toast.err  { border-color:var(--danger);  color:var(--danger); }
+
+    /* ── Inline-редактирование имени ── */
+    .inline-edit { display:none; gap:6px; align-items:center; }
+    .inline-edit.active { display:flex; }
+    .inline-edit input {
+      flex:1; padding:5px 10px; border-radius:8px;
+      border:1px solid var(--accent); background:var(--bg-dark);
+      color:var(--text-primary); font-size:13px; font-family:inherit; outline:none;
+    }
+    .ie-save   { padding:5px 10px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-size:13px; }
+    .ie-cancel { padding:5px 10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); cursor:pointer; font-size:13px; }
+
+    @media(max-width:768px) {
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+      #side-panel { width:100%; }
+      #create-form { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="top-bar">
+  <img src="/static/img/mascot.svg" alt="Алекс" style="width:28px;height:28px">
+  <div class="logo">FIRSTSHIFT</div>
+  <div class="sys-badge">SYSTEM ADMIN</div>
+  <div id="top-bar-right">
+    <span class="top-user" id="top-username"></span>
+    <button class="btn-sm btn-danger" onclick="API.clearToken(); window.location.href='/'">Выйти</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Статистика -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="val" id="stat-tenants">—</div>
+      <div class="lbl">ЗАВОДОВ / КОМПАНИЙ</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-users">—</div>
+      <div class="lbl">ВСЕГО ПОЛЬЗОВАТЕЛЕЙ</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-safety">—</div>
+      <div class="lbl">SAFETY CHECK СЕГОДНЯ</div>
+    </div>
+  </div>
+
+  <!-- Создать тенант -->
+  <div class="section-header">
+    <div class="section-title">🏭 Управление тенантами</div>
+  </div>
+
+  <div id="create-form">
+    <input id="input-name" type="text" placeholder="Название (например: Завод №1)" maxlength="128">
+    <input id="input-slug" type="text" placeholder="Код входа (латиницей, например: zavod-1)" maxlength="64" autocorrect="off" autocapitalize="off">
+    <button id="btn-create" onclick="createTenant()">+ Создать</button>
+  </div>
+
+  <!-- Таблица тенантов -->
+  <div id="table-loading" class="loading">Загрузка...</div>
+  <table class="tenant-table" id="tenant-table" style="display:none">
+    <thead>
+      <tr>
+        <th>Компания</th>
+        <th>Код</th>
+        <th>Пользователи</th>
+        <th>Safety сегодня</th>
+        <th>Создан</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody id="tenant-tbody"></tbody>
+  </table>
+
+</div>
+
+<!-- Overlay -->
+<div id="overlay" onclick="closeSide()"></div>
+
+<!-- Боковая панель -->
+<div id="side-panel">
+  <div id="side-header">
+    <div>
+      <div id="side-title">—</div>
+      <div id="side-slug">—</div>
+    </div>
+    <button id="side-close" onclick="closeSide()">✕</button>
+  </div>
+  <div id="side-body"><div class="loading">Выбери компанию</div></div>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  if (!API.hasToken()) { window.location.href = '/'; }
+
+  const headers = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${sessionStorage.getItem('firstshift_token')}`,
+  });
+
+  async function apiFetch(path, opts = {}) {
+    const resp = await fetch(path, { headers: headers(), ...opts });
+    if (resp.status === 401) { API.clearToken(); window.location.href = '/'; }
+    if (resp.status === 403) { window.location.href = '/'; }
+    if (resp.status === 204) return null;
+    if (!resp.ok) throw new Error((await resp.json()).detail || `HTTP ${resp.status}`);
+    return resp.json();
+  }
+
+  let _toastTimer = null;
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { el.className = ''; }, 2800);
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('ru-RU');
+  }
+
+  // ── Загрузка ──────────────────────────────────────────────────────────────
+
+  let _tenants = [];
+
+  async function load() {
+    try {
+      const profile = await API.getProfile();
+      if (profile.role !== 'sysadmin') { window.location.href = '/'; return; }
+      document.getElementById('top-username').textContent = profile.display_name || profile.username;
+
+      const tenants = await apiFetch('/api/sysadmin/tenants');
+      _tenants = tenants;
+
+      const totalUsers  = tenants.reduce((s, t) => s + t.user_count, 0);
+      const totalSafety = tenants.reduce((s, t) => s + t.safety_today, 0);
+
+      document.getElementById('stat-tenants').textContent = tenants.length;
+      document.getElementById('stat-users').textContent   = totalUsers;
+      document.getElementById('stat-safety').textContent  = totalSafety;
+
+      renderTable(tenants);
+    } catch (e) {
+      document.getElementById('table-loading').textContent = 'Ошибка: ' + e.message;
+    }
+  }
+
+  function renderTable(tenants) {
+    const tbody = document.getElementById('tenant-tbody');
+    tbody.innerHTML = '';
+
+    if (!tenants.length) {
+      document.getElementById('table-loading').textContent = 'Тенантов пока нет — создай первый выше.';
+      document.getElementById('tenant-table').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('table-loading').style.display = 'none';
+    document.getElementById('tenant-table').style.display  = 'table';
+
+    tenants.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div class="tenant-name" id="name-${t.id}">${t.name}</div>
+          <div class="inline-edit" id="edit-${t.id}">
+            <input type="text" value="${t.name}" maxlength="128" onkeydown="ieKey(event,${t.id})">
+            <button class="ie-save" onclick="saveName(${t.id})">✓</button>
+            <button class="ie-cancel" onclick="cancelEdit(${t.id})">✕</button>
+          </div>
+        </td>
+        <td><span class="tenant-slug">${t.slug}</span></td>
+        <td><span class="tenant-count">${t.user_count}</span></td>
+        <td style="font-size:13px;color:${t.safety_today > 0 ? 'var(--success)' : 'var(--text-dim)'}">${t.safety_today}</td>
+        <td><span class="tenant-date">${fmtDate(t.created_at)}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn-action" onclick="openUsers(${t.id},'${t.name}','${t.slug}')">👥 Пользователи</button>
+            <button class="btn-action" onclick="startEdit(${t.id})">✏️</button>
+            <button class="btn-action del" onclick="deleteTenant(${t.id},'${t.name}',${t.user_count})">🗑</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── Создать тенант ────────────────────────────────────────────────────────
+
+  async function createTenant() {
+    const name = document.getElementById('input-name').value.trim();
+    const slug = document.getElementById('input-slug').value.trim().toLowerCase();
+    if (!name || !slug) { toast('Заполни название и код', 'err'); return; }
+    if (!/^[a-z0-9_\-]+$/.test(slug)) { toast('Код: только латиница, цифры, дефис, _', 'err'); return; }
+
+    const btn = document.getElementById('btn-create');
+    btn.disabled = true;
+    try {
+      await apiFetch('/api/sysadmin/tenants', {
+        method: 'POST',
+        body: JSON.stringify({ name, slug }),
+      });
+      document.getElementById('input-name').value = '';
+      document.getElementById('input-slug').value = '';
+      toast(`Тенант «${name}» создан ✓`);
+      load();
+    } catch (e) {
+      toast(e.message, 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── Переименовать тенант ──────────────────────────────────────────────────
+
+  function startEdit(id) {
+    document.getElementById(`name-${id}`).style.display = 'none';
+    document.getElementById(`edit-${id}`).classList.add('active');
+    document.getElementById(`edit-${id}`).querySelector('input').focus();
+  }
+
+  function cancelEdit(id) {
+    document.getElementById(`name-${id}`).style.display = '';
+    document.getElementById(`edit-${id}`).classList.remove('active');
+  }
+
+  function ieKey(e, id) {
+    if (e.key === 'Enter')  saveName(id);
+    if (e.key === 'Escape') cancelEdit(id);
+  }
+
+  async function saveName(id) {
+    const input = document.getElementById(`edit-${id}`).querySelector('input');
+    const newName = input.value.trim();
+    if (!newName) return;
+    try {
+      await apiFetch(`/api/sysadmin/tenants/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name: newName }),
+      });
+      cancelEdit(id);
+      toast('Название обновлено ✓');
+      load();
+    } catch (e) {
+      toast(e.message, 'err');
+    }
+  }
+
+  // ── Удалить тенант ────────────────────────────────────────────────────────
+
+  async function deleteTenant(id, name, userCount) {
+    if (userCount > 0) {
+      toast(`Нельзя удалить — ${userCount} пользователей`, 'err');
+      return;
+    }
+    if (!confirm(`Удалить тенант «${name}»? Это необратимо.`)) return;
+    try {
+      await apiFetch(`/api/sysadmin/tenants/${id}`, { method: 'DELETE' });
+      toast(`«${name}» удалён`);
+      load();
+    } catch (e) {
+      toast(e.message, 'err');
+    }
+  }
+
+  // ── Боковая панель пользователей ──────────────────────────────────────────
+
+  const ROLE_RU = { employee:'Сотрудник', mentor:'Наставник', hr:'HR', admin:'Администратор', sysadmin:'Sysadmin' };
+
+  async function openUsers(tenantId, name, slug) {
+    document.getElementById('side-title').textContent = name;
+    document.getElementById('side-slug').textContent  = slug;
+    document.getElementById('side-body').innerHTML    = '<div class="loading">Загрузка...</div>';
+    document.getElementById('side-panel').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+
+    try {
+      const users = await apiFetch(`/api/sysadmin/tenants/${tenantId}/users`);
+      const body  = document.getElementById('side-body');
+      if (!users.length) {
+        body.innerHTML = '<div class="empty">Нет пользователей</div>';
+        return;
+      }
+      body.innerHTML = '';
+      users.forEach(u => {
+        const div = document.createElement('div');
+        div.className = 'user-row';
+        div.innerHTML = `
+          <div class="user-avatar">${(u.display_name || u.username).charAt(0).toUpperCase()}</div>
+          <div class="user-info">
+            <div class="user-name">${u.display_name || u.username}</div>
+            <div class="user-meta">@${u.username} · LVL ${u.level}</div>
+          </div>
+          <span class="role-badge role-${u.role}">${ROLE_RU[u.role] || u.role}</span>
+          <div class="user-xp">${u.total_xp} XP</div>
+        `;
+        body.appendChild(div);
+      });
+    } catch (e) {
+      document.getElementById('side-body').innerHTML = `<div class="empty">Ошибка: ${e.message}</div>`;
+    }
+  }
+
+  function closeSide() {
+    document.getElementById('side-panel').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  // Авто-генерация slug из названия
+  document.getElementById('input-name').addEventListener('input', function() {
+    const slug = this.value
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9_\-]/g, '')
+      .slice(0, 64);
+    document.getElementById('input-slug').value = slug;
+  });
+
+  load();
+</script>
+</body>
+</html>

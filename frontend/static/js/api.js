@@ -5,8 +5,9 @@
  */
 
 const API = (() => {
-  const BASE = '';  // same-origin, сервер FastAPI отдаёт и фронт и API
-  const TOKEN_KEY = 'firstshift_token';
+  const BASE        = '';  // same-origin, сервер FastAPI отдаёт и фронт и API
+  const TOKEN_KEY   = 'firstshift_token';
+  const PROFILE_KEY = 'firstshift_profile';
 
   let _token = sessionStorage.getItem(TOKEN_KEY);
 
@@ -20,6 +21,7 @@ const API = (() => {
   function clearToken() {
     _token = null;
     sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(PROFILE_KEY);
   }
 
   function hasToken() {
@@ -66,6 +68,7 @@ const API = (() => {
   async function login(username, password) {
     const data = await post('/api/auth/login', { username, password });
     setToken(data.access_token);
+    if (data.user) sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
     return data;  // { access_token, user }
   }
 
@@ -79,11 +82,22 @@ const API = (() => {
       company_code: companyCode,
     });
     setToken(data.access_token);
+    if (data.user) sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
     return data;
   }
 
-  async function getProfile() {
-    return get('/api/users/me');
+  // Профиль кешируется в sessionStorage — один запрос за сессию.
+  // forceRefresh=true пробивает кеш (например, после смены имени).
+  async function getProfile(forceRefresh = false) {
+    if (!forceRefresh) {
+      const cached = sessionStorage.getItem(PROFILE_KEY);
+      if (cached) {
+        try { return JSON.parse(cached); } catch (_) {}
+      }
+    }
+    const profile = await get('/api/users/me');
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    return profile;
   }
 
   async function updateDisplayName(name) {
@@ -91,10 +105,13 @@ const API = (() => {
   }
 
   async function updateProfile(displayName) {
-    return _fetch('/api/users/me', {
+    const profile = await _fetch('/api/users/me', {
       method: 'PATCH',
       body: JSON.stringify({ display_name: displayName }),
     });
+    // Обновляем кеш после смены имени
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    return profile;
   }
 
   async function getQuests() {

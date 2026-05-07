@@ -38,6 +38,7 @@ class UserRole(StrEnum):
     MENTOR   = "mentor"
     HR       = "hr"
     ADMIN    = "admin"
+    SYSADMIN = "sysadmin"
 
 
 class QuestType(StrEnum):
