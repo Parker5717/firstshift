@@ -33,7 +33,7 @@ const Onboarding = (() => {
     {
       icon: '🏆',
       title: 'XP и достижения',
-      text: 'За квесты получаешь опыт и растёшь от Стажёра до Специалиста. Открывай ачивки и попадай в лидерборд!',
+      text: 'За квесты получаешь опыт и растёшь от Стажёра до Специалиста. Открывай достижения и попадай в лидерборд!',
     },
   ];
 
@@ -149,7 +149,7 @@ const Onboarding = (() => {
   // ── Публичный API ─────────────────────────────────────────────────────────
 
   async function maybeShow() {
-    if (sessionStorage.getItem(SEEN_KEY)) return;
+    if (localStorage.getItem(SEEN_KEY)) return;
 
     // Определяем роль и выбираем шаги
     try {
@@ -248,7 +248,7 @@ const Onboarding = (() => {
   }
 
   function _done() {
-    sessionStorage.setItem(SEEN_KEY, '1');
+    localStorage.setItem(SEEN_KEY, '1');
     if (_overlay) {
       _overlay.style.opacity    = '0';
       _overlay.style.transition = 'opacity 0.3s';
@@ -261,7 +261,7 @@ const Onboarding = (() => {
 
   // Сброс для повторного показа (для тестирования)
   function reset() {
-    sessionStorage.removeItem(SEEN_KEY);
+    localStorage.removeItem(SEEN_KEY);
   }
 
   return { maybeShow, reset };
