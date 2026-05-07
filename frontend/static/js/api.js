@@ -37,9 +37,14 @@ const API = (() => {
     const resp = await fetch(BASE + path, { ...options, headers });
 
     if (resp.status === 401) {
-      clearToken();
-      window.location.href = '/';
-      throw new Error('Сессия истекла, войди заново');
+      // На auth-эндпоинтах 401 = неверные данные, редирект не нужен
+      if (!path.startsWith('/api/auth/')) {
+        clearToken();
+        window.location.href = '/';
+      }
+      let detail = 'Сессия истекла, войди заново';
+      try { detail = (await resp.json()).detail || detail; } catch (_) {}
+      throw new Error(detail);
     }
 
     if (!resp.ok) {
