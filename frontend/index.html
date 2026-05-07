@@ -6,215 +6,330 @@
   <title>FirstShift — Первый день на заводе</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600&display=swap');
-
     body {
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; overflow: hidden; background: #070b14;
+      min-height: 100vh; overflow-y: auto; overflow-x: hidden;
+      background: var(--bg-base);
+      padding: 24px 0;
     }
 
-    .bg-grid {
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(0,170,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,170,255,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-      pointer-events: none;
+    /* ── Ambient background ───────────────────────────────── */
+    .bg-orb {
+      position: fixed; border-radius: 50%; pointer-events: none;
+      filter: blur(90px); will-change: transform;
     }
-    .bg-glow {
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,100,255,0.12), transparent),
-        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,200,100,0.06), transparent);
-      pointer-events: none;
+    .bg-orb-1 {
+      width: 55vw; height: 55vw; max-width: 420px; max-height: 420px;
+      top: -15%; right: -15%;
+      background: radial-gradient(circle, rgba(196, 120, 64, 0.18) 0%, transparent 70%);
+      animation: orbDrift1 14s ease-in-out infinite;
     }
-    .particle {
-      position: fixed; width: 2px; height: 2px;
-      background: var(--accent); border-radius: 50%;
-      animation: float linear infinite; opacity: 0; pointer-events: none;
+    .bg-orb-2 {
+      width: 50vw; height: 50vw; max-width: 380px; max-height: 380px;
+      bottom: -10%; left: -12%;
+      background: radial-gradient(circle, rgba(160, 80, 50, 0.14) 0%, transparent 70%);
+      animation: orbDrift2 18s ease-in-out infinite;
     }
-    @keyframes float {
-      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
-      10%  { opacity: 0.6; } 90% { opacity: 0.3; }
-      100% { transform: translateY(-20px) scale(1); opacity: 0; }
+    .bg-orb-3 {
+      width: 30vw; height: 30vw; max-width: 240px; max-height: 240px;
+      top: 55%; left: 55%;
+      background: radial-gradient(circle, rgba(180, 140, 80, 0.08) 0%, transparent 70%);
+      animation: orbDrift1 22s ease-in-out infinite reverse;
+    }
+    @keyframes orbDrift1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%       { transform: translate(-20px, 15px) scale(1.04); }
+      66%       { transform: translate(15px, -10px) scale(0.97); }
+    }
+    @keyframes orbDrift2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      40%       { transform: translate(18px, -14px) scale(1.03); }
+      70%       { transform: translate(-12px, 10px) scale(0.98); }
     }
 
+    /* Subtle dot pattern */
+    .bg-dots {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(212, 118, 78, 0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 20%, transparent 100%);
+    }
+
+    /* ── Layout ───────────────────────────────────────────── */
     .login-wrap {
       position: relative; z-index: 1;
-      width: 100%; max-width: 400px; padding: 0 24px;
-      display: flex; flex-direction: column; align-items: center;
+      width: 100%; max-width: 420px; padding: 0 22px;
+      display: flex; flex-direction: column; align-items: stretch;
+      gap: 0;
     }
 
+    /* ── Logo ─────────────────────────────────────────────── */
     .logo-area {
-      text-align: center; margin-bottom: 24px;
-      animation: logoIn 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
+      text-align: center;
+      margin-bottom: 28px;
+      animation: enterDown 0.7s cubic-bezier(0.34, 1.2, 0.64, 1) both;
     }
-    @keyframes logoIn {
-      from { opacity: 0; transform: translateY(-24px); }
+    @keyframes enterDown {
+      from { opacity: 0; transform: translateY(-20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .logo-robot {
-      font-size: 64px; display: block; margin-bottom: 10px;
-      filter: drop-shadow(0 0 24px rgba(0,170,255,0.6));
-      animation: robotPulse 3s ease-in-out infinite;
+
+    .logo-mark {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 68px; height: 68px;
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(212, 118, 78, 0.2), rgba(196, 100, 56, 0.08));
+      border: 1px solid rgba(212, 118, 78, 0.3);
+      margin-bottom: 14px;
+      font-size: 36px;
+      box-shadow:
+        0 0 0 1px rgba(212, 118, 78, 0.08),
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 220, 180, 0.06);
     }
-    @keyframes robotPulse {
-      0%, 100% { filter: drop-shadow(0 0 24px rgba(0,170,255,0.6)); transform: scale(1); }
-      50%       { filter: drop-shadow(0 0 40px rgba(0,170,255,0.9)); transform: scale(1.05); }
-    }
+
     .logo-name {
-      font-family: 'Orbitron', monospace; font-size: 30px; font-weight: 900;
-      letter-spacing: 6px; color: #fff;
-      text-shadow: 0 0 20px rgba(0,170,255,0.8), 0 0 60px rgba(0,170,255,0.3);
+      font-family: var(--font-display);
+      font-size: 28px; font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      line-height: 1;
     }
+    .logo-name span { color: var(--accent); }
+
     .logo-tagline {
-      font-size: 12px; color: var(--text-secondary);
-      letter-spacing: 2px; text-transform: uppercase; margin-top: 6px;
-      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 7px;
+      letter-spacing: 0.3px;
+      font-family: var(--font-main);
     }
 
+    /* ── Feature pills ────────────────────────────────────── */
     .features {
-      display: flex; gap: 10px; margin-bottom: 20px;
-      animation: fadeIn 0.8s 0.3s ease forwards; opacity: 0;
+      display: flex; gap: 7px; justify-content: center;
+      margin-bottom: 24px; flex-wrap: wrap;
+      animation: enterUp 0.6s 0.15s cubic-bezier(0.4, 0, 0.2, 1) both;
     }
-    @keyframes fadeIn { to { opacity: 1; } }
-    .feature {
-      flex: 1; padding: 8px 6px; border-radius: 10px;
-      border: 1px solid rgba(0,170,255,0.2); background: rgba(0,170,255,0.04);
-      text-align: center; font-size: 10px; color: var(--text-secondary); line-height: 1.4;
+    @keyframes enterUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .feature .icon { font-size: 18px; display: block; margin-bottom: 3px; }
+    .feature-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.024);
+      font-size: 11px; font-weight: 500;
+      color: var(--text-secondary);
+      font-family: var(--font-main);
+    }
+    .feature-pill span { font-size: 13px; }
 
-    /* Таб-переключатель */
-    .tab-switch {
-      display: flex; width: 100%;
-      background: rgba(0,170,255,0.06); border: 1px solid rgba(0,170,255,0.2);
-      border-radius: 10px; padding: 3px; margin-bottom: 16px;
-    }
-    .tab-btn {
-      flex: 1; padding: 9px; border: none; border-radius: 8px;
-      font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
-      cursor: pointer; transition: all 0.2s;
-      background: transparent; color: var(--text-secondary);
-    }
-    .tab-btn.active {
-      background: var(--accent); color: #fff;
-      box-shadow: 0 2px 12px rgba(0,170,255,0.4);
-    }
-
-    /* Карточка формы */
-    .login-box {
-      width: 100%; padding: 24px 22px; border-radius: 20px;
-      border: 1px solid rgba(0,170,255,0.3); background: rgba(7,11,20,0.9);
-      backdrop-filter: blur(20px);
-      box-shadow: 0 0 0 1px rgba(0,170,255,0.1), 0 24px 48px rgba(0,0,0,0.4),
-                  inset 0 1px 0 rgba(255,255,255,0.05);
-      animation: boxIn 0.8s 0.2s cubic-bezier(0.4,0,0.2,1) both;
+    /* ── Card ─────────────────────────────────────────────── */
+    .login-card {
+      background: rgba(28, 24, 20, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 22px 22px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow:
+        0 1px 0 rgba(255, 200, 150, 0.04) inset,
+        0 24px 48px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(0, 0, 0, 0.2);
+      animation: enterUp 0.65s 0.1s cubic-bezier(0.34, 1.1, 0.64, 1) both;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    @keyframes boxIn {
-      from { opacity: 0; transform: translateY(24px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    .login-card.error-state {
+      border-color: rgba(184, 84, 84, 0.55);
+      box-shadow: 0 0 0 3px rgba(184, 84, 84, 0.15), 0 24px 48px rgba(0, 0, 0, 0.45);
     }
 
-    /* Красная рамка карточки при ошибке — без animation, только border */
-    .login-box.error-state {
-      border-color: rgba(255,51,85,0.6);
-      box-shadow: 0 0 0 3px rgba(255,51,85,0.2), 0 24px 48px rgba(0,0,0,0.4);
+    /* ── Tab switch ───────────────────────────────────────── */
+    .tab-switch {
+      display: flex; width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 3px;
+      margin-bottom: 18px;
+    }
+    .tab-btn {
+      flex: 1; padding: 9px 12px;
+      border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-main);
+      cursor: pointer; transition: all 0.2s ease;
+      background: transparent;
+      color: var(--text-secondary);
+      letter-spacing: 0.1px;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 14px rgba(212, 118, 78, 0.38);
     }
 
-    .input-group { margin-bottom: 12px; }
-    .input-group input {
-      width: 100%; padding: 13px 16px; box-sizing: border-box;
-      background: rgba(0,170,255,0.05); border: 1px solid rgba(0,170,255,0.2);
-      border-radius: 12px; color: var(--text-primary);
-      font-size: 16px; font-family: 'Inter', sans-serif;
-      outline: none; transition: all 0.25s ease;
-    }
-    .input-group input:focus {
-      border-color: var(--accent); background: rgba(0,170,255,0.08);
-      box-shadow: 0 0 0 3px rgba(0,170,255,0.15);
-    }
-    .input-group input::placeholder { color: var(--text-dim); }
+    /* ── Inputs ───────────────────────────────────────────── */
+    .input-group { margin-bottom: 10px; }
 
-    /* Красная подсветка полей при ошибке */
+    .input-group input,
+    .input-group select {
+      width: 100%; padding: 12px 14px; box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: var(--font-main);
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      -webkit-appearance: none; appearance: none;
+    }
+    .input-group input::placeholder,
+    .input-group select option:first-child {
+      color: var(--text-dim);
+    }
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: var(--accent);
+      background: rgba(212, 118, 78, 0.06);
+      box-shadow: 0 0 0 3px rgba(212, 118, 78, 0.12);
+    }
+    .input-group select {
+      color: var(--text-secondary);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A7B6F' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+    }
+
     .input-group.input-error input {
-      border-color: #ff3355 !important;
-      background: rgba(255,51,85,0.07) !important;
-      box-shadow: 0 0 0 3px rgba(255,51,85,0.18) !important;
+      border-color: rgba(184, 84, 84, 0.7) !important;
+      background: rgba(184, 84, 84, 0.06) !important;
+      box-shadow: 0 0 0 3px rgba(184, 84, 84, 0.12) !important;
     }
 
-    .btn-login {
-      width: 100%; padding: 14px; border-radius: 12px; border: none;
-      background: linear-gradient(135deg, #0077ee, #00aaff);
-      color: #fff; font-size: 15px; font-weight: 700;
-      font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
-      cursor: pointer; transition: all 0.2s ease; overflow: hidden; position: relative;
+    /* Privacy row */
+    .privacy-row {
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
     }
-    .btn-login::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-      opacity: 0; transition: opacity 0.2s;
+    .privacy-row input[type="checkbox"] {
+      width: 16px; height: 16px; margin-top: 1px;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
     }
-    .btn-login:hover::after { opacity: 1; }
-    .btn-login:hover { box-shadow: 0 8px 24px rgba(0,170,255,0.4); transform: translateY(-1px); }
-    .btn-login:active { transform: translateY(0); }
-    .btn-login:disabled { opacity: 0.5; cursor: default; transform: none; }
+    .privacy-row span {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      font-family: var(--font-main);
+    }
+    .privacy-row a { color: var(--accent); text-decoration: none; }
 
-    /* Блок ошибки */
+    /* ── Submit button ────────────────────────────────────── */
+    .btn-submit {
+      width: 100%; padding: 13px 20px;
+      border: none; border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px; font-weight: 700;
+      font-family: var(--font-main);
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      position: relative; overflow: hidden;
+    }
+    .btn-submit::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 60%);
+      pointer-events: none;
+    }
+    .btn-submit:hover {
+      background: var(--accent-light);
+      box-shadow: 0 6px 24px rgba(212, 118, 78, 0.42);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled {
+      opacity: 0.48; cursor: default; transform: none;
+      box-shadow: none;
+    }
+
+    /* ── Error message ────────────────────────────────────── */
     .error-msg {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      min-height: 20px; margin-top: 10px;
-      font-size: 13px; font-weight: 600; color: #ff3355;
-      font-family: 'Inter', sans-serif;
-      opacity: 0; transform: translateY(-4px);
-      transition: opacity 0.2s, transform 0.2s;
+      display: flex; align-items: center; gap: 6px;
+      min-height: 18px; margin-top: 10px;
+      font-size: 12.5px; font-weight: 600;
+      color: var(--danger);
+      font-family: var(--font-main);
+      opacity: 0; transform: translateY(-3px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
     .error-msg.visible { opacity: 1; transform: translateY(0); }
 
-    .bottom-links {
-      display: flex; gap: 16px; margin-top: 20px;
-      animation: fadeIn 0.8s 0.5s ease both;
+    /* ── Footer links ─────────────────────────────────────── */
+    .footer-links {
+      display: flex; gap: 20px; justify-content: center;
+      margin-top: 20px;
+      animation: enterUp 0.6s 0.3s ease both;
     }
-    .bottom-links a {
-      font-size: 12px; color: var(--text-dim); text-decoration: none;
-      font-family: 'Inter', sans-serif; transition: color 0.2s;
+    .footer-links a {
+      font-size: 12px; color: var(--text-dim);
+      text-decoration: none;
+      font-family: var(--font-main);
+      transition: color 0.2s;
     }
-    .bottom-links a:hover { color: var(--accent); }
+    .footer-links a:hover { color: var(--accent); }
 
-    .version {
-      position: fixed; bottom: 16px; right: 16px;
-      font-size: 10px; color: var(--text-dim); font-family: monospace; opacity: 0.5;
+    .version-tag {
+      position: fixed; bottom: 14px; right: 14px;
+      font-size: 10px; color: var(--text-dim);
+      font-family: var(--font-mono); opacity: 0.45;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-<div class="bg-grid"></div>
-<div class="bg-glow"></div>
+<!-- Background -->
+<div class="bg-dots"></div>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
 
 <div class="login-wrap">
 
+  <!-- Logo -->
   <div class="logo-area">
-    <span class="logo-robot">🤖</span>
-    <div class="logo-name">FIRSTSHIFT</div>
+    <div class="logo-mark">🤖</div>
+    <div class="logo-name">First<span>Shift</span></div>
     <div class="logo-tagline">AR-помощник на производстве</div>
   </div>
 
+  <!-- Feature pills -->
   <div class="features">
-    <div class="feature"><span class="icon">📷</span>AR-камера</div>
-    <div class="feature"><span class="icon">🎯</span>Квесты</div>
-    <div class="feature"><span class="icon">🏆</span>Ачивки</div>
-    <div class="feature"><span class="icon">🛡️</span>Безопасность</div>
+    <div class="feature-pill"><span>📷</span> AR-камера</div>
+    <div class="feature-pill"><span>🎯</span> Квесты</div>
+    <div class="feature-pill"><span>🏆</span> Ачивки</div>
+    <div class="feature-pill"><span>🛡️</span> Safety Check</div>
   </div>
 
-  <div class="tab-switch">
-    <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Войти</button>
-    <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Регистрация</button>
-  </div>
+  <!-- Auth card -->
+  <div class="login-card" id="login-box">
 
-  <div class="login-box" id="login-box">
+    <!-- Tab switch -->
+    <div class="tab-switch">
+      <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Войти</button>
+      <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Регистрация</button>
+    </div>
+
+    <!-- Fields -->
     <div class="input-group" id="group-username">
       <input type="text" id="username-input"
         placeholder="Логин (a-z, 0-9, _, -)"
@@ -224,7 +339,7 @@
 
     <div class="input-group" id="group-password">
       <input type="password" id="password-input"
-        placeholder="Пароль (минимум 6 символов)"
+        placeholder="Пароль"
         maxlength="128" autocomplete="current-password">
     </div>
 
@@ -241,112 +356,86 @@
     </div>
 
     <div class="input-group" id="group-birthyear" style="display:none">
-      <select id="birthyear-input" style="
-        width:100%; padding:13px 16px; box-sizing:border-box;
-        background:rgba(0,170,255,0.05); border:1px solid rgba(0,170,255,0.2);
-        border-radius:12px; color:var(--text-primary);
-        font-size:16px; font-family:'Inter',sans-serif; outline:none;
-      ">
+      <select id="birthyear-input">
         <option value="">Год рождения (необязательно)</option>
       </select>
     </div>
 
-    <div id="group-privacy" style="display:none;margin-bottom:12px">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text-secondary);line-height:1.5">
-        <input type="checkbox" id="privacy-checkbox" style="margin-top:2px;flex-shrink:0;accent-color:var(--accent)">
-        <span>Согласен с <a href="/privacy" target="_blank" style="color:var(--accent)">политикой обработки данных</a> (152-ФЗ). Система не сохраняет биометрию.</span>
-      </label>
+    <label class="privacy-row" id="group-privacy">
+      <input type="checkbox" id="privacy-checkbox">
+      <span>Согласен с <a href="/privacy" target="_blank">политикой обработки данных</a> (152-ФЗ). Биометрия не сохраняется.</span>
+    </label>
+
+    <button class="btn-submit" id="btn-submit">Войти →</button>
+
+    <div class="error-msg" id="error-msg">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="error-text"></span>
     </div>
 
-    <button class="btn-login" id="btn-submit">Войти →</button>
+  </div><!-- /.login-card -->
 
-    <div class="error-msg" id="error-msg">⚠️ <span id="error-text"></span></div>
+  <div class="footer-links">
+    <a href="/markers">🖨 Маркеры для печати</a>
+    <a href="/docs" target="_blank">API Docs</a>
   </div>
 
-  <div class="bottom-links">
-    <a href="/markers">🖨️ Маркеры для печати</a>
-    <a href="/docs" target="_blank">📖 API Docs</a>
-  </div>
-</div>
+</div><!-- /.login-wrap -->
 
-<div class="version">FirstShift v0.2.0</div>
+<div class="version-tag">v0.2.0</div>
 
 <script src="/static/js/api.js"></script>
 <script>
   if (API.hasToken()) window.location.href = '/safety';
 
-  // Заполняем select года рождения
+  // Год рождения
   (function() {
     const sel = document.getElementById('birthyear-input');
-    const curYear = new Date().getFullYear();
-    for (let y = curYear - 18; y >= curYear - 65; y--) {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.textContent = y;
-      sel.appendChild(opt);
+    const cur = new Date().getFullYear();
+    for (let y = cur - 18; y >= cur - 65; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      sel.appendChild(o);
     }
   })();
-
-  // Частицы фона
-  for (let i = 0; i < 20; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.animationDuration = (8 + Math.random() * 12) + 's';
-    p.style.animationDelay   = (Math.random() * 10) + 's';
-    document.body.appendChild(p);
-  }
 
   let _mode = 'login';
 
   function switchTab(mode) {
     _mode = mode;
-    document.getElementById('tab-login').classList.toggle('active',    mode === 'login');
-    document.getElementById('tab-register').classList.toggle('active', mode === 'register');
-    document.getElementById('group-displayname').style.display = mode === 'register' ? 'block' : 'none';
-    document.getElementById('group-company').style.display     = mode === 'register' ? 'block' : 'none';
-    document.getElementById('group-birthyear').style.display   = mode === 'register' ? 'block' : 'none';
-    document.getElementById('group-privacy').style.display      = mode === 'register' ? 'block' : 'none';
-    document.getElementById('btn-submit').textContent = mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
-    document.getElementById('password-input').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    const isReg = mode === 'register';
+    document.getElementById('tab-login').classList.toggle('active',    !isReg);
+    document.getElementById('tab-register').classList.toggle('active', isReg);
+    document.getElementById('group-displayname').style.display = isReg ? 'block' : 'none';
+    document.getElementById('group-company').style.display     = isReg ? 'block' : 'none';
+    document.getElementById('group-birthyear').style.display   = isReg ? 'block' : 'none';
+    document.getElementById('group-privacy').style.display     = isReg ? 'flex'  : 'none';
+    document.getElementById('btn-submit').textContent = isReg ? 'Создать аккаунт →' : 'Войти →';
+    document.getElementById('password-input').autocomplete = isReg ? 'new-password' : 'current-password';
     hideError();
     document.getElementById('username-input').focus();
   }
 
-  // ---------- Визуальная ошибка ----------
   function showError(message, fields = ['username', 'password']) {
-    // Текст
     document.getElementById('error-text').textContent = message;
-    const errorEl = document.getElementById('error-msg');
-    errorEl.classList.add('visible');
-
-    // Красная подсветка полей
+    document.getElementById('error-msg').classList.add('visible');
     fields.forEach(f => {
-      const g = document.getElementById('group-' + f);
-      if (g) g.classList.add('input-error');
+      document.getElementById('group-' + f)?.classList.add('input-error');
     });
-
-    // Shake через Web Animations API — не конфликтует с CSS анимациями
     const box = document.getElementById('login-box');
     box.classList.add('error-state');
     box.animate([
       { transform: 'translateX(0)' },
-      { transform: 'translateX(-8px)' },
-      { transform: 'translateX(8px)' },
-      { transform: 'translateX(-6px)' },
-      { transform: 'translateX(6px)' },
-      { transform: 'translateX(-3px)' },
-      { transform: 'translateX(2px)' },
+      { transform: 'translateX(-7px)' },
+      { transform: 'translateX(7px)' },
+      { transform: 'translateX(-5px)' },
+      { transform: 'translateX(5px)' },
+      { transform: 'translateX(-2px)' },
       { transform: 'translateX(0)' },
-    ], { duration: 420, easing: 'ease' });
-    setTimeout(() => box.classList.remove('error-state'), 2500);
-
-    // Убираем красные рамки через 2.5 сек
+    ], { duration: 380, easing: 'ease' });
     setTimeout(() => {
-      fields.forEach(f => {
-        const g = document.getElementById('group-' + f);
-        if (g) g.classList.remove('input-error');
-      });
+      box.classList.remove('error-state');
+      fields.forEach(f => document.getElementById('group-' + f)?.classList.remove('input-error'));
     }, 2500);
   }
 
@@ -357,27 +446,20 @@
     });
   }
 
-  // ---------- Валидация ----------
   function validate() {
-    const username = document.getElementById('username-input').value.trim();
-    const password = document.getElementById('password-input').value;
-
-    if (!username) return { msg: 'Введи логин', fields: ['username'] };
-    if (!/^[a-zA-Z0-9_\-]+$/.test(username))
-      return { msg: 'Логин: только a-z, 0-9, _ и -', fields: ['username'] };
-    if (username.length < 2)
-      return { msg: 'Логин минимум 2 символа', fields: ['username'] };
-    if (!password) return { msg: 'Введи пароль', fields: ['password'] };
-    if (password.length < 6)
-      return { msg: 'Пароль минимум 6 символов', fields: ['password'] };
+    const u = document.getElementById('username-input').value.trim();
+    const p = document.getElementById('password-input').value;
+    if (!u) return { msg: 'Введи логин', fields: ['username'] };
+    if (!/^[a-zA-Z0-9_\-]+$/.test(u)) return { msg: 'Логин: a-z, 0-9, _ и -', fields: ['username'] };
+    if (u.length < 2) return { msg: 'Логин минимум 2 символа', fields: ['username'] };
+    if (!p) return { msg: 'Введи пароль', fields: ['password'] };
+    if (p.length < 6) return { msg: 'Пароль минимум 6 символов', fields: ['password'] };
     return null;
   }
 
-  // ---------- Отправка ----------
   async function doSubmit() {
     const btn = document.getElementById('btn-submit');
     hideError();
-
     const err = validate();
     if (err) { showError(err.msg, err.fields); return; }
 
@@ -388,21 +470,16 @@
     const companyCode = document.getElementById('company-input')?.value.trim() || '';
 
     btn.disabled = true;
-    btn.textContent = '⏳ Подключение...';
+    btn.textContent = 'Подключение...';
 
     if (_mode === 'register') {
-      const privacyOk = document.getElementById('privacy-checkbox').checked;
-      if (!privacyOk) {
-        showError('Необходимо принять политику обработки данных', []);
-        btn.disabled = false;
-        btn.textContent = 'Создать аккаунт →';
-        return;
+      if (!document.getElementById('privacy-checkbox').checked) {
+        showError('Необходимо принять политику данных', []);
+        btn.disabled = false; btn.textContent = 'Создать аккаунт →'; return;
       }
       if (!companyCode) {
-        showError('Укажите код компании', ['company-input']);
-        btn.disabled = false;
-        btn.textContent = 'Создать аккаунт →';
-        return;
+        showError('Укажи код компании', ['company-input']);
+        btn.disabled = false; btn.textContent = 'Создать аккаунт →'; return;
       }
     }
 
@@ -412,11 +489,11 @@
       } else {
         await API.register(username, password, displayName || null, true, birthYear, companyCode);
       }
-      btn.textContent = '✅ Входим...';
-      setTimeout(() => window.location.href = '/safety', 400);
-    } catch (apiErr) {
-      const msg = apiErr.message || 'Ошибка подключения';
-      showError(msg, ['username', 'password']);
+      btn.textContent = '✓ Входим...';
+      btn.style.background = 'var(--success)';
+      setTimeout(() => window.location.href = '/safety', 380);
+    } catch (e) {
+      showError(e.message || 'Ошибка подключения', ['username', 'password']);
       btn.disabled = false;
       btn.textContent = _mode === 'login' ? 'Войти →' : 'Создать аккаунт →';
     }
@@ -424,9 +501,7 @@
 
   document.getElementById('btn-submit').addEventListener('click', doSubmit);
   document.addEventListener('keydown', e => { if (e.key === 'Enter') doSubmit(); });
-
-  // Сбрасываем ошибку при вводе
-  ['username-input', 'password-input', 'displayname-input'].forEach(id => {
+  ['username-input','password-input','displayname-input'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', hideError);
   });
 

@@ -6,18 +6,18 @@
   <title>FirstShift — Мои подопечные</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <style>
-    body { min-height:100vh; overflow-y:auto; padding:0 0 48px; display:block; background:#070b14; }
+    body { min-height:100vh; overflow-y:auto; padding:0 0 48px; display:block; }
 
     #top-bar {
       display:flex; align-items:center; gap:12px; padding:12px 16px;
-      background:rgba(7,11,20,0.96); border-bottom:1px solid rgba(170,136,255,0.2);
+      background:rgba(19,18,16,0.97); border-bottom:1px solid var(--border);
       position:sticky; top:0; z-index:20;
     }
-    .logo { font-family:monospace; font-size:15px; font-weight:700; color:#aa88ff; letter-spacing:2px; }
+    .logo { font-family:var(--font-mono); font-size:15px; font-weight:700; color:var(--accent); letter-spacing:2px; }
     .mentor-badge {
       padding:3px 10px; border-radius:20px; font-size:10px;
-      font-family:monospace; font-weight:700; letter-spacing:1px;
-      background:rgba(170,136,255,0.12); border:1px solid rgba(170,136,255,0.4); color:#aa88ff;
+      font-family:var(--font-mono); font-weight:700; letter-spacing:1px;
+      background:var(--accent-dim); border:1px solid var(--border-bright); color:var(--accent-light);
     }
     #top-bar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
     .top-user { font-size:13px; color:var(--text-secondary); }
@@ -26,20 +26,20 @@
       border:1px solid var(--border); background:transparent;
       color:var(--text-secondary); cursor:pointer; transition:all 0.2s; font-family:inherit;
     }
-    .btn-sm:hover { border-color:#aa88ff; color:#aa88ff; }
-    .btn-danger { border-color:rgba(255,51,85,0.4) !important; color:#ff3355 !important; }
-    .btn-danger:hover { background:rgba(255,51,85,0.1) !important; }
+    .btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-danger { border-color:rgba(184,84,84,0.4) !important; color:var(--danger) !important; }
+    .btn-danger:hover { background:var(--danger-dim) !important; }
 
     .page { max-width:900px; margin:0 auto; padding:20px 16px; }
 
     /* Статы */
     .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
     .stat-card { padding:14px 16px; border-radius:14px; border:1px solid var(--border); background:var(--bg-glass); }
-    .stat-card .val { font-size:26px; font-weight:900; color:var(--text-primary); }
-    .stat-card .lbl { font-size:11px; color:var(--text-secondary); margin-top:4px; font-family:monospace; }
+    .stat-card .val { font-size:26px; font-weight:900; color:var(--text-primary); font-family:var(--font-display); }
+    .stat-card .lbl { font-size:11px; color:var(--text-secondary); margin-top:4px; font-family:var(--font-mono); }
 
     .section-title {
-      font-size:12px; font-family:monospace; color:#aa88ff;
+      font-size:12px; font-family:var(--font-mono); color:var(--accent);
       letter-spacing:1px; text-transform:uppercase; font-weight:700;
       margin-bottom:14px;
     }
@@ -52,34 +52,34 @@
       margin-bottom:10px; cursor:pointer;
       transition:all 0.2s;
     }
-    .mentee-card:hover { border-color:#aa88ff; background:rgba(170,136,255,0.06); }
+    .mentee-card:hover { border-color:var(--border-bright); background:var(--accent-dim); transform:translateX(2px); }
 
     .mentee-avatar {
       width:42px; height:42px; border-radius:50%;
-      background:linear-gradient(135deg,#5500aa,#aa88ff);
-      border:2px solid #aa88ff;
+      background:linear-gradient(135deg,#7A3520,#D4764E);
+      border:2px solid var(--border-bright);
       display:flex; align-items:center; justify-content:center;
       font-size:16px; font-weight:700; color:#fff; flex-shrink:0;
     }
     .mentee-info { flex:1; min-width:0; }
     .mentee-name { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
-    .mentee-meta { font-size:12px; color:var(--text-secondary); font-family:monospace; }
+    .mentee-meta { font-size:12px; color:var(--text-secondary); font-family:var(--font-mono); }
 
     .mentee-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
     .xp-badge {
       font-size:12px; font-weight:700; color:var(--success);
-      font-family:monospace;
+      font-family:var(--font-mono);
     }
     .safety-badge {
       font-size:11px; padding:3px 8px; border-radius:20px; font-weight:600;
     }
-    .safety-ok     { background:rgba(0,255,136,0.12); color:var(--success); border:1px solid rgba(0,255,136,0.3); }
-    .safety-miss   { background:rgba(255,170,0,0.12); color:#ffaa00; border:1px solid rgba(255,170,0,0.3); }
+    .safety-ok   { background:var(--success-dim); color:var(--success); border:1px solid rgba(107,168,122,0.4); }
+    .safety-miss { background:var(--warning-dim); color:var(--warning); border:1px solid rgba(196,150,64,0.4); }
 
     .progress-mini { width:80px; }
     .progress-mini-bg { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
-    .progress-mini-fill { height:100%; background:#aa88ff; border-radius:2px; }
-    .progress-mini-txt { font-size:10px; color:var(--text-dim); font-family:monospace; margin-top:2px; text-align:right; }
+    .progress-mini-fill { height:100%; background:var(--accent); border-radius:2px; }
+    .progress-mini-txt { font-size:10px; color:var(--text-dim); font-family:var(--font-mono); margin-top:2px; text-align:right; }
 
     /* Пустое состояние */
     .empty-state {
@@ -95,7 +95,7 @@
     /* Боковая панель */
     #detail-panel {
       position:fixed; top:0; right:0; bottom:0; width:360px;
-      background:var(--bg-dark); border-left:1px solid rgba(170,136,255,0.2);
+      background:var(--bg-surface); border-left:1px solid var(--border);
       z-index:30; transform:translateX(100%);
       transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
       display:flex; flex-direction:column;
@@ -108,8 +108,8 @@
     }
     #detail-avatar {
       width:40px; height:40px; border-radius:50%;
-      background:linear-gradient(135deg,#5500aa,#aa88ff);
-      border:2px solid #aa88ff;
+      background:linear-gradient(135deg,#7A3520,#D4764E);
+      border:2px solid var(--border-bright);
       display:flex; align-items:center; justify-content:center;
       font-size:16px; font-weight:700; color:#fff; flex-shrink:0;
     }
@@ -122,7 +122,7 @@
       display:flex; align-items:center; justify-content:center;
       transition:all 0.2s; margin-left:auto; flex-shrink:0;
     }
-    #detail-close:hover { border-color:#ff3355; color:#ff3355; }
+    #detail-close:hover { border-color:var(--danger); color:var(--danger); }
     #detail-body { flex:1; overflow-y:auto; padding:16px 18px; }
 
     .quest-row {
@@ -131,21 +131,21 @@
       border:1px solid var(--border); background:var(--bg-glass);
       margin-bottom:8px;
     }
-    .quest-row.completed { border-color:rgba(0,255,136,0.25); background:rgba(0,255,136,0.04); }
-    .quest-row.active    { border-color:rgba(170,136,255,0.35); }
+    .quest-row.completed { border-color:rgba(107,168,122,0.35); background:rgba(107,168,122,0.04); }
+    .quest-row.active    { border-color:var(--border-bright); background:var(--accent-dim); }
     .quest-row.locked    { opacity:0.4; }
     .quest-icon { font-size:18px; flex-shrink:0; width:28px; text-align:center; }
     .quest-info { flex:1; min-width:0; }
     .quest-title { font-size:13px; font-weight:600; color:var(--text-primary); }
-    .quest-status { font-size:11px; font-family:monospace; margin-top:2px; }
+    .quest-status { font-size:11px; font-family:var(--font-mono); margin-top:2px; }
     .quest-status.completed { color:var(--success); }
-    .quest-status.active    { color:#aa88ff; }
+    .quest-status.active    { color:var(--accent); }
     .quest-status.available { color:var(--text-secondary); }
     .quest-status.locked    { color:var(--text-dim); }
-    .quest-xp { font-size:12px; font-family:monospace; color:var(--success); font-weight:700; flex-shrink:0; }
+    .quest-xp { font-size:12px; font-family:var(--font-mono); color:var(--success); font-weight:700; flex-shrink:0; }
 
     #overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,0.5);
+      position:fixed; inset:0; background:rgba(10,8,6,0.6);
       z-index:25; opacity:0; pointer-events:none; transition:opacity 0.3s;
     }
     #overlay.open { opacity:1; pointer-events:all; }

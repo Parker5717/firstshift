@@ -30,12 +30,12 @@
       padding: 20px;
       border-radius: 16px;
       border: 1px solid var(--border-bright);
-      background: linear-gradient(135deg, rgba(0,170,255,0.08), rgba(0,255,136,0.04));
+      background: linear-gradient(135deg, rgba(212,118,78,0.1), rgba(107,168,122,0.04));
       display: flex; align-items: center; gap: 16px;
     }
     #hero-avatar {
       width: 64px; height: 64px; border-radius: 50%;
-      background: linear-gradient(135deg, #0055aa, #00aaff);
+      background: linear-gradient(135deg, #7A3520, #D4764E);
       border: 2px solid var(--accent);
       display: flex; align-items: center; justify-content: center;
       font-size: 28px; font-weight: 900; color: white;
@@ -97,7 +97,7 @@
     }
     #toast.show { opacity: 1; }
     #toast.success { border-color: var(--success); color: var(--success); }
-    #toast.error   { border-color: #ff4444; color: #ff4444; }
+    #toast.error   { border-color: var(--danger); color: var(--danger); }
 
     /* Статы */
     #stats-grid {
@@ -120,7 +120,7 @@
       border: 1px solid var(--border);
       background: var(--bg-glass);
     }
-    .lb-item.me    { border-color: var(--accent); background: rgba(0,170,255,0.06); }
+    .lb-item.me    { border-color: var(--accent); background: var(--accent-dim); }
     .lb-item.gold  { border-color: #ffd700; }
     .lb-item.silver{ border-color: #c0c0c0; }
     .lb-item.bronze{ border-color: #cd7f32; }
@@ -158,8 +158,8 @@
   <h1>👤 Мой профиль</h1>
   <button onclick="sessionStorage.removeItem('firstshift_token'); window.location.href='/'" style="
     padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600;
-    border:1px solid rgba(255,51,85,0.4); background:transparent;
-    color:#ff3355; cursor:pointer; font-family:inherit; transition:all 0.2s;
+    border:1px solid rgba(184,84,84,0.4); background:transparent;
+    color:var(--danger); cursor:pointer; font-family:inherit; transition:all 0.2s;
   ">Выйти</button>
 </div>
 

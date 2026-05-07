@@ -18,7 +18,7 @@
       position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center; pointer-events:none;
     }
-    #silhouette svg { height:75%; opacity:0.25; filter:drop-shadow(0 0 12px rgba(0,170,255,0.5)); }
+    #silhouette svg { height:75%; opacity:0.22; filter:drop-shadow(0 0 12px rgba(212,118,78,0.5)); }
 
     .ppe-zone {
       position:absolute; border-radius:50%;
@@ -26,8 +26,8 @@
     }
     #zone-helmet { top:8%; left:50%; transform:translateX(-50%); width:22%; padding-top:22%; }
     #zone-vest   { top:35%; left:50%; transform:translateX(-50%); width:44%; padding-top:32%; }
-    .ppe-zone.ok      { border-color:#00ff88; background:rgba(0,255,136,0.08); }
-    .ppe-zone.missing { border-color:#ff3355; background:rgba(255,51,85,0.08); }
+    .ppe-zone.ok      { border-color:var(--success); background:rgba(107,168,122,0.1); }
+    .ppe-zone.missing { border-color:var(--danger); background:rgba(184,84,84,0.1); }
 
     #status-panel {
       background:var(--bg-dark); border-top:1px solid var(--border);
@@ -42,24 +42,24 @@
       border:1px solid var(--border); background:var(--bg-glass);
       font-size:14px; font-weight:600; transition:all 0.3s ease;
     }
-    .ppe-item.ok      { border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.08); }
-    .ppe-item.missing { border-color:#ff3355; color:#ff3355; background:rgba(255,51,85,0.08); }
+    .ppe-item.ok      { border-color:var(--success); color:var(--success); background:rgba(107,168,122,0.08); }
+    .ppe-item.missing { border-color:var(--danger); color:var(--danger); background:rgba(184,84,84,0.08); }
     .ppe-item .icon { font-size:20px; }
 
     #status-message {
       font-size:15px; font-weight:700; text-align:center;
       color:var(--text-secondary); min-height:22px; transition:color 0.3s;
     }
-    #status-message.ok      { color:#00ff88; }
-    #status-message.missing { color:#ff3355; }
+    #status-message.ok      { color:var(--success); }
+    #status-message.missing { color:var(--danger); }
 
     #btn-confirm {
       width:100%; padding:15px; font-size:16px; font-weight:800;
       border-radius:12px; border:none; cursor:pointer; transition:all 0.3s;
       background:var(--locked); color:var(--text-dim);
     }
-    #btn-confirm.ready { background:#00ff88; color:#070b14; box-shadow:0 0 24px rgba(0,255,136,0.4); }
-    #btn-confirm.ready:hover { background:#22ffaa; }
+    #btn-confirm.ready { background:var(--success); color:#fff; box-shadow:0 0 24px rgba(107,168,122,0.4); }
+    #btn-confirm.ready:hover { background:#7EC491; }
 
     #top-bar {
       display:flex; align-items:center; gap:12px;
@@ -90,7 +90,7 @@
   <span id="offline-badge" style="
     display:none; font-size:10px; font-family:monospace;
     padding:3px 8px; border-radius:20px; font-weight:700;
-    background:rgba(255,170,0,0.15); border:1px solid rgba(255,170,0,0.4); color:#ffaa00;
+    background:rgba(196,150,64,0.15); border:1px solid rgba(196,150,64,0.4); color:var(--warning);
   ">📵 ОФЛАЙН</span>
 </div>
 
@@ -99,14 +99,14 @@
   <div id="scan-line"></div>
   <div id="silhouette">
     <svg viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="22" r="16" stroke="#00aaff" stroke-width="1.5"/>
-      <path d="M30 22 Q30 6 50 6 Q70 6 70 22" stroke="#00aaff" stroke-width="2" fill="rgba(0,170,255,0.1)"/>
-      <rect x="28" y="42" width="44" height="55" rx="6" stroke="#00aaff" stroke-width="1.5" fill="rgba(0,170,255,0.06)"/>
-      <path d="M42 38 L50 48 L58 38" stroke="#00aaff" stroke-width="1.5"/>
-      <rect x="8"  y="42" width="18" height="45" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
-      <rect x="74" y="42" width="18" height="45" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
-      <rect x="28" y="100" width="18" height="55" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
-      <rect x="54" y="100" width="18" height="55" rx="8" stroke="#00aaff" stroke-width="1" opacity="0.5"/>
+      <circle cx="50" cy="22" r="16" stroke="#D4764E" stroke-width="1.5"/>
+      <path d="M30 22 Q30 6 50 6 Q70 6 70 22" stroke="#D4764E" stroke-width="2" fill="rgba(212,118,78,0.1)"/>
+      <rect x="28" y="42" width="44" height="55" rx="6" stroke="#D4764E" stroke-width="1.5" fill="rgba(212,118,78,0.06)"/>
+      <path d="M42 38 L50 48 L58 38" stroke="#D4764E" stroke-width="1.5"/>
+      <rect x="8"  y="42" width="18" height="45" rx="8" stroke="#D4764E" stroke-width="1" opacity="0.5"/>
+      <rect x="74" y="42" width="18" height="45" rx="8" stroke="#D4764E" stroke-width="1" opacity="0.5"/>
+      <rect x="28" y="100" width="18" height="55" rx="8" stroke="#D4764E" stroke-width="1" opacity="0.5"/>
+      <rect x="54" y="100" width="18" height="55" rx="8" stroke="#D4764E" stroke-width="1" opacity="0.5"/>
     </svg>
     <div id="zone-helmet" class="ppe-zone"></div>
     <div id="zone-vest"   class="ppe-zone"></div>
@@ -116,12 +116,12 @@
 <!-- Офлайн-заглушка — поверх всего, скрыта когда онлайн -->
 <div id="offline-wall" style="
   display:none; position:absolute; inset:0;
-  background:rgba(7,11,20,0.92); z-index:10;
+  background:rgba(19,18,16,0.94); z-index:10;
   flex-direction:column; align-items:center; justify-content:center;
   gap:16px; padding:32px; text-align:center;
 ">
   <div style="font-size:56px">📵</div>
-  <div style="font-size:18px; font-weight:800; color:#ffaa00">Нет подключения</div>
+  <div style="font-size:18px; font-weight:800; color:var(--warning)">Нет подключения</div>
   <div style="font-size:14px; color:var(--text-secondary); line-height:1.6; max-width:280px">
     Safety Check требует подключения к сети.<br>
     Обратись к наставнику или подключись к WiFi.
