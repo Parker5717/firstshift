@@ -101,7 +101,7 @@ const Mascot = (() => {
       border-radius:12px 12px 12px 4px;
       color:var(--text-primary);
       font-size:13px; line-height:1.55;
-      box-shadow:0 0 20px rgba(0,170,255,0.2);
+      box-shadow:0 0 20px rgba(212,118,78,0.25);
       cursor:pointer;
     `;
     _bubble.addEventListener('click', _stopAndHide);
@@ -112,15 +112,15 @@ const Mascot = (() => {
     _avatar = document.createElement('div');
     _avatar.style.cssText = `
       width:50px; height:50px; border-radius:50%;
-      background:linear-gradient(135deg,#0055aa,#00aaff);
+      background:linear-gradient(135deg,#7A3520,#D4764E);
       border:2px solid var(--accent);
       display:flex; align-items:center; justify-content:center;
-      font-size:24px;
-      box-shadow:0 0 14px rgba(0,170,255,0.35);
+      overflow:hidden;
+      box-shadow:0 0 14px rgba(212,118,78,0.4);
       cursor:pointer; flex-shrink:0;
       transition:transform 0.2s;
     `;
-    _avatar.textContent = '🤖';
+    _avatar.innerHTML = '<img src="/static/img/mascot.svg" alt="Алекс" style="width:40px;height:40px;display:block">';
     _avatar.title = 'Алекс — нажми для подсказки';
     _avatar.addEventListener('click', () => {
       if (_isShowing) _stopAndHide();

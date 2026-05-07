@@ -11,7 +11,7 @@ const Onboarding = (() => {
 
   const STEPS_EMPLOYEE = [
     {
-      icon: '🤖',
+      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Привет! Я Алекс',
       text: 'Твой цифровой напарник на производстве. Помогу освоиться, покажу где что находится и объясню правила безопасности.',
     },
@@ -39,7 +39,7 @@ const Onboarding = (() => {
 
   const STEPS_MENTOR = [
     {
-      icon: '🤖',
+      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Привет! Я Алекс',
       text: 'Панель наставника FirstShift. Ты отвечаешь за адаптацию новых сотрудников на производстве.',
     },
@@ -62,7 +62,7 @@ const Onboarding = (() => {
 
   const STEPS_HR = [
     {
-      icon: '🤖',
+      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Добро пожаловать в FirstShift',
       text: 'Панель HR-менеджера. Здесь ты управляешь адаптацией всех сотрудников предприятия.',
     },
@@ -90,7 +90,7 @@ const Onboarding = (() => {
 
   const STEPS_ADMIN = [
     {
-      icon: '🤖',
+      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Добро пожаловать, администратор',
       text: 'У тебя полный доступ к платформе FirstShift. Управляй ролями, наставниками и данными всех пользователей.',
     },
@@ -177,7 +177,7 @@ const Onboarding = (() => {
     _overlay = document.createElement('div');
     _overlay.style.cssText = `
       position:fixed; inset:0; z-index:100;
-      background:rgba(7,11,20,0.88);
+      background:rgba(13,11,9,0.92);
       backdrop-filter:blur(6px);
       display:flex; align-items:center; justify-content:center;
       padding:24px;
@@ -207,7 +207,7 @@ const Onboarding = (() => {
         border-radius:20px;
         padding:28px 24px 24px;
         text-align:center;
-        box-shadow:0 0 60px rgba(0,170,255,0.2);
+        box-shadow:0 0 60px rgba(212,118,78,0.2);
       ">
         <div style="font-size:56px;margin-bottom:16px">${step.icon}</div>
         <div style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:10px">
