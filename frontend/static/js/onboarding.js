@@ -11,7 +11,7 @@ const Onboarding = (() => {
 
   const STEPS_EMPLOYEE = [
     {
-      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
+      icon: '<img src="/static/img/mascot.png" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Привет! Я Алекс',
       text: 'Твой цифровой напарник на производстве. Помогу освоиться, покажу где что находится и объясню правила безопасности.',
     },
@@ -39,7 +39,7 @@ const Onboarding = (() => {
 
   const STEPS_MENTOR = [
     {
-      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
+      icon: '<img src="/static/img/mascot.png" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Привет! Я Алекс',
       text: 'Панель наставника FirstShift. Ты отвечаешь за адаптацию новых сотрудников на производстве.',
     },
@@ -62,7 +62,7 @@ const Onboarding = (() => {
 
   const STEPS_HR = [
     {
-      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
+      icon: '<img src="/static/img/mascot.png" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Добро пожаловать в FirstShift',
       text: 'Панель HR-менеджера. Здесь ты управляешь адаптацией всех сотрудников предприятия.',
     },
@@ -90,7 +90,7 @@ const Onboarding = (() => {
 
   const STEPS_ADMIN = [
     {
-      icon: '<img src="/static/img/mascot.svg" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
+      icon: '<img src="/static/img/mascot.png" alt="Алекс" style="width:56px;height:56px;display:inline-block">',
       title: 'Добро пожаловать, администратор',
       text: 'У тебя полный доступ к платформе FirstShift. Управляй ролями, наставниками и данными всех пользователей.',
     },

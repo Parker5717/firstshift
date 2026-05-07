@@ -1,6 +1,6 @@
 /**
  * FirstShift Achievements
- * Загрузка, отображение и уведомления о новых ачивках.
+ * Загрузка, отображение и уведомления о новых достижениех.
  */
 
 const Achievements = (() => {
@@ -14,7 +14,7 @@ const Achievements = (() => {
   };
 
   /**
-   * Загрузить ачивки с сервера и обновить модалку.
+   * Загрузить достижения с сервера и обновить модалку.
    */
   async function load() {
     try {
@@ -28,7 +28,7 @@ const Achievements = (() => {
   }
 
   /**
-   * Показать уведомления о новых ачивках после завершения квеста.
+   * Показать уведомления о новых достижениех после завершения квеста.
    * @param {Array} newAchs — массив из QuestCompleteOut.newly_unlocked_achievements
    */
   async function notifyNew(newAchs) {
@@ -50,7 +50,7 @@ const Achievements = (() => {
     const locked   = list.filter(a => !a.unlocked);
 
     if (unlocked.length === 0 && locked.length === 0) {
-      container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px">Нет ачивок</p>';
+      container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px">Нет достижений</p>';
       return;
     }
 

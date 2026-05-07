@@ -1,6 +1,6 @@
 /**
  * FirstShift Quest Engine
- * Управляет состоянием квестов и ачивок в единой модалке.
+ * Управляет состоянием квестов и достижений в единой модалке.
  */
 
 const QuestEngine = (() => {
@@ -150,7 +150,7 @@ const QuestEngine = (() => {
     });
   }
 
-  // ── Рендер ачивок ────────────────────────────────────────────
+  // ── Рендер достижений ────────────────────────────────────────────
   async function _renderAchievements() {
     const panel = document.getElementById('achievements-list-panel');
     if (!panel) return;
@@ -190,11 +190,11 @@ const QuestEngine = (() => {
         panel.appendChild(item);
       });
     } catch (e) {
-      panel.innerHTML = '<div style="color:var(--danger);text-align:center;padding:20px;font-size:13px">Ошибка загрузки ачивок</div>';
+      panel.innerHTML = '<div style="color:var(--danger);text-align:center;padding:20px;font-size:13px">Ошибка загрузки достижений</div>';
     }
   }
 
-  // ── Уведомление о новых ачивках ──────────────────────────────
+  // ── Уведомление о новых достижениех ──────────────────────────────
   async function _notifyAchievements(newAchs) {
     for (const ach of newAchs) {
       await _showAchNotification(ach);

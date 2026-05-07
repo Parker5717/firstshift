@@ -235,7 +235,7 @@ const VisionClient = (() => {
         // Перезагружаем квесты — разблокировались новые
         QuestEngine.load();
 
-        // Показываем ачивки если разблокировались
+        // Показываем достижения если разблокировались
         if (evt.newly_unlocked_achievements?.length > 0) {
           if (typeof Achievements !== 'undefined') Achievements.showUnlocked(evt.newly_unlocked_achievements);
         }

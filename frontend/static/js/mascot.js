@@ -119,7 +119,7 @@ const Mascot = (() => {
       transition:transform 0.2s;
       background:transparent;
     `;
-    _avatar.innerHTML = '<img src="/static/img/mascot.svg" alt="Алекс" style="width:100%;height:100%;display:block">';
+    _avatar.innerHTML = '<img src="/static/img/mascot.png" alt="Алекс" style="width:100%;height:100%;object-fit:cover;object-position:50% 15%;display:block">';
     _avatar.title = 'Алекс — нажми для подсказки';
     _avatar.addEventListener('click', () => {
       if (_isShowing) _stopAndHide();

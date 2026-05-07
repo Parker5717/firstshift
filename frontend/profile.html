@@ -136,7 +136,7 @@
     .lb-level { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
     .lb-xp    { font-size: 13px; font-weight: 700; color: var(--success); font-family: var(--font-mono); }
 
-    /* Ачивки */
+    /* Достижения */
     #ach-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
     }
@@ -156,7 +156,7 @@
 <div id="top-bar">
   <button class="btn" onclick="window.location.href='/app'" style="padding:8px 14px;font-size:13px">← Назад</button>
   <h1>👤 Мой профиль</h1>
-  <button onclick="sessionStorage.removeItem('firstshift_token'); window.location.href='/'" style="
+  <button onclick="API.clearToken(); window.location.href='/'" style="
     padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600;
     border:1px solid rgba(184,84,84,0.4); background:transparent;
     color:var(--danger); cursor:pointer; font-family:inherit; transition:all 0.2s;
@@ -287,11 +287,27 @@
     if (e.key === 'Escape') closeEdit();
   });
 
-  // ---- Загрузка данных ----
-  async function apiFetch(path) {
-    return API.get(path);
-  }
+  // ---- Мгновенное заполнение из кеша (синхронно, без задержки) ----
+  (function prefillFromCache() {
+    try {
+      const raw = localStorage.getItem('firstshift_profile');
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      heroAvatar.textContent = p.display_name.charAt(0).toUpperCase();
+      heroName.textContent   = p.display_name;
+      document.getElementById('hero-level').textContent   = `LVL ${p.level} · ${p.level_title}`;
+      document.getElementById('hero-xp-fill').style.width = `${Math.round((p.level_progress_pct || 0) * 100)}%`;
+      document.getElementById('hero-xp-text').textContent = `${p.total_xp} XP · ещё ${p.xp_to_next_level} до уровня ${p.level + 1}`;
+      if (p.role !== 'employee') {
+        document.getElementById('hero-xp-bar').style.display         = 'none';
+        document.getElementById('hero-xp-text').style.display        = 'none';
+        document.getElementById('section-achievements').style.display = 'none';
+        document.getElementById('section-leaderboard').style.display  = 'none';
+      }
+    } catch (_) {}
+  })();
 
+  // ---- Загрузка данных ----
   async function load() {
     const profile = await API.getProfile();
     _myUsername = profile.username;
@@ -302,58 +318,62 @@
     document.getElementById('hero-xp-fill').style.width = `${Math.round(profile.level_progress_pct * 100)}%`;
     document.getElementById('hero-xp-text').textContent = `${profile.total_xp} XP · ещё ${profile.xp_to_next_level} до уровня ${profile.level + 1}`;
 
-    // Скрыть XP, ачивки и лидерборд для не-сотрудников
-    if (profile.role !== 'employee') {
-      document.getElementById('hero-xp-bar').style.display       = 'none';
-      document.getElementById('hero-xp-text').style.display      = 'none';
+    const isEmployee = profile.role === 'employee';
+    if (!isEmployee) {
+      document.getElementById('hero-xp-bar').style.display         = 'none';
+      document.getElementById('hero-xp-text').style.display        = 'none';
       document.getElementById('section-achievements').style.display = 'none';
       document.getElementById('section-leaderboard').style.display  = 'none';
     }
 
-    // Статистика
-    const stats = await apiFetch('/api/progress/stats');
+    // Все сетевые запросы параллельно
+    const [stats, achs, lb] = await Promise.all([
+      API.get('/api/progress/stats'),
+      isEmployee ? API.get('/api/progress/achievements') : Promise.resolve(null),
+      isEmployee ? API.getLeaderboard()                  : Promise.resolve(null),
+    ]);
+
     document.getElementById('stat-quests').textContent = stats.quests_completed;
     document.getElementById('stat-scans').textContent  = stats.scans_total;
     document.getElementById('stat-achs').textContent   = stats.achievements_unlocked;
 
-    // Ачивки
-    const achs = await apiFetch('/api/progress/achievements');
-    const achGrid = document.getElementById('ach-grid');
-    achGrid.innerHTML = '';
-    achs.forEach(a => {
-      const card = document.createElement('div');
-      card.className = `ach-card${a.unlocked ? ' unlocked' : ''}`;
-      card.innerHTML = `
-        <div class="ach-icon">${ICONS[a.icon] || '🏆'}</div>
-        <div class="ach-title">${a.title}</div>
-        ${a.xp_bonus ? `<div class="ach-xp">+${a.xp_bonus} XP</div>` : ''}
-      `;
-      card.title = a.description;
-      achGrid.appendChild(card);
-    });
+    if (isEmployee && achs) {
+      const achGrid = document.getElementById('ach-grid');
+      achGrid.innerHTML = '';
+      achs.forEach(a => {
+        const card = document.createElement('div');
+        card.className = `ach-card${a.unlocked ? ' unlocked' : ''}`;
+        card.innerHTML = `
+          <div class="ach-icon">${ICONS[a.icon] || '🏆'}</div>
+          <div class="ach-title">${a.title}</div>
+          ${a.xp_bonus ? `<div class="ach-xp">+${a.xp_bonus} XP</div>` : ''}
+        `;
+        card.title = a.description;
+        achGrid.appendChild(card);
+      });
+    }
 
-    // Лидерборд
-    const lb = await API.getLeaderboard();
-    const lbList = document.getElementById('leaderboard-list');
-    lbList.innerHTML = '';
-    lb.forEach((u, i) => {
-      const isMe = u.username === _myUsername;
-      const item = document.createElement('div');
-      item.className = `lb-item${isMe ? ' me' : ''}${i < 3 ? ` ${RANK_CLASSES[i]}` : ''}`;
-      item.innerHTML = `
-        <div class="lb-rank">${i < 3 ? RANK_ICONS[i] : `#${i+1}`}</div>
-        <div class="lb-avatar">${u.display_name.charAt(0).toUpperCase()}</div>
-        <div class="lb-info">
-          <div class="lb-name">${u.display_name}${isMe ? ' (ты)' : ''}</div>
-          <div class="lb-level">LVL ${u.level} · ${u.level_title}</div>
-        </div>
-        <div class="lb-xp">${u.total_xp} XP</div>
-      `;
-      lbList.appendChild(item);
-    });
-
-    if (lb.length === 0) {
-      lbList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;font-size:14px">Пока никого нет. Будь первым! 🚀</div>';
+    if (isEmployee && lb) {
+      const lbList = document.getElementById('leaderboard-list');
+      lbList.innerHTML = '';
+      lb.forEach((u, i) => {
+        const isMe = u.username === _myUsername;
+        const item = document.createElement('div');
+        item.className = `lb-item${isMe ? ' me' : ''}${i < 3 ? ` ${RANK_CLASSES[i]}` : ''}`;
+        item.innerHTML = `
+          <div class="lb-rank">${i < 3 ? RANK_ICONS[i] : `#${i+1}`}</div>
+          <div class="lb-avatar">${u.display_name.charAt(0).toUpperCase()}</div>
+          <div class="lb-info">
+            <div class="lb-name">${u.display_name}${isMe ? ' (ты)' : ''}</div>
+            <div class="lb-level">LVL ${u.level} · ${u.level_title}</div>
+          </div>
+          <div class="lb-xp">${u.total_xp} XP</div>
+        `;
+        lbList.appendChild(item);
+      });
+      if (lb.length === 0) {
+        lbList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;font-size:14px">Пока никого нет. Будь первым! 🚀</div>';
+      }
     }
   }
 

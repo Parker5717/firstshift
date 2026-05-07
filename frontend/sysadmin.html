@@ -186,17 +186,61 @@
     .ie-save   { padding:5px 10px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-size:13px; }
     .ie-cancel { padding:5px 10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); cursor:pointer; font-size:13px; }
 
+    /* ── Мобильная адаптация ── */
+    .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
     @media(max-width:768px) {
-      .stats-row { grid-template-columns:repeat(2,1fr); }
+      .page { padding:12px; }
+
+      /* Статы — 2 колонки */
+      .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px; }
+      .stat-card { padding:12px; }
+      .stat-card .val { font-size:24px; }
+
+      /* Top bar */
+      #top-bar { padding:10px 12px; gap:8px; }
+      .logo { font-size:13px; }
+      .top-user { display:none; }
+      .btn-sm { padding:6px 10px; font-size:11px; }
+      .sys-badge { display:none; }
+
+      /* Форма создания — колонкой */
+      #create-form { flex-direction:column; gap:8px; }
+      #create-form input { width:100%; }
+      #btn-create { width:100%; padding:13px; font-size:14px; }
+
+      /* Скрываем колонки: Код, Safety, Создан */
+      .tenant-table th:nth-child(2),
+      .tenant-table td:nth-child(2),
+      .tenant-table th:nth-child(4),
+      .tenant-table td:nth-child(4),
+      .tenant-table th:nth-child(5),
+      .tenant-table td:nth-child(5) { display:none; }
+
+      /* Кнопки действий — скрываем текст, оставляем иконки */
+      .btn-action { padding:8px 10px; font-size:14px; }
+      .btn-text { display:none; }
+
+      /* Строки таблицы — выше для удобства тапа */
+      .tenant-table td { padding:14px 10px; }
+
+      /* Панель — полный экран */
       #side-panel { width:100%; }
-      #create-form { flex-direction:column; }
+
+      /* Inline-edit на мобиле */
+      .inline-edit input { font-size:14px; }
+    }
+
+    @media(max-width:480px) {
+      .stats-row { grid-template-columns:1fr 1fr; }
+      /* Скрываем и колонку с кол-вом пользователей, оставляем только название + действия */
     }
   </style>
 </head>
 <body>
 
 <div id="top-bar">
-  <img src="/static/img/mascot.svg" alt="Алекс" style="width:28px;height:28px">
+  <img src="/static/img/mascot.png" alt="Алекс" style="width:28px;height:28px">
   <div class="logo">FIRSTSHIFT</div>
   <div class="sys-badge">SYSTEM ADMIN</div>
   <div id="top-bar-right">
@@ -236,6 +280,7 @@
 
   <!-- Таблица тенантов -->
   <div id="table-loading" class="loading">Загрузка...</div>
+  <div class="table-wrap">
   <table class="tenant-table" id="tenant-table" style="display:none">
     <thead>
       <tr>
@@ -249,6 +294,7 @@
     </thead>
     <tbody id="tenant-tbody"></tbody>
   </table>
+  </div><!-- .table-wrap -->
 
 </div>
 
@@ -357,9 +403,9 @@
         <td><span class="tenant-date">${fmtDate(t.created_at)}</span></td>
         <td>
           <div class="actions">
-            <button class="btn-action" onclick="openUsers(${t.id},'${t.name}','${t.slug}')">👥 Пользователи</button>
-            <button class="btn-action" onclick="startEdit(${t.id})">✏️</button>
-            <button class="btn-action del" onclick="deleteTenant(${t.id},'${t.name}',${t.user_count})">🗑</button>
+            <button class="btn-action" onclick="openUsers(${t.id},'${t.name}','${t.slug}')">👥 <span class="btn-text">Пользователи</span></button>
+            <button class="btn-action" onclick="startEdit(${t.id})" title="Переименовать">✏️</button>
+            <button class="btn-action del" onclick="deleteTenant(${t.id},'${t.name}',${t.user_count})" title="Удалить">🗑</button>
           </div>
         </td>
       `;

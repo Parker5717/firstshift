@@ -177,6 +177,29 @@
     }
     .pdf-btns button:hover { background:rgba(212,118,78,0.22); border-color:var(--accent); }
 
+    /* ── Секция управления в панели ── */
+    #detail-manage {
+      padding:12px 18px; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .manage-label {
+      font-size:10px; font-family:var(--font-mono); color:var(--text-dim);
+      letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;
+    }
+    .manage-row { margin-bottom:10px; }
+    .manage-row:last-child { margin-bottom:0; }
+    .select-full {
+      width:100%; padding:9px 12px; border-radius:10px; font-size:13px;
+      border:1px solid var(--border); background:var(--bg-panel);
+      color:var(--text-primary); cursor:pointer; font-family:inherit;
+      transition:border-color 0.2s; outline:none;
+    }
+    .select-full:focus { border-color:var(--accent); }
+    .manage-saved {
+      font-size:11px; color:var(--success); font-family:var(--font-mono);
+      margin-top:4px; opacity:0; transition:opacity 0.3s; height:16px;
+    }
+    .manage-saved.show { opacity:1; }
+
     /* ── Мобильная адаптация ── */
     @media (max-width: 768px) {
       .page { padding:12px; }
@@ -223,7 +246,7 @@
   <div id="top-bar-right">
     <span class="top-user" id="top-username">Загрузка...</span>
     <button class="btn-sm" onclick="window.location.href='/app'">← Приложение</button>
-    <button class="btn-sm btn-danger" onclick="sessionStorage.removeItem('firstshift_token'); window.location.href='/'">Выйти</button>
+    <button class="btn-sm btn-danger" onclick="API.clearToken(); window.location.href='/'">Выйти</button>
   </div>
 </div>
 
@@ -289,6 +312,27 @@
     <button onclick="downloadPDF(7)">📄 PDF · 7 дней</button>
     <button onclick="downloadPDF(30)">📄 PDF · 30 дней</button>
   </div>
+
+  <div id="detail-manage" style="display:none">
+    <div class="manage-row" id="manage-role-row" style="display:none">
+      <div class="manage-label">Роль</div>
+      <select id="detail-role-select" class="select-full" onchange="detailChangeRole(this)">
+        <option value="employee">Сотрудник</option>
+        <option value="mentor">Наставник</option>
+        <option value="hr">HR</option>
+        <option value="admin">Администратор</option>
+      </select>
+      <div class="manage-saved" id="role-saved">✓ Роль сохранена</div>
+    </div>
+    <div class="manage-row" id="manage-mentor-row" style="display:none">
+      <div class="manage-label">Наставник</div>
+      <select id="detail-mentor-select" class="select-full" onchange="detailChangeMentor(this)">
+        <option value="">— нет —</option>
+      </select>
+      <div class="manage-saved" id="mentor-saved">✓ Наставник сохранён</div>
+    </div>
+  </div>
+
   <div id="detail-body">
     <div class="loading">Выбери сотрудника</div>
   </div>
@@ -483,10 +527,79 @@
     document.getElementById('detail-name').textContent = user.display_name || user.username;
     document.getElementById('detail-meta').textContent =
       `LVL ${user.level} · ${user.level_title} · ${user.total_xp} XP`;
+
+    // Секция управления — роль и наставник
+    const manageDiv  = document.getElementById('detail-manage');
+    const roleRow    = document.getElementById('manage-role-row');
+    const mentorRow  = document.getElementById('manage-mentor-row');
+    let showManage   = false;
+
+    if (_myRole === 'admin') {
+      roleRow.style.display = 'block';
+      const sel = document.getElementById('detail-role-select');
+      sel.value = user.role;
+      sel.dataset.uid = user.id;
+      showManage = true;
+    } else {
+      roleRow.style.display = 'none';
+    }
+
+    if (['admin', 'hr'].includes(_myRole)) {
+      mentorRow.style.display = 'block';
+      const sel = document.getElementById('detail-mentor-select');
+      sel.dataset.uid = user.id;
+      sel.innerHTML = '<option value="">— нет —</option>' +
+        _mentors
+          .filter(m => m.id !== user.id)
+          .map(m => `<option value="${m.id}"${m.id === user.mentor_id ? ' selected' : ''}>${m.display_name || m.username}</option>`)
+          .join('');
+      showManage = true;
+    } else {
+      mentorRow.style.display = 'none';
+    }
+
+    manageDiv.style.display = showManage ? 'block' : 'none';
     document.getElementById('detail-body').innerHTML = '<div class="loading">Загрузка квестов...</div>';
     document.getElementById('detail-panel').classList.add('open');
     document.getElementById('overlay').classList.add('open');
     loadDetailQuests(user.id);
+  }
+
+  function _flashSaved(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  async function detailChangeRole(select) {
+    const uid  = parseInt(select.dataset.uid);
+    const role = select.value;
+    try {
+      await apiFetch(`/api/admin/users/${uid}/role`, { method:'PATCH', body:JSON.stringify({ role }) });
+      const user = _allEmployees.find(u => u.id === uid);
+      if (user) user.role = role;
+      renderTable(_allEmployees);
+      _flashSaved('role-saved');
+    } catch(e) {
+      alert('Ошибка: ' + e.message);
+      const user = _allEmployees.find(u => u.id === uid);
+      if (user) select.value = user.role;
+    }
+  }
+
+  async function detailChangeMentor(select) {
+    const uid       = parseInt(select.dataset.uid);
+    const mentor_id = select.value ? parseInt(select.value) : null;
+    try {
+      await apiFetch(`/api/admin/users/${uid}/mentor`, { method:'PATCH', body:JSON.stringify({ mentor_id }) });
+      const user = _allEmployees.find(u => u.id === uid);
+      if (user) user.mentor_id = mentor_id;
+      renderTable(_allEmployees);
+      _flashSaved('mentor-saved');
+    } catch(e) {
+      alert('Ошибка: ' + e.message);
+    }
   }
 
   function closeDetail() {
@@ -583,6 +696,17 @@
       btn.disabled = false;
     }
   }
+
+  // Мгновенное заполнение имени из кеша
+  (function() {
+    try {
+      const raw = localStorage.getItem('firstshift_profile');
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      document.getElementById('top-username').textContent =
+        `${p.display_name} · ${ROLE_LABELS[p.role] || p.role}`;
+    } catch (_) {}
+  })();
 
   loadEmployees();
   loadSafety();

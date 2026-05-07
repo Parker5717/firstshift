@@ -21,7 +21,7 @@ const API = (() => {
   function clearToken() {
     _token = null;
     sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(PROFILE_KEY);
+    localStorage.removeItem(PROFILE_KEY);
   }
 
   function hasToken() {
@@ -73,7 +73,7 @@ const API = (() => {
   async function login(username, password) {
     const data = await post('/api/auth/login', { username, password });
     setToken(data.access_token);
-    if (data.user) sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
+    if (data.user) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
     return data;  // { access_token, user }
   }
 
@@ -87,21 +87,21 @@ const API = (() => {
       company_code: companyCode,
     });
     setToken(data.access_token);
-    if (data.user) sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
+    if (data.user) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.user));
     return data;
   }
 
-  // Профиль кешируется в sessionStorage — один запрос за сессию.
+  // Профиль кешируется в localStorage — один запрос за сессию, работает между вкладками.
   // forceRefresh=true пробивает кеш (например, после смены имени).
   async function getProfile(forceRefresh = false) {
     if (!forceRefresh) {
-      const cached = sessionStorage.getItem(PROFILE_KEY);
+      const cached = localStorage.getItem(PROFILE_KEY);
       if (cached) {
         try { return JSON.parse(cached); } catch (_) {}
       }
     }
     const profile = await get('/api/users/me');
-    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
     return profile;
   }
 
@@ -114,8 +114,7 @@ const API = (() => {
       method: 'PATCH',
       body: JSON.stringify({ display_name: displayName }),
     });
-    // Обновляем кеш после смены имени
-    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
     return profile;
   }
 

@@ -151,8 +151,28 @@
     #overlay.open { opacity:1; pointer-events:all; }
 
     @media (max-width:768px) {
-      .stats-row { grid-template-columns:repeat(2,1fr); }
+      /* Top bar — убираем лишнее, чтобы кнопки влезли */
+      #top-bar { padding:10px 12px; gap:8px; }
+      .logo { font-size:13px; letter-spacing:1px; }
+      .mentor-badge { display:none; }
+      .top-user { display:none; }
+      .btn-sm { padding:7px 10px; font-size:12px; }
+      /* Текст «← Приложение» скрываем — оставляем только стрелку */
+      #btn-back-app { padding:7px 10px; font-size:16px; }
+
+      /* Статы — 2 колонки */
+      .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px; }
+      .stat-card { padding:12px; }
+      .stat-card .val { font-size:22px; }
+
+      /* Карточки подопечных — убираем прогресс-бар справа */
+      .progress-mini { display:none; }
+      .mentee-right { gap:4px; }
+
+      /* Панель — полный экран */
       #detail-panel { width:100%; }
+
+      .page { padding:12px; }
     }
   </style>
 </head>
@@ -164,7 +184,7 @@
   <div id="top-bar-right">
     <span class="top-user" id="top-username"></span>
     <button class="btn-sm" onclick="window.location.href='/app'">← Приложение</button>
-    <button class="btn-sm btn-danger" onclick="sessionStorage.removeItem('firstshift_token'); window.location.href='/'">Выйти</button>
+    <button class="btn-sm btn-danger" onclick="API.clearToken(); window.location.href='/'">Выйти</button>
   </div>
 </div>
 
@@ -361,6 +381,16 @@
         `<div class="loading">Ошибка: ${e.message}</div>`;
     }
   }
+
+  // Мгновенное заполнение имени из кеша
+  (function() {
+    try {
+      const raw = localStorage.getItem('firstshift_profile');
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      document.getElementById('top-username').textContent = p.display_name || p.username;
+    } catch (_) {}
+  })();
 
   load();
 </script>

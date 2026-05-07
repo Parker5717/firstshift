@@ -108,7 +108,7 @@
       const hudLevel = document.getElementById('hud-level-label');
       if (hudLevel) hudLevel.style.display = 'none';
     }
-    if (profile.total_xp < 50) sessionStorage.removeItem('firstshift_onboarding_done');
+    if (profile.total_xp < 50) localStorage.removeItem('firstshift_onboarding_done');
     setTimeout(() => Onboarding.maybeShow(), 300);
   } catch (err) {
     console.error('[App] Ошибка загрузки профиля:', err);
